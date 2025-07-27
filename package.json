@@ -1,0 +1,27 @@
+{
+  "name": "quiz-system",
+  "version": "1.0.0",
+  "description": "Interactive quiz generation and testing system with Unity integration",
+  "main": "src/frontend/quizGenerator.html",
+  "keywords": [
+    "quiz",
+    "education",
+    "unity",
+    "webview",
+    "testing",
+    "assessment"
+  ],
+  "author": "Anban Mestry <anbanm@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anbanm/quiz-system.git"
+  },
+  "homepage": "https://github.com/anbanm/quiz-system",
+  "scripts": {
+    "start": "echo 'Open src/frontend/quizGenerator.html in your browser'",
+    "test": "echo 'Open src/frontend/WebTest.html in your browser'"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
