@@ -114,8 +114,8 @@
     <label>Image:</label>
     <input type="text" id="imagePath" placeholder="Select image..." readonly>
     <button onclick="document.getElementById('fileInput').click()">Browse</button>
-    <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
-   <!-- <img id="imagePreview" style="display:none;"> -->
+    <input type="file" id="fileInput" style="display: none;" accept="image/*" onchange="handleFileSelect(event)">
+    <img id="imagePreview" style="display:none; max-width: 200px; max-height: 200px; margin-top: 10px; border: 1px solid #ddd; border-radius: 5px;">
 
     <label>Option 1:</label>
     <input type="text" id="option1" placeholder="Option 1">
@@ -179,16 +179,30 @@
         const testId = 'test-' + Math.floor(Math.random() * 1000000);
         document.getElementById("testId").value = testId;
 
-        // Update testName from the input element
+        // Update both testName and testId in the actual test data
         const testNameInput = document.getElementById("testName").value;
         quizData.tests[currentTestIndex].testName = testNameInput;
+        quizData.tests[currentTestIndex].testId = testId;
 
-        return testId;    }
+        return testId;
+    }
 
     function handleFileSelect(event) {
         const file = event.target.files[0];
         if (file) {
             document.getElementById('imagePath').value = file.name;
+            
+            // Show image preview and store the data URL for later use
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('imagePreview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                
+                // Store the image data URL for editing purposes
+                preview.dataset.imageData = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
     }
 
@@ -303,10 +317,16 @@
             return;
         }
         const question = document.getElementById("question").value;
-        let image = document.getElementById("imagePath").value
+        let image = document.getElementById("imagePath").value;
+        let imagePreviewData = null;
+        
         if (image) {
             const fileName = image.split('/').pop(); // Extract the file name from the path
             image = `test_image_assets/${fileName}`;
+            
+            // Get the preview data for editing purposes
+            const preview = document.getElementById("imagePreview");
+            imagePreviewData = preview.dataset.imageData || null;
         }
         const option1 = document.getElementById("option1").value;
         const option2 = document.getElementById("option2").value;
@@ -326,6 +346,7 @@
         const newQuestion = {
             question: question,
             image: image,
+            imagePreviewData: imagePreviewData,
             option1: option1,
             option2: option2,
             option3: option3,
@@ -380,10 +401,21 @@
 
         if(question.image){
             document.getElementById("imagePath").value = question.image||"";
-            //document.getElementById("imagePreview").style.display = 'block';
+            const preview = document.getElementById("imagePreview");
+            
+            // Use stored preview data if available, otherwise try to load the image path
+            if (question.imagePreviewData) {
+                preview.src = question.imagePreviewData;
+                preview.dataset.imageData = question.imagePreviewData;
+            } else {
+                preview.src = question.image;
+            }
+            preview.style.display = 'block';
         }else{
-           // document.getElementById("imagePreview").src = '';
-            //document.getElementById("imagePreview").style.display = 'none';
+            const preview = document.getElementById("imagePreview");
+            preview.src = '';
+            preview.dataset.imageData = '';
+            preview.style.display = 'none';
         }
         document.getElementById("option1").value = question.option1;
         document.getElementById("option2").value = question.option2;
@@ -416,6 +448,13 @@
         document.getElementById("category").value = "";
         document.getElementById("points").value = 1;
         document.getElementById("difficulty").value = "easy";
+        
+        // Hide image preview
+        const preview = document.getElementById("imagePreview");
+        preview.src = '';
+        preview.dataset.imageData = '';
+        preview.style.display = 'none';
+        
         currentQuestionIndex = null;
     }
 
