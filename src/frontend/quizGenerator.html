@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Question Entry</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            margin: 20px;
+            padding: 20px;
+            max-width: 900px;
+            margin: auto;
+            color: #333;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            border: none;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #questionList, #jsonOutput {
+            margin-top: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        ul li {
+            background: #ecf0f1;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        ul li button {
+            background: #e74c3c;
+            padding: 5px 10px;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+        ul li button:hover {
+            background: #c0392b;
+        }
+        img#imagePreview {
+            display: block;
+            width: 100px;
+            height: auto;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Quiz Test Entry</h2>
+
+    <label>Load Existing JSON:</label>
+    <input type="file" id="jsonUpload" accept="application/json" onchange="loadJSON(event)">
+
+
+    <div id="testSelectContainer" style="display: none;">  </div>
+
+    <button onclick="createNewTest()">Create New Test</button>
+    <hr> </hr>  </div>  <div id="testDetailsContainer" style="display: none;">
+    <h3>Test Details</h3>
+    <label>Test Name:</label>
+    <input type="text" id="testName" placeholder="Enter test name...">
+    <label>Test ID:</label>
+    <input type="text" id="testId" placeholder="Generated automatically" readonly>
+    <button onclick="generateTestId()">Generate Test ID</button>
+
+    <label>Question:</label>
+    <input type="text" id="question" placeholder="Enter question...">
+
+    <label>Image:</label>
+    <input type="text" id="imagePath" placeholder="Select image..." readonly>
+    <button onclick="document.getElementById('fileInput').click()">Browse</button>
+    <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
+   <!-- <img id="imagePreview" style="display:none;"> -->
+
+    <label>Option 1:</label>
+    <input type="text" id="option1" placeholder="Option 1">
+
+    <label>Option 2:</label>
+    <input type="text" id="option2" placeholder="Option 2">
+
+    <label>Option 3:</label>
+    <input type="text" id="option3" placeholder="Option 3">
+
+    <label>Option 4:</label>
+    <input type="text" id="option4" placeholder="Option 4">
+
+    <label>Correct Answer:</label>
+    <select id="correctAnswer">
+        <option value="option1">Option 1</option>
+        <option value="option2">Option 2</option>
+        <option value="option3">Option 3</option>
+        <option value="option4">Option 4</option>
+    </select>
+
+    <label>Category:</label>
+    <input type="text" id="category" placeholder="Enter category...">
+
+    <label>Points:</label>
+    <input type="number" id="points" value="1" min="1" placeholder="Points for this question">
+
+    <label>Difficulty:</label>
+    <select id="difficulty">
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+    </select>
+
+    <button onclick="addOrUpdateQuestion()">Add / Update Question</button>
+
+
+    <h3 id="totalPointsDisplay">Total Points: 0</h3>
+    <div id="questionList">
+        <h3>Questions Added:</h3>
+        <ul id="questions"></ul>
+    </div>
+
+    <button onclick="generateJSON()">Generate JSON</button>
+    <button onclick="downloadJSON()">Download JSON</button>
+
+    <h3>Generated JSON:</h3>
+    <div id="jsonOutput"></div>
+
+
+</div>
+
+<script>
+    let quizData = { tests: [] }; // Store all tests
+    let currentTestIndex = -1;      // Index of the currently selected test
+    let currentQuestionIndex = null // Index of the currently selected question
+
+
+
+    function generateTestId() {
+        const testId = 'test-' + Math.floor(Math.random() * 1000000);
+        document.getElementById("testId").value = testId;
+
+        // Update testName from the input element
+        const testNameInput = document.getElementById("testName").value;
+        quizData.tests[currentTestIndex].testName = testNameInput;
+
+        return testId;    }
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            document.getElementById('imagePath').value = file.name;
+        }
+    }
+
+    async function ensureImageInDirectory(file, filePath) {
+        try {
+            const dirHandle = await window.showDirectoryPicker();
+            let fileHandle;
+            try {
+                fileHandle = await dirHandle.getFileHandle(filePath, { create: false });
+            } catch (error) {
+                if (error.name === 'NotFoundError') {
+                    fileHandle = await dirHandle.getFileHandle(filePath, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(file);
+                    await writable.close();
+                } else {
+                    throw error;
+                }
+            }
+        } catch (error) {
+            console.error("Error accessing file system:", error);
+        }
+    }
+
+
+
+
+    function loadJSON(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    quizData = JSON.parse(e.target.result);
+                    if (!quizData || !quizData.tests || !Array.isArray(quizData.tests)) {
+                        quizData = { tests: [] }; // Reset if the structure is invalid
+                    }
+                    populateTestSelect();
+                } catch (error) {
+                    alert("Error parsing JSON: " + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+    }
+
+
+    function populateTestSelect() {
+        const testSelectContainer = document.getElementById("testSelectContainer");
+        testSelectContainer.innerHTML = ""; // Clear previous options
+
+        if (quizData.tests.length > 0) {
+            const select = document.createElement("select");
+            select.id = "testSelect";
+            select.onchange = () => selectTest(parseInt(select.value));
+
+            quizData.tests.forEach((test, index) => {
+                const option = document.createElement("option");
+                option.value = index;
+                option.text = test.testName || `Test ${index + 1}`;
+                select.appendChild(option);
+            });
+
+            testSelectContainer.appendChild(select);
+            testSelectContainer.style.display = "block";
+            selectTest(0); // Select the first test by default if there are any tests.
+        } else {
+            testSelectContainer.style.display = "none";
+        }
+        document.getElementById("testDetailsContainer").style.display = "block";
+    }
+
+    function selectTest(index) {
+        currentTestIndex = index;
+        const test = quizData.tests[index];
+
+        const testNameInput = document.getElementById("testName");
+        testNameInput.value = test.testName;
+        testNameInput.onchange = () => {
+            test.testName = testNameInput.value;
+        };
+
+        document.getElementById("testId").value = test.testId;
+
+        // Load Questions of selected test
+        const questions = test.questions || [];
+        renderQuestions(questions);
+        updateTotalPoints(questions);
+    }
+
+
+    function createNewTest() {
+        const newTest = {
+            testName: "New Test",
+            testId: 'test-' + Math.floor(Math.random() * 1000000),
+            questions: []
+        };
+
+        quizData.tests.push(newTest);
+        currentTestIndex = quizData.tests.length - 1;  // Switch to the last test.
+
+        populateTestSelect();   // Refresh test selection menu
+        selectTest(currentTestIndex); // Select new test and populate the rest of the form fields
+        clearQuestionForm();
+
+    }
+
+    function addOrUpdateQuestion() {
+        const test = quizData.tests[currentTestIndex];
+        if(!test){
+            alert("No test selected!")
+            return;
+        }
+        const question = document.getElementById("question").value;
+        let image = document.getElementById("imagePath").value
+        if (image) {
+            const fileName = image.split('/').pop(); // Extract the file name from the path
+            image = `test_image_assets/${fileName}`;
+        }
+        const option1 = document.getElementById("option1").value;
+        const option2 = document.getElementById("option2").value;
+        const option3 = document.getElementById("option3").value;
+        const option4 = document.getElementById("option4").value;
+        const correctAnswer = document.getElementById("correctAnswer").value;
+        const category = document.getElementById("category").value;
+        const difficulty = document.getElementById("difficulty").value;
+        const points = parseInt(document.getElementById("points").value);
+
+
+        if(!question || !option1 || !option2 || !option3 || !option4 || !correctAnswer || !category || !difficulty)
+        {
+            alert("Please fill all the fields")
+            return;
+        }
+        const newQuestion = {
+            question: question,
+            image: image,
+            option1: option1,
+            option2: option2,
+            option3: option3,
+            option4: option4,
+            correctAnswer: correctAnswer,
+            category: category,
+            difficulty: difficulty,
+            points: points
+        };
+
+        if(currentQuestionIndex !== null){
+            test.questions[currentQuestionIndex] = {...test.questions[currentQuestionIndex], ...newQuestion};
+            currentQuestionIndex = null;
+
+        }else{
+            newQuestion.id = 'q-' + Math.floor(Math.random() * 1000000);
+            test.questions.push(newQuestion)
+        }
+
+        clearQuestionForm();
+        renderQuestions(test.questions);
+        updateTotalPoints(test.questions);
+
+    }
+
+
+
+
+    function renderQuestions(questions) {
+        const questionsList = document.getElementById("questions");
+        questionsList.innerHTML = "";
+        questions.forEach((question, index) => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <span>${question.question} -  (${question.difficulty}) - Points: ${question.points}</span>
+                <div>
+                    <button onclick="editQuestion(${index})">Edit</button>
+                    <button onclick="deleteQuestion(${index})">Delete</button>
+                </div>
+            `;
+            questionsList.appendChild(li);
+        });
+    }
+
+
+    function editQuestion(index){
+
+        const test = quizData.tests[currentTestIndex];
+        const question = test.questions[index];
+
+        document.getElementById("question").value = question.question;
+
+        if(question.image){
+            document.getElementById("imagePath").value = question.image||"";
+            //document.getElementById("imagePreview").style.display = 'block';
+        }else{
+           // document.getElementById("imagePreview").src = '';
+            //document.getElementById("imagePreview").style.display = 'none';
+        }
+        document.getElementById("option1").value = question.option1;
+        document.getElementById("option2").value = question.option2;
+        document.getElementById("option3").value = question.option3;
+        document.getElementById("option4").value = question.option4;
+        document.getElementById("correctAnswer").value = question.correctAnswer;
+        document.getElementById("category").value = question.category;
+        document.getElementById("points").value = question.points;
+        document.getElementById("difficulty").value = question.difficulty;
+
+        currentQuestionIndex = index;
+    }
+
+
+    function deleteQuestion(index) {
+        const test = quizData.tests[currentTestIndex];
+        test.questions.splice(index, 1);
+        renderQuestions(test.questions);
+        updateTotalPoints(test.questions);
+    }
+
+    function clearQuestionForm(){
+        document.getElementById("question").value = "";
+        document.getElementById("imagePath").value = "";
+        document.getElementById("option1").value = "";
+        document.getElementById("option2").value = "";
+        document.getElementById("option3").value = "";
+        document.getElementById("option4").value = "";
+        document.getElementById("correctAnswer").value = "option1";
+        document.getElementById("category").value = "";
+        document.getElementById("points").value = 1;
+        document.getElementById("difficulty").value = "easy";
+        currentQuestionIndex = null;
+    }
+
+    function generateJSON() {
+        // Update testName from the input element
+        const testNameInput = document.getElementById("testName").value;
+        const test = quizData.tests[currentTestIndex];
+        test.testName = testNameInput;
+
+        // Create a new object for JSON output
+        const outputTest = {
+            testName: test.testName,
+            testID: test.testId,
+            questions: test.questions.map(question => ({
+                question: question.question,
+                image: question.image,
+                options: [question.option1, question.option2, question.option3, question.option4],
+                correctAnswer: [question.option1, question.option2, question.option3, question.option4].indexOf(question[question.correctAnswer]),
+                category: question.category,
+                difficulty: question.difficulty,
+                points: question.points,
+                id: question.id
+            }))
+        };
+
+        const jsonData = JSON.stringify({tests: [outputTest]}, null, 4);
+        document.getElementById("jsonOutput").innerText = jsonData;
+        return jsonData;
+
+
+    }
+    function downloadJSON() {
+        const jsonData = generateJSON();
+        if (!jsonData) return;
+
+        const test = quizData.tests[currentTestIndex];
+        const testName = test.testName.replace(/\s+/g, '_'); // Replace spaces with underscores
+        const testID = test.testID; // Use testID instead of testId
+        const date = new Date().toISOString().split('T')[0]; // Get the current date in YYYY-MM-DD format
+
+        const filename = `${testName}_${testID}_${date}.json`;
+
+        const blob = new Blob([jsonData], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function updateTotalPoints(questions) {
+        const totalPoints = questions.reduce((sum, question) => sum + question.points, 0);
+        document.getElementById("totalPointsDisplay").innerText = `Total Points: ${totalPoints}`;
+    }
+
+</script>
+</body>
+</html>

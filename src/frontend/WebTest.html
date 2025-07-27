@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 20px;
+            padding: 20px;
+            max-width: 900px;
+            margin: auto;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        .question {
+            margin-bottom: 15px;
+        }
+        button, input[type="file"] {
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #resultContainer {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 5px;
+            display: none;
+        }
+        #fileUpload {
+            display: none;
+        }
+        #logArea {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            height: 200px;
+            overflow-y: scroll;
+            font-family: monospace;
+        }
+    </style>
+    <script>
+        let testID = "";
+        let questions = [];
+        let userAnswers = {};
+        let useUnity = true;
+        let hasSubmitted = false;
+        function toggleMode() {
+            useUnity = !useUnity;
+            document.getElementById("modeIndicator").innerText = useUnity ? "Unity Mode" : "Local File Mode";
+            document.getElementById("fileUpload").style.display = useUnity ? "none" : "block";
+        }
+
+        function receiveFromUnity(message) {
+            if (!useUnity) return;
+            try {
+                let data = JSON.parse(message);
+                logMessage("Received JSON from Unity: " + JSON.stringify(data, null, 4));
+                if (data.tests && data.tests.length > 0) {
+                    testID = data.tests[0].testID;
+                    logMessage("Test ID: " + testID);
+                    loadTest(data);
+                } else {
+                    logMessage("No tests found in the JSON data.");
+                }
+            } catch (error) {
+                logMessage("Invalid JSON from Unity: " + message);
+            }
+        }
+
+        function loadTest(testJson) {
+            logMessage("Loading test data: " + JSON.stringify(testJson));
+            if (testJson.tests && testJson.tests.length > 0) {
+                const test = testJson.tests[0];
+                testID = test.testID;
+                questions = test.questions;
+                renderQuestions();
+            } else {
+                logMessage("No tests found in the JSON data.");
+            }
+        }
+
+        function renderQuestions() {
+            let quizContainer = document.getElementById("quizContainer");
+            quizContainer.innerHTML = "";
+
+            questions.forEach((q, index) => {
+                let questionBlock = document.createElement("div");
+                questionBlock.classList.add("question");
+                questionBlock.innerHTML = `<p><strong>${q.question}</strong></p>`;
+
+                if (q.image) {
+                    questionBlock.innerHTML += `<img src="${q.image}" alt="Question Image" style="max-width: 100%; height: auto;" />`;
+                }
+
+                q.options.forEach((option, i) => {
+                    questionBlock.innerHTML += `
+                        <input type="radio" name="q${index}" value="${i}" onchange="saveAnswer(${index}, ${i})"> ${option}<br>
+                    `;
+                });
+                quizContainer.appendChild(questionBlock);
+            });
+        }
+
+        function saveAnswer(questionIndex, selectedOptionIndex) {
+            userAnswers[questionIndex] = selectedOptionIndex;
+        }
+
+        function submitTest() {
+            let correctCount = 0;
+            let totalPoints = 0;
+            if (hasSubmitted) {
+                alert("You have already submitted the test.");
+                return;
+            }
+            questions.forEach((q, index) => {
+                if (userAnswers[index] === q.correctAnswer) {
+                    correctCount++;
+                    totalPoints += q.points || 1;
+                }
+            });
+
+            let result = {
+                testID: testID,
+                correctAnswers: correctCount,
+                totalQuestions: questions.length,
+                pointsAwarded: totalPoints
+            };
+
+            displayResults(result);
+            if (useUnity) {
+                sendToUnity(JSON.stringify(result));
+            }
+            hasSubmitted = true;
+        }
+
+        function displayResults(result) {
+            let resultContainer = document.getElementById("resultContainer");
+            resultContainer.innerHTML = `
+                <h3>Test Results</h3>
+                <p><strong>Test ID:</strong> ${result.testID}</p>
+                <p><strong>Correct Answers:</strong> ${result.correctAnswers} / ${result.totalQuestions}</p>
+                <p><strong>Points Awarded:</strong> ${result.pointsAwarded}</p>
+            `;
+            resultContainer.style.display = "block";
+        }
+
+        function sendToUnity(message) {
+            window.location = "uniwebview://event?data=" + encodeURIComponent(message);
+        }
+
+        function handleFileUpload(event) {
+            if (useUnity) return;
+            let file = event.target.files[0];
+            if (!file) return;
+
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let testJson = JSON.parse(e.target.result);
+                    logMessage("Loaded JSON from file: " + JSON.stringify(testJson));
+                    loadTest(testJson);
+                } catch (error) {
+                    logMessage("Error parsing JSON file: " + error);
+                    alert("Invalid JSON file.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function logMessage(message) {
+            let logArea = document.getElementById("logArea");
+            logArea.innerText += message + "\n";
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <h2>Quiz Test</h2>
+    <button onclick="toggleMode()">Toggle Mode: <span id="modeIndicator">Unity Mode</span></button>
+    <input type="file" id="fileUpload" accept="application/json" onchange="handleFileUpload(event)">
+    <div id="quizContainer"></div>
+    <button onclick="submitTest()">Submit Test</button>
+    <div id="resultContainer"></div>
+    <div id="logArea"></div>
+</div>
+</body>
+</html>
