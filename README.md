@@ -1,6 +1,6 @@
 # Quiz System
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 A comprehensive quiz generation and testing system with Unity integration for educational applications.
@@ -75,8 +75,9 @@ quiz-system/
 
 ## Dependencies
 
-- **Web**: Modern web browser with ES6 support
+- **Web**: Modern web browser with ES6 support (works completely offline)
 - **Unity**: Unity 2021.3+ with UniWebView package
+- **Included Libraries**: JSZip 3.10.1 (bundled locally for offline use)
 
 ## Contributing
 

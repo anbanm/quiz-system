@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Question Entry</title>
+    <title>Quiz Builder for Teachers</title>
+    <script src="jszip.min.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -91,79 +92,186 @@
 </head>
 <body>
 <div class="container">
-    <h2>Quiz Test Entry</h2>
+    <h1 style="text-align: center; color: #2c3e50; margin-bottom: 10px;">📚 Quiz Builder for Teachers</h1>
+    <p style="text-align: center; color: #7f8c8d; margin-bottom: 30px;">Create engaging quizzes for your students in just a few simple steps!</p>
 
-    <label>Load Existing JSON:</label>
-    <input type="file" id="jsonUpload" accept="application/json" onchange="loadJSON(event)">
+    <div style="margin-bottom: 20px; padding: 15px; background: #e8f4fd; border-radius: 8px; border-left: 4px solid #3498db;">
+        <strong>📂 Open Existing Quiz:</strong>
+        <input type="file" id="jsonUpload" accept="application/json" onchange="loadJSON(event)" style="margin-top: 10px;">
+        <small style="color: #7f8c8d; display: block; margin-top: 5px;">Upload a previously saved quiz file to continue editing</small>
+    </div>
 
 
     <div id="testSelectContainer" style="display: none;">  </div>
 
-    <button onclick="createNewTest()">Create New Test</button>
-    <hr> </hr>  </div>  <div id="testDetailsContainer" style="display: none;">
-    <h3>Test Details</h3>
-    <label>Test Name:</label>
-    <input type="text" id="testName" placeholder="Enter test name...">
-    <label>Test ID:</label>
-    <input type="text" id="testId" placeholder="Generated automatically" readonly>
-    <button onclick="generateTestId()">Generate Test ID</button>
-
-    <label>Question:</label>
-    <input type="text" id="question" placeholder="Enter question...">
-
-    <label>Image:</label>
-    <input type="text" id="imagePath" placeholder="Select image..." readonly>
-    <button onclick="document.getElementById('fileInput').click()">Browse</button>
-    <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
-   <!-- <img id="imagePreview" style="display:none;"> -->
-
-    <label>Option 1:</label>
-    <input type="text" id="option1" placeholder="Option 1">
-
-    <label>Option 2:</label>
-    <input type="text" id="option2" placeholder="Option 2">
-
-    <label>Option 3:</label>
-    <input type="text" id="option3" placeholder="Option 3">
-
-    <label>Option 4:</label>
-    <input type="text" id="option4" placeholder="Option 4">
-
-    <label>Correct Answer:</label>
-    <select id="correctAnswer">
-        <option value="option1">Option 1</option>
-        <option value="option2">Option 2</option>
-        <option value="option3">Option 3</option>
-        <option value="option4">Option 4</option>
-    </select>
-
-    <label>Category:</label>
-    <input type="text" id="category" placeholder="Enter category...">
-
-    <label>Points:</label>
-    <input type="number" id="points" value="1" min="1" placeholder="Points for this question">
-
-    <label>Difficulty:</label>
-    <select id="difficulty">
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-    </select>
-
-    <button onclick="addOrUpdateQuestion()">Add / Update Question</button>
-
-
-    <h3 id="totalPointsDisplay">Total Points: 0</h3>
-    <div id="questionList">
-        <h3>Questions Added:</h3>
-        <ul id="questions"></ul>
+    <div style="text-align: center; margin: 30px 0;">
+        <button onclick="createNewTest()" style="background: #27ae60; font-size: 18px; padding: 15px 30px; border-radius: 8px;">
+            ✨ Create New Quiz
+        </button>
     </div>
 
-    <button onclick="generateJSON()">Generate JSON</button>
-    <button onclick="downloadJSON()">Download JSON</button>
+</div>
 
-    <h3>Generated JSON:</h3>
-    <div id="jsonOutput"></div>
+<div id="testDetailsContainer" style="display: none;" class="container" style="margin-top: 20px;">
+    <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">📝 Quiz Details</h2>
+    
+    <div style="margin: 20px 0;">
+        <label style="color: #2c3e50; font-size: 16px;">📚 Quiz Name:</label>
+        <input type="text" id="testName" placeholder="e.g., Math Chapter 5 Quiz, Science Test #1..." style="font-size: 16px;">
+        <small style="color: #7f8c8d; display: block; margin-top: 5px;">Give your quiz a descriptive name that students will recognize</small>
+    </div>
+
+    <details style="margin: 20px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+        <summary style="cursor: pointer; font-weight: bold; color: #7f8c8d;">⚙️ Advanced Settings (Optional)</summary>
+        <div style="margin-top: 10px;">
+            <label>Quiz ID:</label>
+            <input type="text" id="testId" placeholder="Generated automatically" readonly>
+            <button onclick="generateTestId()" style="background: #95a5a6; font-size: 14px;">Generate New ID</button>
+        </div>
+    </details>
+
+    <h2 style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-top: 30px;">❓ Add Questions</h2>
+    
+    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 20px 0;">
+        <strong>💡 Quick Tips:</strong>
+        <ul style="margin: 10px 0; padding-left: 20px; color: #856404;">
+            <li>Write clear, specific questions</li>
+            <li>Make sure only one answer is clearly correct</li>
+            <li>Add images to make questions more engaging</li>
+            <li>Use different difficulty levels to challenge all students</li>
+        </ul>
+    </div>
+
+    <div style="margin: 20px 0; padding: 20px; background: white; border-radius: 8px; border: 2px solid #e8f4fd;">
+        <label style="color: #2c3e50; font-size: 16px; font-weight: bold; display: block; margin-bottom: 10px;">❓ Your Question:</label>
+        <textarea id="question" placeholder="What is the capital of France?" style="width: 100%; height: 80px; resize: vertical; font-size: 16px; border: 2px solid #ddd; border-radius: 5px; padding: 12px; font-family: inherit;"></textarea>
+        <small style="color: #7f8c8d; display: block; margin-top: 8px; font-style: italic;">💡 Write a clear, specific question for your students</small>
+    </div>
+
+    <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+        <label style="color: #2c3e50; font-size: 16px;">🖼️ Add Image (Optional):</label>
+        <input type="text" id="imagePath" placeholder="No image selected" readonly style="margin-top: 10px;">
+        <button onclick="document.getElementById('fileInput').click()" style="background: #17a2b8; margin-top: 10px;">📁 Choose Image</button>
+        <input type="file" id="fileInput" style="display: none;" accept="image/*" onchange="handleFileSelect(event)">
+        <img id="imagePreview" style="display:none; max-width: 200px; max-height: 200px; margin-top: 10px; border: 1px solid #ddd; border-radius: 5px;">
+        <small style="color: #7f8c8d; display: block; margin-top: 5px;">Images help students understand the question better</small>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <h3 style="color: #2c3e50; margin-bottom: 15px;">📝 Answer Options:</h3>
+        
+        <div style="display: grid; gap: 10px;">
+            <div>
+                <label style="color: #27ae60; font-weight: bold;">A)</label>
+                <input type="text" id="option1" placeholder="First answer option" style="margin-left: 10px;">
+            </div>
+            <div>
+                <label style="color: #f39c12; font-weight: bold;">B)</label>
+                <input type="text" id="option2" placeholder="Second answer option" style="margin-left: 10px;">
+            </div>
+            <div>
+                <label style="color: #3498db; font-weight: bold;">C)</label>
+                <input type="text" id="option3" placeholder="Third answer option" style="margin-left: 10px;">
+            </div>
+            <div>
+                <label style="color: #e74c3c; font-weight: bold;">D)</label>
+                <input type="text" id="option4" placeholder="Fourth answer option" style="margin-left: 10px;">
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 20px 0;">
+        <div>
+            <label style="color: #2c3e50; font-weight: bold;">✅ Correct Answer:</label>
+            <select id="correctAnswer" style="margin-top: 5px; font-size: 16px; padding: 8px;">
+                <option value="option1">A</option>
+                <option value="option2">B</option>
+                <option value="option3">C</option>
+                <option value="option4">D</option>
+            </select>
+        </div>
+        
+        <div>
+            <label style="color: #2c3e50; font-weight: bold;">⭐ Points:</label>
+            <input type="number" id="points" value="1" min="1" max="10" style="margin-top: 5px; font-size: 16px; padding: 8px;">
+        </div>
+        
+        <div>
+            <label style="color: #2c3e50; font-weight: bold;">📊 Difficulty:</label>
+            <select id="difficulty" style="margin-top: 5px; font-size: 16px; padding: 8px;">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <label style="color: #2c3e50; font-weight: bold;">📂 Subject/Category:</label>
+        <input type="text" id="category" placeholder="e.g., Math, Science, History..." style="margin-top: 5px;">
+        <small style="color: #7f8c8d; display: block; margin-top: 5px;">Help organize your questions by subject or topic</small>
+    </div>
+
+    <div style="text-align: center; margin: 30px 0;">
+        <button onclick="addOrUpdateQuestion()" style="background: #27ae60; font-size: 18px; padding: 15px 30px; border-radius: 8px;">
+            ➕ Add Question to Quiz
+        </button>
+    </div>
+
+
+    <div style="margin-top: 40px; padding: 20px; background: #e8f5e8; border-radius: 8px; border-left: 4px solid #27ae60;">
+        <h2 style="color: #2c3e50; margin-bottom: 20px;">📊 Quiz Summary</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+            <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                <h3 style="margin: 0; color: #3498db;">📝 Questions</h3>
+                <p style="font-size: 24px; font-weight: bold; margin: 10px 0; color: #2c3e50;" id="questionCount">0</p>
+            </div>
+            <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                <h3 style="margin: 0; color: #f39c12;">⭐ Total Points</h3>
+                <p style="font-size: 24px; font-weight: bold; margin: 10px 0; color: #2c3e50;" id="totalPointsDisplay">0</p>
+            </div>
+            <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                <h3 style="margin: 0; color: #e74c3c;">📊 Difficulty Mix</h3>
+                <p style="font-size: 14px; margin: 10px 0; color: #2c3e50;" id="difficultyBreakdown">-</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="questionList" style="margin-top: 30px;">
+        <h2 style="color: #2c3e50; border-bottom: 2px solid #9b59b6; padding-bottom: 10px;">📋 Your Questions</h2>
+        <div id="questions" style="margin-top: 20px;"></div>
+        <div id="emptyState" style="text-align: center; padding: 40px; color: #7f8c8d; display: block;">
+            <p style="font-size: 18px;">📝 No questions added yet</p>
+            <p>Add your first question above to get started!</p>
+        </div>
+    </div>
+
+    <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+        <h2 style="color: #2c3e50; margin-bottom: 20px;">💾 Save Your Quiz</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+            <button onclick="generateJSON()" style="background: #3498db; padding: 15px; border-radius: 8px;">
+                👀 Preview Quiz Data
+            </button>
+            <button onclick="downloadZIP()" style="background: #27ae60; padding: 15px; border-radius: 8px;">
+                📦 Download ZIP Package
+            </button>
+            <button onclick="downloadJSON()" style="background: #95a5a6; padding: 15px; border-radius: 8px;">
+                📄 Download JSON Only
+            </button>
+        </div>
+        
+        <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <h4 style="margin: 0 0 10px 0; color: #27ae60;">💡 Download Options:</h4>
+            <p style="margin: 5px 0; font-size: 14px;"><strong>📦 ZIP Package:</strong> Complete quiz with images in separate folder (recommended for sharing)</p>
+            <p style="margin: 5px 0; font-size: 14px;"><strong>📄 JSON Only:</strong> Lightweight file with embedded images (larger file size)</p>
+        </div>
+        
+        <details style="margin-top: 20px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #7f8c8d;">📄 View Quiz Data (Technical)</summary>
+            <div id="jsonOutput" style="margin-top: 15px; padding: 15px; background: #2c3e50; color: #ecf0f1; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto;"></div>
+        </details>
+    </div>
 
 
 </div>
@@ -173,7 +281,19 @@
     let currentTestIndex = -1;      // Index of the currently selected test
     let currentQuestionIndex = null // Index of the currently selected question
 
-
+    function getImageExtension(imagePath) {
+        if (!imagePath) return 'jpg';
+        if (imagePath.startsWith('data:image/')) {
+            const match = imagePath.match(/data:image\/([^;]+)/);
+            let ext = match ? match[1] : 'jpg';
+            // Convert jpeg to jpg for consistency
+            return ext === 'jpeg' ? 'jpg' : ext;
+        }
+        const ext = imagePath.split('.').pop().toLowerCase();
+        // Convert jpeg to jpg for consistency
+        const normalizedExt = ext === 'jpeg' ? 'jpg' : ext;
+        return ['jpg', 'png', 'gif', 'webp'].includes(normalizedExt) ? normalizedExt : 'jpg';
+    }
 
     function generateTestId() {
         const testId = 'test-' + Math.floor(Math.random() * 1000000);
@@ -189,6 +309,18 @@
         const file = event.target.files[0];
         if (file) {
             document.getElementById('imagePath').value = file.name;
+            
+            // Show image preview and store the data URL for later use
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('imagePreview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                
+                // Store the image data URL for editing purposes
+                preview.dataset.imageData = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
     }
 
@@ -222,10 +354,46 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    quizData = JSON.parse(e.target.result);
-                    if (!quizData || !quizData.tests || !Array.isArray(quizData.tests)) {
+                    const loadedData = JSON.parse(e.target.result);
+                    if (!loadedData || !loadedData.tests || !Array.isArray(loadedData.tests)) {
                         quizData = { tests: [] }; // Reset if the structure is invalid
+                        return;
                     }
+                    
+                    // Convert loaded data to internal format
+                    quizData = {
+                        tests: loadedData.tests.map(test => ({
+                            testName: test.testName,
+                            testId: test.testID || test.testId, // Handle both formats
+                            questions: test.questions.map(q => {
+                                // Convert from export format back to internal format
+                                if (q.options && typeof q.options === 'object') {
+                                    // New format with A/B/C/D object
+                                    return {
+                                        question: q.question,
+                                        image: q.image,
+                                        imagePreviewData: q.image && q.image.startsWith('data:') ? q.image : null, // Only use data URLs as preview data
+                                        option1: q.options.A,
+                                        option2: q.options.B,
+                                        option3: q.options.C,
+                                        option4: q.options.D,
+                                        correctAnswer: q.correctAnswer === 'A' ? 'option1' :
+                                                      q.correctAnswer === 'B' ? 'option2' :
+                                                      q.correctAnswer === 'C' ? 'option3' :
+                                                      q.correctAnswer === 'D' ? 'option4' : 'option1',
+                                        category: q.category,
+                                        difficulty: q.difficulty,
+                                        points: q.points || 1,
+                                        id: q.id || 'q-' + Math.floor(Math.random() * 1000000)
+                                    };
+                                } else {
+                                    // Old format - return as is
+                                    return q;
+                                }
+                            })
+                        }))
+                    };
+                    
                     populateTestSelect();
                 } catch (error) {
                     alert("Error parsing JSON: " + error.message);
@@ -303,10 +471,16 @@
             return;
         }
         const question = document.getElementById("question").value;
-        let image = document.getElementById("imagePath").value
+        let image = document.getElementById("imagePath").value;
+        let imagePreviewData = null;
+        
         if (image) {
             const fileName = image.split('/').pop(); // Extract the file name from the path
             image = `test_image_assets/${fileName}`;
+            
+            // Get the preview data for editing purposes
+            const preview = document.getElementById("imagePreview");
+            imagePreviewData = preview.dataset.imageData || null;
         }
         const option1 = document.getElementById("option1").value;
         const option2 = document.getElementById("option2").value;
@@ -326,6 +500,7 @@
         const newQuestion = {
             question: question,
             image: image,
+            imagePreviewData: imagePreviewData,
             option1: option1,
             option2: option2,
             option3: option3,
@@ -356,18 +531,82 @@
 
     function renderQuestions(questions) {
         const questionsList = document.getElementById("questions");
+        const emptyState = document.getElementById("emptyState");
+        
         questionsList.innerHTML = "";
+        
+        if (questions.length === 0) {
+            emptyState.style.display = "block";
+            return;
+        }
+        
+        emptyState.style.display = "none";
+        
         questions.forEach((question, index) => {
-            const li = document.createElement("li");
-            li.innerHTML = `
-                <span>${question.question} -  (${question.difficulty}) - Points: ${question.points}</span>
-                <div>
-                    <button onclick="editQuestion(${index})">Edit</button>
-                    <button onclick="deleteQuestion(${index})">Delete</button>
+            const questionCard = document.createElement("div");
+            questionCard.style.cssText = `
+                background: white; 
+                padding: 15px; 
+                margin: 10px 0; 
+                border-radius: 8px; 
+                border-left: 4px solid ${getDifficultyColor(question.difficulty)}; 
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            `;
+            
+            const difficultyEmoji = getDifficultyEmoji(question.difficulty);
+            // Use imagePreviewData if available, otherwise fallback to image path (only if it's a data URL)
+            const imageSrc = question.imagePreviewData || (question.image && question.image.startsWith('data:') ? question.image : null);
+            const imagePreview = imageSrc ? `<img src="${imageSrc}" style="max-width: 80px; max-height: 50px; object-fit: cover; border-radius: 4px;">` : '';
+            
+            questionCard.innerHTML = `
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    ${imagePreview ? `<div style="flex-shrink: 0;">${imagePreview}</div>` : ''}
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <span style="background: ${getDifficultyColor(question.difficulty)}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; font-weight: bold;">
+                                ${difficultyEmoji} ${question.difficulty.toUpperCase()}
+                            </span>
+                            <span style="background: #f39c12; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; font-weight: bold;">
+                                ${question.points} pts
+                            </span>
+                            <span style="background: #95a5a6; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; font-weight: bold;">
+                                ${question.category}
+                            </span>
+                        </div>
+                        <h4 style="margin: 0 0 8px 0; color: #2c3e50; font-size: 16px; line-height: 1.3;">${question.question}</h4>
+                        <div style="display: flex; gap: 15px; font-size: 13px; color: #7f8c8d; flex-wrap: wrap;">
+                            <span><strong>A)</strong> ${question.option1}</span>
+                            <span><strong>B)</strong> ${question.option2}</span>
+                            <span><strong>C)</strong> ${question.option3}</span>
+                            <span><strong>D)</strong> ${question.option4}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                        <button onclick="editQuestion(${index})" style="background: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">✏️ Edit</button>
+                        <button onclick="deleteQuestion(${index})" style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">🗑️ Delete</button>
+                    </div>
                 </div>
             `;
-            questionsList.appendChild(li);
+            questionsList.appendChild(questionCard);
         });
+    }
+    
+    function getDifficultyColor(difficulty) {
+        switch(difficulty) {
+            case 'easy': return '#27ae60';
+            case 'medium': return '#f39c12';
+            case 'hard': return '#e74c3c';
+            default: return '#95a5a6';
+        }
+    }
+    
+    function getDifficultyEmoji(difficulty) {
+        switch(difficulty) {
+            case 'easy': return '🟢';
+            case 'medium': return '🟡';
+            case 'hard': return '🔴';
+            default: return '⚪';
+        }
     }
 
 
@@ -380,10 +619,28 @@
 
         if(question.image){
             document.getElementById("imagePath").value = question.image||"";
-            //document.getElementById("imagePreview").style.display = 'block';
+            const preview = document.getElementById("imagePreview");
+            
+            // Use stored preview data if available, otherwise try to load the image path (only if it's a data URL)
+            if (question.imagePreviewData) {
+                preview.src = question.imagePreviewData;
+                preview.dataset.imageData = question.imagePreviewData;
+                preview.style.display = 'block';
+            } else if (question.image && question.image.startsWith('data:')) {
+                preview.src = question.image;
+                preview.dataset.imageData = question.image;
+                preview.style.display = 'block';
+            } else {
+                // File path - show placeholder or hide preview
+                preview.src = '';
+                preview.dataset.imageData = '';
+                preview.style.display = 'none';
+            }
         }else{
-           // document.getElementById("imagePreview").src = '';
-            //document.getElementById("imagePreview").style.display = 'none';
+            const preview = document.getElementById("imagePreview");
+            preview.src = '';
+            preview.dataset.imageData = '';
+            preview.style.display = 'none';
         }
         document.getElementById("option1").value = question.option1;
         document.getElementById("option2").value = question.option2;
@@ -416,6 +673,13 @@
         document.getElementById("category").value = "";
         document.getElementById("points").value = 1;
         document.getElementById("difficulty").value = "easy";
+        
+        // Hide image preview
+        const preview = document.getElementById("imagePreview");
+        preview.src = '';
+        preview.dataset.imageData = '';
+        preview.style.display = 'none';
+        
         currentQuestionIndex = null;
     }
 
@@ -429,16 +693,31 @@
         const outputTest = {
             testName: test.testName,
             testID: test.testId,
-            questions: test.questions.map(question => ({
-                question: question.question,
-                image: question.image,
-                options: [question.option1, question.option2, question.option3, question.option4],
-                correctAnswer: [question.option1, question.option2, question.option3, question.option4].indexOf(question[question.correctAnswer]),
-                category: question.category,
-                difficulty: question.difficulty,
-                points: question.points,
-                id: question.id
-            }))
+            questions: test.questions.map(question => {
+                // Convert option selection to letter
+                const optionToLetter = {
+                    'option1': 'A',
+                    'option2': 'B', 
+                    'option3': 'C',
+                    'option4': 'D'
+                };
+                
+                return {
+                    question: question.question,
+                    image: question.image ? `images/${question.id}_image.${getImageExtension(question.image)}` : null,
+                    options: {
+                        A: question.option1,
+                        B: question.option2,
+                        C: question.option3,
+                        D: question.option4
+                    },
+                    correctAnswer: optionToLetter[question.correctAnswer],
+                    category: question.category,
+                    difficulty: question.difficulty,
+                    points: question.points,
+                    id: question.id
+                };
+            })
         };
 
         const jsonData = JSON.stringify({tests: [outputTest]}, null, 4);
@@ -447,14 +726,109 @@
 
 
     }
-    function downloadJSON() {
+    async function downloadZIP() {
+        // Check if JSZip is available
+        if (typeof JSZip === 'undefined') {
+            alert('ZIP functionality is not available. Please download the JSON file instead or ensure jszip.min.js is in the same folder.');
+            return;
+        }
+        
         const jsonData = generateJSON();
         if (!jsonData) return;
 
         const test = quizData.tests[currentTestIndex];
-        const testName = test.testName.replace(/\s+/g, '_'); // Replace spaces with underscores
-        const testID = test.testID; // Use testID instead of testId
-        const date = new Date().toISOString().split('T')[0]; // Get the current date in YYYY-MM-DD format
+        const testName = test.testName.replace(/\s+/g, '_');
+        const testID = test.testId;
+        const date = new Date().toISOString().split('T')[0];
+
+        const zip = new JSZip();
+        
+        // Add JSON file
+        zip.file(`${testName}_${testID}_${date}.json`, jsonData);
+        
+        // Add images folder
+        const imagesFolder = zip.folder("images");
+        
+        // Collect all images from questions
+        const imagePromises = test.questions
+            .filter(q => q.imagePreviewData) // Only questions with actual image data
+            .map(async (question) => {
+                try {
+                    const imageData = question.imagePreviewData;
+                    const extension = getImageExtension(imageData);
+                    const filename = `${question.id}_image.${extension}`;
+                    
+                    // Convert data URL to blob
+                    const response = await fetch(imageData);
+                    const blob = await response.blob();
+                    
+                    imagesFolder.file(filename, blob);
+                } catch (error) {
+                    console.error(`Error processing image for question ${question.id}:`, error);
+                }
+            });
+            
+        // Wait for all images to be processed
+        await Promise.all(imagePromises);
+        
+        // Generate and download ZIP
+        const zipBlob = await zip.generateAsync({type: "blob"});
+        const url = URL.createObjectURL(zipBlob);
+        
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${testName}_${testID}_${date}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    // Generate JSON with embedded images for standalone use
+    function generateEmbeddedJSON() {
+        const testNameInput = document.getElementById("testName").value;
+        const test = quizData.tests[currentTestIndex];
+        test.testName = testNameInput;
+
+        const optionToLetter = {
+            'option1': 'A',
+            'option2': 'B', 
+            'option3': 'C',
+            'option4': 'D'
+        };
+        
+        const outputTest = {
+            testName: test.testName,
+            testID: test.testId,
+            questions: test.questions.map(question => ({
+                question: question.question,
+                image: question.imagePreviewData, // Use embedded image data
+                options: {
+                    A: question.option1,
+                    B: question.option2,
+                    C: question.option3,
+                    D: question.option4
+                },
+                correctAnswer: optionToLetter[question.correctAnswer],
+                category: question.category,
+                difficulty: question.difficulty,
+                points: question.points,
+                id: question.id
+            }))
+        };
+
+        return JSON.stringify({tests: [outputTest]}, null, 4);
+    }
+
+    // Download JSON with embedded images for compatibility
+    function downloadJSON() {
+        const jsonData = generateEmbeddedJSON();
+        if (!jsonData) return;
+
+        const test = quizData.tests[currentTestIndex];
+        const testName = test.testName.replace(/\s+/g, '_');
+        const testID = test.testId;
+        const date = new Date().toISOString().split('T')[0];
 
         const filename = `${testName}_${testID}_${date}.json`;
 
@@ -472,7 +846,23 @@
 
     function updateTotalPoints(questions) {
         const totalPoints = questions.reduce((sum, question) => sum + question.points, 0);
-        document.getElementById("totalPointsDisplay").innerText = `Total Points: ${totalPoints}`;
+        const questionCount = questions.length;
+        
+        // Update summary cards
+        document.getElementById("totalPointsDisplay").innerText = totalPoints;
+        document.getElementById("questionCount").innerText = questionCount;
+        
+        // Calculate difficulty breakdown
+        const difficulties = questions.reduce((acc, q) => {
+            acc[q.difficulty] = (acc[q.difficulty] || 0) + 1;
+            return acc;
+        }, {});
+        
+        const difficultyText = questionCount > 0 ? 
+            `${difficulties.easy || 0} Easy, ${difficulties.medium || 0} Medium, ${difficulties.hard || 0} Hard` :
+            'No questions yet';
+            
+        document.getElementById("difficultyBreakdown").innerText = difficultyText;
     }
 
 </script>

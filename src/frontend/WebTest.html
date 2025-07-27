@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Test</title>
+    <script src="jszip.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,7 +27,7 @@
         .question {
             margin-bottom: 15px;
         }
-        button, input[type="file"] {
+        button {
             background-color: #3498db;
             color: white;
             cursor: pointer;
@@ -37,6 +38,22 @@
             font-size: 16px;
             margin-top: 10px;
         }
+        
+        input[type="file"] {
+            padding: 10px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 5px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+        
+        input[type="file"]:hover {
+            background-color: #e9ecef;
+            border-color: #2980b9;
+        }
         button:hover {
             background-color: #2980b9;
         }
@@ -45,9 +62,6 @@
             padding: 15px;
             background: #e3f2fd;
             border-radius: 5px;
-            display: none;
-        }
-        #fileUpload {
             display: none;
         }
         #logArea {
@@ -66,10 +80,176 @@
         let userAnswers = {};
         let useUnity = true;
         let hasSubmitted = false;
+        let selectedAssetDirectory = null;
+        let extractedImages = {}; // Store extracted images as blob URLs
+        
+        async function selectAssetFolder() {
+            try {
+                // Check if the File System Access API is supported
+                if ('showDirectoryPicker' in window) {
+                    const directoryHandle = await window.showDirectoryPicker();
+                    selectedAssetDirectory = directoryHandle;
+                    
+                    logMessage(`Selected asset folder: ${directoryHandle.name}`);
+                } else {
+                    // Fallback for browsers without File System Access API
+                    alert('Folder picker is not supported in this browser.\n\nFor better compatibility, please use the ZIP upload option instead.');
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Error selecting folder:', error);
+                    alert('Error selecting folder. You can still use embedded images from JSON files.');
+                }
+            }
+        }
+
+        async function handleZipUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Check if JSZip is available
+            if (typeof JSZip === 'undefined') {
+                alert('ZIP functionality is not available. Please upload a JSON file instead or ensure jszip.min.js is in the same folder.');
+                return;
+            }
+
+            document.getElementById('loadingMessage').style.display = 'block';
+            logMessage('Processing ZIP file...');
+
+            try {
+                const zip = new JSZip();
+                const zipData = await zip.loadAsync(file);
+                
+                // Clear previous extracted images
+                extractedImages = {};
+
+                // Find and load the JSON file
+                let jsonFile = null;
+                let jsonContent = null;
+
+                zipData.forEach((relativePath, zipEntry) => {
+                    if (relativePath.endsWith('.json') && !relativePath.includes('/')) {
+                        // JSON file in root directory
+                        jsonFile = zipEntry;
+                    }
+                });
+
+                if (!jsonFile) {
+                    throw new Error('No JSON file found in the root of the ZIP package');
+                }
+
+                // Load JSON content
+                jsonContent = await jsonFile.async('text');
+                const testJson = JSON.parse(jsonContent);
+                logMessage('JSON file loaded from ZIP successfully');
+
+                // Extract images from the images/ folder
+                const imagePromises = [];
+                zipData.forEach((relativePath, zipEntry) => {
+                    if (relativePath.startsWith('images/') && !zipEntry.dir) {
+                        imagePromises.push(
+                            zipEntry.async('blob').then(blob => {
+                                const filename = relativePath.split('/').pop();
+                                extractedImages[filename] = URL.createObjectURL(blob);
+                                logMessage(`Extracted image: ${filename}`);
+                            })
+                        );
+                    }
+                });
+
+                // Wait for all images to be extracted
+                await Promise.all(imagePromises);
+                
+                logMessage(`Extracted ${Object.keys(extractedImages).length} images from ZIP`);
+                
+                // Load the test data
+                await loadTest(testJson);
+                
+                document.getElementById('loadingMessage').style.display = 'none';
+                logMessage('ZIP processing complete!');
+
+            } catch (error) {
+                document.getElementById('loadingMessage').style.display = 'none';
+                console.error('Error processing ZIP file:', error);
+                alert('Error processing ZIP file: ' + error.message);
+                logMessage('Error: ' + error.message);
+            }
+        }
+        
+        async function resolveImagePath(imagePath) {
+            if (!imagePath) {
+                logMessage('resolveImagePath: No image path provided');
+                return null;
+            }
+            
+            logMessage(`resolveImagePath: Processing ${imagePath}`);
+            
+            // If it's already a data URL, return as-is
+            if (imagePath.startsWith('data:')) {
+                logMessage('resolveImagePath: Using data URL');
+                return imagePath;
+            }
+            
+            // Check if we have extracted images from ZIP
+            if (Object.keys(extractedImages).length > 0) {
+                const filename = imagePath.split('/').pop();
+                logMessage(`resolveImagePath: Looking for extracted image ${filename}`);
+                logMessage(`Available extracted images: ${Object.keys(extractedImages).join(', ')}`);
+                
+                // Try exact match first
+                if (extractedImages[filename]) {
+                    logMessage(`resolveImagePath: Found extracted image ${filename}`);
+                    return extractedImages[filename];
+                }
+                
+                // Try with different extensions (.jpg vs .jpeg)
+                const baseFilename = filename.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '');
+                const possibleExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                
+                for (const ext of possibleExtensions) {
+                    const testFilename = `${baseFilename}.${ext}`;
+                    if (extractedImages[testFilename]) {
+                        logMessage(`resolveImagePath: Found extracted image with different extension: ${testFilename}`);
+                        return extractedImages[testFilename];
+                    }
+                }
+                
+                logMessage(`resolveImagePath: Extracted image ${filename} not found with any extension`);
+            }
+            
+            // If we have a selected directory and the File System Access API
+            if (selectedAssetDirectory && 'showDirectoryPicker' in window) {
+                try {
+                    // Navigate to the images folder
+                    const imagesFolder = await selectedAssetDirectory.getDirectoryHandle('images');
+                    
+                    // Get the filename from the path
+                    const filename = imagePath.split('/').pop();
+                    
+                    // Get the file handle
+                    const fileHandle = await imagesFolder.getFileHandle(filename);
+                    const file = await fileHandle.getFile();
+                    
+                    // Create a blob URL
+                    return URL.createObjectURL(file);
+                } catch (error) {
+                    console.error(`Error loading image ${imagePath}:`, error);
+                    logMessage(`Failed to load image: ${imagePath}`);
+                    return null;
+                }
+            }
+            
+            // Note: Manual path entry is no longer supported in the new UI
+            // Use ZIP upload for best compatibility across all browsers
+            
+            // Return the path as-is (could be absolute or relative)
+            return imagePath;
+        }
         function toggleMode() {
             useUnity = !useUnity;
             document.getElementById("modeIndicator").innerText = useUnity ? "Unity Mode" : "Local File Mode";
-            document.getElementById("fileUpload").style.display = useUnity ? "none" : "block";
+            document.getElementById("fileUploadSection").style.display = useUnity ? "none" : "block";
+            logMessage(`Mode toggled to: ${useUnity ? "Unity" : "Local File"}`);
         }
 
         function receiveFromUnity(message) {
@@ -89,42 +269,56 @@
             }
         }
 
-        function loadTest(testJson) {
+        async function loadTest(testJson) {
             logMessage("Loading test data: " + JSON.stringify(testJson));
             if (testJson.tests && testJson.tests.length > 0) {
                 const test = testJson.tests[0];
                 testID = test.testID;
                 questions = test.questions;
-                renderQuestions();
+                await renderQuestions();
             } else {
                 logMessage("No tests found in the JSON data.");
             }
         }
 
-        function renderQuestions() {
+        async function renderQuestions() {
             let quizContainer = document.getElementById("quizContainer");
             quizContainer.innerHTML = "";
 
-            questions.forEach((q, index) => {
+            for (let index = 0; index < questions.length; index++) {
+                const q = questions[index];
                 let questionBlock = document.createElement("div");
                 questionBlock.classList.add("question");
                 questionBlock.innerHTML = `<p><strong>${q.question}</strong></p>`;
 
-                if (q.image) {
-                    questionBlock.innerHTML += `<img src="${q.image}" alt="Question Image" style="max-width: 100%; height: auto;" />`;
+                // Handle image loading asynchronously
+                const resolvedImagePath = await resolveImagePath(q.image);
+                if (resolvedImagePath) {
+                    questionBlock.innerHTML += `<img src="${resolvedImagePath}" alt="Question Image" style="max-width: 100%; height: auto;" onerror="this.style.display='none'; console.log('Failed to load image: ${resolvedImagePath}');" />`;
                 }
 
-                q.options.forEach((option, i) => {
-                    questionBlock.innerHTML += `
-                        <input type="radio" name="q${index}" value="${i}" onchange="saveAnswer(${index}, ${i})"> ${option}<br>
-                    `;
-                });
+                // Handle both old array format and new object format for backward compatibility
+                if (Array.isArray(q.options)) {
+                    // Old format: options as array
+                    q.options.forEach((option, i) => {
+                        questionBlock.innerHTML += `
+                            <input type="radio" name="q${index}" value="${i}" onchange="saveAnswer(${index}, '${i}')"> ${option}<br>
+                        `;
+                    });
+                } else {
+                    // New format: options as object with A/B/C/D keys
+                    Object.entries(q.options).forEach(([letter, option]) => {
+                        questionBlock.innerHTML += `
+                            <input type="radio" name="q${index}" value="${letter}" onchange="saveAnswer(${index}, '${letter}')"> ${letter}) ${option}<br>
+                        `;
+                    });
+                }
                 quizContainer.appendChild(questionBlock);
-            });
+            }
         }
 
-        function saveAnswer(questionIndex, selectedOptionIndex) {
-            userAnswers[questionIndex] = selectedOptionIndex;
+        function saveAnswer(questionIndex, selectedOption) {
+            userAnswers[questionIndex] = selectedOption;
         }
 
         function submitTest() {
@@ -135,7 +329,18 @@
                 return;
             }
             questions.forEach((q, index) => {
-                if (userAnswers[index] === q.correctAnswer) {
+                let userAnswer = userAnswers[index];
+                let correctAnswer = q.correctAnswer;
+                
+                // Handle backward compatibility: convert old index-based answers to letters
+                if (Array.isArray(q.options) && typeof userAnswer === 'string' && !isNaN(userAnswer)) {
+                    // Old format with array options, convert index to letter
+                    const indexToLetter = ['A', 'B', 'C', 'D'];
+                    userAnswer = indexToLetter[parseInt(userAnswer)] || userAnswer;
+                }
+                
+                // For new format, both userAnswer and correctAnswer should be letters
+                if (userAnswer === correctAnswer) {
                     correctCount++;
                     totalPoints += q.points || 1;
                 }
@@ -170,20 +375,30 @@
             window.location = "uniwebview://event?data=" + encodeURIComponent(message);
         }
 
-        function handleFileUpload(event) {
-            if (useUnity) return;
+        async function handleFileUpload(event) {
+            logMessage("handleFileUpload called");
+            if (useUnity) {
+                logMessage("handleFileUpload: Unity mode, skipping");
+                return;
+            }
             let file = event.target.files[0];
-            if (!file) return;
+            if (!file) {
+                logMessage("handleFileUpload: No file selected");
+                return;
+            }
+
+            logMessage(`handleFileUpload: Processing file ${file.name}`);
 
             let reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     let testJson = JSON.parse(e.target.result);
-                    logMessage("Loaded JSON from file: " + JSON.stringify(testJson));
-                    loadTest(testJson);
+                    logMessage("JSON parsed successfully");
+                    logMessage("Loaded JSON from file: " + JSON.stringify(testJson, null, 2));
+                    await loadTest(testJson);
                 } catch (error) {
                     logMessage("Error parsing JSON file: " + error);
-                    alert("Invalid JSON file.");
+                    alert("Invalid JSON file: " + error.message);
                 }
             };
             reader.readAsText(file);
@@ -200,7 +415,25 @@
 <div class="container">
     <h2>Quiz Test</h2>
     <button onclick="toggleMode()">Toggle Mode: <span id="modeIndicator">Unity Mode</span></button>
-    <input type="file" id="fileUpload" accept="application/json" onchange="handleFileUpload(event)">
+    
+    <div id="fileUploadSection" style="display: none; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+        <h3 style="margin: 0 0 15px 0; color: #2c3e50;">📁 Load Quiz Files</h3>
+        
+        <h4 style="color: #27ae60;">📦 ZIP Package (Recommended)</h4>
+        <input type="file" id="zipUpload" accept=".zip" onchange="handleZipUpload(event)" style="margin: 10px 0;">
+        <p style="color: #666;">Upload the complete ZIP package from the quiz generator.</p>
+        
+        <hr style="margin: 30px 0; border: 1px solid #ddd;">
+        
+        <h4 style="color: #856404;">📄 JSON Only</h4>
+        <input type="file" id="fileUpload" accept="application/json" onchange="handleFileUpload(event)" style="margin: 10px 0;" onclick="logMessage('JSON file input clicked')">
+        <p style="color: #666;">For JSON files with embedded images.</p>
+        
+        <div id="loadingMessage" style="display: none; text-align: center; padding: 15px; background: #fff3cd; border-radius: 4px; margin-top: 20px;">
+            <strong>⏳ Processing ZIP file...</strong> Please wait while we extract and prepare your quiz.
+        </div>
+    </div>
+    
     <div id="quizContainer"></div>
     <button onclick="submitTest()">Submit Test</button>
     <div id="resultContainer"></div>
