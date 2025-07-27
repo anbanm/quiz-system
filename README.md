@@ -1,9 +1,38 @@
-# Quiz System
+# 🎓 Quiz System - Teacher-Friendly Quiz Creator
+
+<div align="center">
 
 ![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Browser Support](https://img.shields.io/badge/browsers-Chrome%20%7C%20Safari%20%7C%20Firefox%20%7C%20Edge-brightgreen.svg)
+![Offline](https://img.shields.io/badge/offline-ready-orange.svg)
 
-A comprehensive quiz generation and testing system with Unity integration for educational applications.
+**Create professional quizzes with images • Works completely offline • No setup required**
+
+*Perfect for teachers who want a simple, reliable quiz tool that works anywhere*
+
+[📦 Download Latest Release](https://github.com/anbanm/quiz-system/releases) • [🎬 See Demo](#quick-start) • [🚀 Get Started](#quick-start)
+
+</div>
+
+---
+
+## ✨ Why Teachers Love This Quiz System
+
+- **🌐 Works Everywhere**: Safari, Chrome, Firefox, Edge - even without internet
+- **📸 Image Support**: Add pictures to questions with live preview
+- **📦 ZIP Packages**: Share complete quizzes easily - students just upload and go
+- **🎨 Teacher-Friendly**: Educational design with clear language and emojis
+- **⚡ Zero Setup**: Download, open in browser, start creating
+- **🔒 Privacy First**: All data stays on your device, no accounts needed
+
+*A comprehensive quiz generation and testing system with Unity integration for educational applications.*
+
+## 📸 Screenshots
+
+> **Coming Soon!** We're preparing beautiful screenshots to show you the teacher-friendly interface in action.
+> 
+> For now, try it yourself: Download the files and open `src/frontend/quizGenerator.html` in your browser!
 
 ## Overview
 
@@ -62,7 +91,15 @@ quiz-system/
 └── README.md
 ```
 
-## Quick Start
+## 🚀 Quick Start
+
+### 📥 Download & Setup (30 seconds)
+1. **Download**: Click the green "Code" button above → "Download ZIP"
+2. **Extract**: Unzip the downloaded file anywhere on your computer
+3. **Open**: Double-click `src/frontend/quizGenerator.html` 
+4. **Start Creating**: Your browser opens with the quiz generator ready to go!
+
+*That's it! No installation, no accounts, no internet required.*
 
 ### Creating a Quiz (Teacher)
 1. Open `src/frontend/quizGenerator.html` in a web browser
