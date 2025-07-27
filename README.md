@@ -14,21 +14,30 @@ This project consists of two main components:
 ## Features
 
 ### Quiz Generator (`quizGenerator.html`)
-- ✅ Create and manage multiple tests
-- ✅ Add questions with multiple choice options
-- ✅ Support for images in questions
-- ✅ Set difficulty levels (Easy, Medium, Hard)
-- ✅ Assign point values to questions
-- ✅ Category organization
-- ✅ JSON export for Unity integration
-- ✅ Load and edit existing quiz data
+- ✅ **Teacher-friendly interface** with educational themes and clear language
+- ✅ Create and manage multiple tests with professional layout
+- ✅ Add questions with multiple choice options (A/B/C/D format)
+- ✅ **Image support** with live preview and smart file handling
+- ✅ Set difficulty levels (Easy, Medium, Hard) with visual indicators
+- ✅ Assign point values to questions (1-10 points)
+- ✅ Category organization for subject-based quizzes
+- ✅ **ZIP package export** with images in separate folder (recommended)
+- ✅ **JSON export** with embedded images (backward compatibility)
+- ✅ Load and edit existing quiz data with proper image handling
+- ✅ **Compact question cards** with horizontal layout and image thumbnails
+- ✅ **Offline functionality** - works without internet connection
 
 ### Quiz Test Runner (`WebTest.html`)
-- ✅ Display questions with images
-- ✅ Multiple choice answer collection
-- ✅ Score calculation and reporting
+- ✅ **Universal browser support** - Safari, Chrome, Firefox, Edge
+- ✅ **ZIP package upload** with automatic extraction (all browsers)
+- ✅ **JSON file upload** for embedded image quizzes
+- ✅ Smart image loading with extension matching (.jpg/.jpeg support)
+- ✅ Display questions with properly resolved images
+- ✅ Multiple choice answer collection with letter-based answers
+- ✅ **Backward compatibility** with old and new quiz formats
+- ✅ Score calculation and detailed reporting
 - ✅ Unity integration via messaging
-- ✅ Local file mode for testing
+- ✅ **Debug logging** for troubleshooting
 
 ### Unity Integration
 - ✅ WebView integration with UniWebView
@@ -55,17 +64,30 @@ quiz-system/
 
 ## Quick Start
 
-### Creating a Quiz
+### Creating a Quiz (Teacher)
 1. Open `src/frontend/quizGenerator.html` in a web browser
-2. Click "Create New Test"
-3. Add questions with options and correct answers
-4. Generate and download JSON file
+2. Click "✨ Create New Quiz"
+3. Add questions with the teacher-friendly interface:
+   - Write clear questions
+   - Add images if needed (with live preview)
+   - Set A/B/C/D answer options
+   - Choose difficulty and points
+4. **Download ZIP Package** (recommended) or JSON file
+5. Share the ZIP file with students
 
-### Running a Quiz
+### Taking a Quiz (Student)
 1. Open `src/frontend/WebTest.html` in a web browser
 2. Toggle to "Local File Mode"
-3. Upload your generated JSON file
-4. Take the quiz and see results
+3. **Upload ZIP Package** (easiest - works on all browsers):
+   - Select the ZIP file from your teacher
+   - Images and quiz load automatically
+4. **OR Upload JSON File** (if using embedded format)
+5. Answer questions and submit for results
+
+### Advanced: Folder Method (Chrome/Edge only)
+- Extract ZIP package to a folder
+- Use the folder picker in WebTest
+- Images load from the extracted folder
 
 ### Unity Integration
 1. Import the C# scripts into your Unity project
@@ -87,15 +109,36 @@ quiz-system/
 4. Test thoroughly
 5. Submit a pull request
 
+## Changelog
+
+### v1.1.0 (2025-01-27)
+- ✅ **ZIP Package Support**: Upload and extract ZIP files in any browser
+- ✅ **Teacher-Friendly Interface**: Professional educational design with emojis and clear language
+- ✅ **Offline JSZip Library**: Complete offline functionality without internet dependency
+- ✅ **Smart Image Handling**: Extension matching, data URL support, live previews
+- ✅ **Enhanced JSON Format**: Labeled options (A/B/C/D) with letter-based correct answers
+- ✅ **Cross-Browser Compatibility**: Full support for Safari, Firefox, Chrome, Edge
+- ✅ **Compact Question Cards**: Horizontal layout with image thumbnails
+- ✅ **Better Error Handling**: Debug logging and improved user feedback
+- ✅ **Backward Compatibility**: Supports both old and new quiz formats
+
+### v1.0.0 (2025-01-27)
+- ✅ Initial release with basic quiz generation and testing
+- ✅ Unity integration with UniWebView
+- ✅ JSON export/import functionality
+- ✅ Basic image support
+
 ## Future Improvements
 
-- [ ] Image preview in quiz generator
 - [ ] Question reordering (drag & drop)
-- [ ] Multiple question types (true/false, text input)
-- [ ] Question bank and templates
+- [ ] Multiple question types (true/false, text input, fill-in-the-blank)
+- [ ] Question bank and templates library
 - [ ] Export to PDF/Word formats
-- [ ] Analytics and reporting
-- [ ] Mobile responsive design
+- [ ] Advanced analytics and reporting dashboard
+- [ ] Mobile responsive design optimization
+- [ ] Real-time collaborative quiz editing
+- [ ] Student progress tracking
+- [ ] Quiz scheduling and time limits
 
 ## License
 
