@@ -226,7 +226,7 @@ Run `npm run test:ui` to experience **"bot vision"** testing:
 - ✅ **Sample Test Data**: Comprehensive test images and quiz examples
 - ✅ **Professional Test Infrastructure**: Playwright configuration with cross-platform support
 
-### v1.1.0 (2025-01-27)
+### v1.1.0 (2025-07-27)
 - ✅ **ZIP Package Support**: Upload and extract ZIP files in any browser
 - ✅ **Teacher-Friendly Interface**: Professional educational design with emojis and clear language
 - ✅ **Offline JSZip Library**: Complete offline functionality without internet dependency
@@ -237,7 +237,7 @@ Run `npm run test:ui` to experience **"bot vision"** testing:
 - ✅ **Better Error Handling**: Debug logging and improved user feedback
 - ✅ **Backward Compatibility**: Supports both old and new quiz formats
 
-### v1.0.0 (2025-01-27)
+### v1.0.0 (2025-07-27)
 - ✅ Initial release with basic quiz generation and testing
 - ✅ Unity integration with UniWebView
 - ✅ JSON export/import functionality
