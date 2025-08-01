@@ -1,0 +1,55 @@
+{
+  "tests": [
+    {
+      "testName": "Sample Geography Quiz",
+      "testID": "test-sample-123",
+      "questions": [
+        {
+          "question": "What is the capital of France?",
+          "image": null,
+          "options": {
+            "A": "London",
+            "B": "Berlin",
+            "C": "Paris",
+            "D": "Madrid"
+          },
+          "correctAnswer": "C",
+          "category": "Geography",
+          "difficulty": "easy",
+          "points": 1,
+          "id": "q-sample-1"
+        },
+        {
+          "question": "Which continent is Brazil in?",
+          "image": null,
+          "options": {
+            "A": "Europe",
+            "B": "Asia",
+            "C": "South America",
+            "D": "Africa"
+          },
+          "correctAnswer": "C",
+          "category": "Geography",
+          "difficulty": "easy",
+          "points": 1,
+          "id": "q-sample-2"
+        },
+        {
+          "question": "What is the largest ocean on Earth?",
+          "image": null,
+          "options": {
+            "A": "Atlantic Ocean",
+            "B": "Indian Ocean",
+            "C": "Arctic Ocean",
+            "D": "Pacific Ocean"
+          },
+          "correctAnswer": "D",
+          "category": "Geography",
+          "difficulty": "medium",
+          "points": 2,
+          "id": "q-sample-3"
+        }
+      ]
+    }
+  ]
+}
