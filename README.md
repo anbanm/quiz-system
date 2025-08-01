@@ -2,16 +2,18 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Browser Support](https://img.shields.io/badge/browsers-Chrome%20%7C%20Safari%20%7C%20Firefox%20%7C%20Edge-brightgreen.svg)
-![Offline](https://img.shields.io/badge/offline-ready-orange.svg)
+![Offline](https://img.shields.io/badge/offline-ready-orange.svg)  
+![Tests](https://img.shields.io/badge/tests-108%20passing-brightgreen.svg)
+![Playwright](https://img.shields.io/badge/testing-Playwright-blueviolet.svg)
 
-**Create professional quizzes with images • Works completely offline • No setup required**
+**Create professional quizzes with images • Works completely offline • 108 automated tests**
 
 *Perfect for teachers who want a simple, reliable quiz tool that works anywhere*
 
-[📦 Download Latest Release](https://github.com/anbanm/quiz-system/releases) • [🎬 See Demo](#quick-start) • [🚀 Get Started](#quick-start)
+[📦 Download Latest Release](https://github.com/anbanm/quiz-system/releases) • [🎬 See Demo](#quick-start) • [🚀 Get Started](#quick-start) • [🤖 Run Tests](#testing)
 
 </div>
 
@@ -25,6 +27,8 @@
 - **🎨 Teacher-Friendly**: Educational design with clear language and emojis
 - **⚡ Zero Setup**: Download, open in browser, start creating
 - **🔒 Privacy First**: All data stays on your device, no accounts needed
+- **🤖 Fully Tested**: 108 automated tests across 6 browsers and mobile devices
+- **📱 Mobile Ready**: Responsive design tested on iPhone, Android, and iPad
 
 *A comprehensive quiz generation and testing system with Unity integration for educational applications.*
 
@@ -85,8 +89,14 @@ quiz-system/
 │   └── unity/             # Unity C# scripts
 │       ├── SampleWebView.cs
 │       └── SampleWebViewSim.cs
+├── tests/                 # Comprehensive test suite
+│   ├── quiz-generator.spec.js
+│   ├── quiz-test-runner.spec.js
+│   ├── mobile-responsiveness.spec.js
+│   └── test-data/         # Sample images and quiz data
 ├── docs/                  # Documentation
 ├── examples/              # Sample quiz data
+├── playwright.config.js   # Test configuration
 ├── .gitignore
 └── README.md
 ```
@@ -132,21 +142,89 @@ quiz-system/
 3. Configure the WebView to load your quiz HTML files
 4. Handle results in your game logic
 
+## 🤖 Testing
+
+Our quiz system includes comprehensive automated testing to ensure reliability across all platforms.
+
+### Test Coverage
+- **108 total tests** across 6 different browsers and devices
+- **36 Teacher Interface tests**: Quiz creation, image upload, JSON generation
+- **36 Student Interface tests**: Quiz taking, image display, answer submission  
+- **36 Mobile Responsiveness tests**: Touch targets, image sizing, responsive layout
+
+### Tested Platforms
+- **Desktop Browsers**: Chromium, Firefox, WebKit (Safari)
+- **Mobile Devices**: iPhone 12, Pixel 5 (Android), iPad Pro
+- **Real Image Testing**: Math formulas, diagrams, visual elements
+
+### Running Tests
+
+```bash
+# Install dependencies (first time only)
+npm install
+
+# Run all 108 tests
+npm test
+
+# Interactive "bot vision" testing
+npm run test:ui
+
+# Specific test suites
+npm run test:mobile      # Mobile responsiveness tests
+npm run test:generator   # Teacher interface tests  
+npm run test:runner      # Student interface tests
+
+# View test reports
+npm run test:report
+```
+
+### Interactive Testing Experience
+Run `npm run test:ui` to experience **"bot vision"** testing:
+- ✨ Watch tests execute in real-time
+- 🎮 Use timeline scrubber to replay actions
+- 🔍 Inspect elements the bot interacts with
+- 📱 Switch between different devices and browsers
+- 🖼️ See real images being tested automatically
+
 ## Dependencies
 
 - **Web**: Modern web browser with ES6 support (works completely offline)
 - **Unity**: Unity 2021.3+ with UniWebView package
-- **Included Libraries**: JSZip 3.10.1 (bundled locally for offline use)
+- **Testing**: Node.js 16+ and npm (for running automated tests)
+- **Included Libraries**: 
+  - JSZip 3.10.1 (bundled locally for offline use)
+  - Playwright 1.54.2+ (automated testing framework)
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+4. **Run the test suite**: `npm test` (all 108 tests must pass)
+5. Test thoroughly across different browsers
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Submit a pull request
+
+### Development Guidelines
+- All new features must include comprehensive Playwright tests
+- Maintain cross-browser compatibility (Chrome, Firefox, Safari, Edge)
+- Ensure mobile responsiveness with proper touch targets (44px minimum)
+- Follow the existing teacher-friendly design patterns
 
 ## Changelog
+
+### v1.2.0 (2025-08-01) - 🤖 Comprehensive Testing Release
+- ✅ **Complete Playwright Test Suite**: 108 automated tests across 6 browsers/devices
+- ✅ **Real Image Testing**: Sample math formulas, diagrams, and visual elements
+- ✅ **Cross-Browser Testing**: Chromium, Firefox, WebKit compatibility validation
+- ✅ **Mobile Device Testing**: iPhone 12, Pixel 5, iPad Pro responsive testing
+- ✅ **Interactive Bot Vision**: `npm run test:ui` for real-time test watching
+- ✅ **Teacher Interface Testing**: Quiz creation, image upload, JSON generation (36 tests)
+- ✅ **Student Interface Testing**: Quiz taking, image display, answer submission (36 tests)
+- ✅ **Mobile Responsiveness Testing**: Touch targets, image sizing, layout validation (36 tests)
+- ✅ **Sample Test Data**: Comprehensive test images and quiz examples
+- ✅ **Professional Test Infrastructure**: Playwright configuration with cross-platform support
 
 ### v1.1.0 (2025-01-27)
 - ✅ **ZIP Package Support**: Upload and extract ZIP files in any browser
@@ -172,10 +250,12 @@ quiz-system/
 - [ ] Question bank and templates library
 - [ ] Export to PDF/Word formats
 - [ ] Advanced analytics and reporting dashboard
-- [ ] Mobile responsive design optimization
 - [ ] Real-time collaborative quiz editing
 - [ ] Student progress tracking
 - [ ] Quiz scheduling and time limits
+- [ ] Visual regression testing with screenshot comparisons
+- [ ] Performance testing and load testing capabilities
+- [ ] Automated accessibility (a11y) testing integration
 
 ## License
 
