@@ -2,76 +2,206 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Quiz Test</title>
     <script src="jszip.min.js"></script>
     <style>
+        /* Mobile-first responsive design */
         body {
             font-family: Arial, sans-serif;
             background-color: #f9f9f9;
-            margin: 20px;
-            padding: 20px;
-            max-width: 900px;
-            margin: auto;
+            margin: 0;
+            padding: 10px;
             color: #333;
+            line-height: 1.6;
+            font-size: 16px; /* Ensure readable text on mobile */
         }
+        
         .container {
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            margin: 0 auto;
         }
+        
         h2 {
             text-align: center;
+            font-size: 1.5rem;
+            margin: 0 0 20px 0;
         }
+        
         .question {
-            margin-bottom: 15px;
+            margin-bottom: 25px; /* More space between questions on mobile */
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
         }
+        
+        .question p {
+            font-weight: bold;
+            margin: 0 0 15px 0;
+            font-size: 1.1rem;
+        }
+        
+        /* Mobile-friendly images */
+        .question img {
+            max-width: 100% !important;
+            height: auto !important;
+            display: block;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        /* Tablet and desktop styles */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            .container {
+                padding: 30px;
+                max-width: 900px;
+            }
+            h2 {
+                font-size: 2rem;
+            }
+        }
+        /* Mobile-friendly buttons */
         button {
             background-color: #3498db;
             color: white;
             cursor: pointer;
             border: none;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 15px 20px; /* Larger touch targets */
+            border-radius: 8px;
             width: 100%;
-            font-size: 16px;
-            margin-top: 10px;
+            font-size: 18px; /* Larger text for mobile */
+            margin: 10px 0;
+            min-height: 44px; /* iOS recommended touch target size */
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
         }
         
+        button:hover, button:active {
+            background-color: #2980b9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        /* Mobile-friendly file inputs */
         input[type="file"] {
-            padding: 10px;
+            padding: 15px;
             border: 2px solid #3498db;
-            border-radius: 5px;
+            border-radius: 8px;
             width: 100%;
             font-size: 16px;
-            margin-top: 5px;
+            margin: 10px 0;
             background-color: #f8f9fa;
             cursor: pointer;
+            min-height: 44px;
+            box-sizing: border-box;
         }
         
         input[type="file"]:hover {
             background-color: #e9ecef;
             border-color: #2980b9;
         }
-        button:hover {
-            background-color: #2980b9;
+        
+        /* Mobile-friendly radio buttons */
+        input[type="radio"] {
+            transform: scale(1.5); /* Larger radio buttons for mobile */
+            margin-right: 12px;
+            margin-left: 8px;
+        }
+        
+        /* Answer option styling */
+        .question label {
+            display: block;
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .question label:hover {
+            background: #f8f9fa;
+            border-color: #3498db;
+        }
+        
+        .question input[type="radio"]:checked + span {
+            font-weight: bold;
+            color: #3498db;
         }
         #resultContainer {
             margin-top: 20px;
-            padding: 15px;
-            background: #e3f2fd;
-            border-radius: 5px;
+            padding: 20px;
+            background: #e8f5e8;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
             display: none;
         }
+        
+        #resultContainer h3 {
+            color: #27ae60;
+            margin-top: 0;
+            font-size: 1.3rem;
+        }
+        
+        #resultContainer p {
+            font-size: 1.1rem;
+            margin: 10px 0;
+        }
+        
         #logArea {
             margin-top: 20px;
-            padding: 10px;
-            background: #f0f0f0;
-            border-radius: 5px;
-            height: 200px;
-            overflow-y: scroll;
-            font-family: monospace;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            height: 150px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        /* Mobile-specific improvements for file upload section */
+        #fileUploadSection {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        #fileUploadSection h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        
+        #fileUploadSection h4 {
+            margin: 20px 0 10px 0;
+            font-size: 1.2rem;
+        }
+        
+        /* Loading message improvements */
+        #loadingMessage {
+            padding: 20px;
+            text-align: center;
+            background: #fff3cd;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            font-size: 1.1rem;
         }
     </style>
     <script>
@@ -301,15 +431,23 @@
                 if (Array.isArray(q.options)) {
                     // Old format: options as array
                     q.options.forEach((option, i) => {
+                        const optionId = `q${index}_option${i}`;
                         questionBlock.innerHTML += `
-                            <input type="radio" name="q${index}" value="${i}" onchange="saveAnswer(${index}, '${i}')"> ${option}<br>
+                            <label for="${optionId}">
+                                <input type="radio" id="${optionId}" name="q${index}" value="${i}" onchange="saveAnswer(${index}, '${i}')">
+                                <span>${option}</span>
+                            </label>
                         `;
                     });
                 } else {
                     // New format: options as object with A/B/C/D keys
                     Object.entries(q.options).forEach(([letter, option]) => {
+                        const optionId = `q${index}_option${letter}`;
                         questionBlock.innerHTML += `
-                            <input type="radio" name="q${index}" value="${letter}" onchange="saveAnswer(${index}, '${letter}')"> ${letter}) ${option}<br>
+                            <label for="${optionId}">
+                                <input type="radio" id="${optionId}" name="q${index}" value="${letter}" onchange="saveAnswer(${index}, '${letter}')">
+                                <span>${letter}) ${option}</span>
+                            </label>
                         `;
                     });
                 }
