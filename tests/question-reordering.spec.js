@@ -80,7 +80,8 @@ test.describe('Question Reordering', () => {
         
         // Check that order numbers updated
         const orderNumbers = await page.locator('.question-order').allTextContents();
-        expect(orderNumbers).toEqual(['1', '2', '3']);
+        const trimmedNumbers = orderNumbers.map(num => num.trim());
+        expect(trimmedNumbers).toEqual(['1', '2', '3']);
     });
 
     test('should move question down with arrow button', async ({ page }) => {
