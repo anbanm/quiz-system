@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Browser Support](https://img.shields.io/badge/browsers-Chrome%20%7C%20Safari%20%7C%20Firefox%20%7C%20Edge-brightgreen.svg)
 ![Offline](https://img.shields.io/badge/offline-ready-orange.svg)  
@@ -213,6 +213,19 @@ Run `npm run test:ui` to experience **"bot vision"** testing:
 - Follow the existing teacher-friendly design patterns
 
 ## Changelog
+
+### v1.3.0 (2025-08-02) - 🔧 Major Codebase Refactoring & Enhanced UX
+- ✅ **Major Code Refactoring**: Separated HTML, CSS, and JavaScript into dedicated files
+- ✅ **87% File Size Reduction**: HTML file reduced from 1,915 lines to 244 lines
+- ✅ **Improved Maintainability**: Clean file structure with `css/` and `js/` directories
+- ✅ **Test Library with Sidebar**: Left sidebar menu for managing quiz collections
+- ✅ **Built-in Sample Tests**: Pre-loaded math and science quizzes for immediate use
+- ✅ **Smart JSON Format Conversion**: Automatic handling of different option formats
+- ✅ **Enhanced Button Behavior**: Context-aware "Create New Quiz" vs "Add New Question"
+- ✅ **Test Metadata Display**: Question count, total points, difficulty overview
+- ✅ **Duplicate Test Detection**: Smart handling of test library imports
+- ✅ **Better Code Organization**: Separation of concerns following web development best practices
+- ✅ **Future-Ready Architecture**: Easier maintenance and feature additions
 
 ### v1.2.0 (2025-08-01) - 🤖 Comprehensive Testing Release
 - ✅ **Complete Playwright Test Suite**: 108 automated tests across 6 browsers/devices
