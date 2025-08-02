@@ -9,9 +9,63 @@
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f9f9f9;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 2px solid #e1e8ed;
             padding: 20px;
-            max-width: 900px;
+            overflow-y: auto;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+        
+        .sidebar-toggle {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            z-index: 101;
+            background: #3498db;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-toggle:hover {
+            background: #2980b9;
+            transform: scale(1.1);
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            padding-left: 320px;
+            overflow-y: auto;
+            max-width: 1200px;
+            transition: padding-left 0.3s ease;
+        }
+        
+        .main-content.sidebar-collapsed {
+            padding-left: 70px;
+        }
             margin: auto;
             color: #333;
         }
@@ -206,9 +260,81 @@
                 gap: 10px !important;
             }
         }
+
+        /* Test Library Styles */
+        .test-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .test-item:hover {
+            background: #e3f2fd;
+            border-color: #3498db;
+            transform: translateX(5px);
+        }
+
+        .test-item.active {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .test-metadata {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .test-badge {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .test-item.active .test-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
     </style>
 </head>
 <body>
+<button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Test Library">📚</button>
+
+<div class="sidebar" id="sidebar">
+    <h2 style="color: #2c3e50; margin: 0 0 20px 0; font-size: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px;">📚 Test Library</h2>
+    
+    <div id="testLibrary">
+        <!-- Test library content will be populated by JavaScript -->
+    </div>
+    
+    <button onclick="loadTestFiles()" style="
+        width: 100%; 
+        background: linear-gradient(135deg, #3498db, #2980b9); 
+        color: white; 
+        border: none; 
+        padding: 12px; 
+        border-radius: 8px; 
+        cursor: pointer; 
+        font-weight: 600;
+        margin-top: 20px;
+        transition: all 0.2s ease;
+    " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+        ➕ Add Tests to Library
+    </button>
+    
+    <input type="file" id="testFileInput" accept=".json" multiple style="display: none;" onchange="handleTestFiles(event)">
+</div>
+
+<div class="main-content" id="mainContent">
 <div class="container">
     <h1 style="text-align: center; color: #2c3e50; margin-bottom: 10px;">📚 Quiz Builder for Teachers</h1>
     <p style="text-align: center; color: #7f8c8d; margin-bottom: 30px;">Create engaging quizzes for your students in just a few simple steps!</p>
@@ -223,7 +349,7 @@
     <div id="testSelectContainer" style="display: none;">  </div>
 
     <div style="text-align: center; margin: 30px 0;">
-        <button onclick="createNewTest()" style="background: #27ae60; font-size: 18px; padding: 15px 30px; border-radius: 8px;">
+        <button id="createTestButton" onclick="createNewTest()" style="background: #27ae60; font-size: 18px; padding: 15px 30px; border-radius: 8px;">
             ✨ Create New Quiz
         </button>
     </div>
@@ -353,6 +479,24 @@
                 <p style="font-size: 14px; margin: 10px 0; color: #2c3e50;" id="difficultyBreakdown">-</p>
             </div>
         </div>
+        
+        <!-- New Test Button in Summary -->
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="summaryCreateButton" onclick="createNewTest()" style="
+                background: linear-gradient(135deg, #e74c3c, #c0392b);
+                color: white;
+                border: none;
+                padding: 12px 25px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: 600;
+                transition: all 0.2s ease;
+                box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+            " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                ➕ Add New Question
+            </button>
+        </div>
     </div>
 
     <div id="questionList" style="margin-top: 30px;">
@@ -398,6 +542,344 @@
     let quizData = { tests: [] }; // Store all tests
     let currentTestIndex = -1;      // Index of the currently selected test
     let currentQuestionIndex = null // Index of the currently selected question
+    
+    // Test Library Management
+    let testLibrary = [];
+    let activeTestId = null;
+
+    // Built-in sample tests
+    const sampleTests = [
+        {
+            id: 'sample-math-basic',
+            name: 'Basic Math Quiz',
+            description: 'Simple arithmetic for elementary students',
+            data: {
+                tests: [{
+                    testName: 'Basic Math Quiz',
+                    testID: 'math-001',
+                    questions: [
+                        {
+                            question: 'What is 5 + 3?',
+                            options: { A: '6', B: '7', C: '8', D: '9' },
+                            correctAnswer: 'C',
+                            difficulty: 'easy',
+                            points: 1,
+                            category: 'arithmetic',
+                            position: 1,
+                            id: 'q1'
+                        },
+                        {
+                            question: 'What is 12 ÷ 4?',
+                            options: { A: '2', B: '3', C: '4', D: '6' },
+                            correctAnswer: 'B',
+                            difficulty: 'easy',
+                            points: 1,
+                            category: 'arithmetic',
+                            position: 2,
+                            id: 'q2'
+                        }
+                    ]
+                }]
+            }
+        },
+        {
+            id: 'sample-science-mixed',
+            name: 'Mixed Science Quiz',
+            description: 'Biology, Chemistry, and Physics questions',
+            data: {
+                tests: [{
+                    testName: 'Mixed Science Quiz',
+                    testID: 'science-001',
+                    questions: [
+                        {
+                            question: 'What is the chemical symbol for water?',
+                            options: { A: 'H2O', B: 'CO2', C: 'NaCl', D: 'O2' },
+                            correctAnswer: 'A',
+                            difficulty: 'easy',
+                            points: 2,
+                            category: 'chemistry',
+                            position: 1,
+                            id: 'q1'
+                        },
+                        {
+                            question: 'Which planet is closest to the Sun?',
+                            options: { A: 'Venus', B: 'Earth', C: 'Mercury', D: 'Mars' },
+                            correctAnswer: 'C',
+                            difficulty: 'medium',
+                            points: 3,
+                            category: 'astronomy',
+                            position: 2,
+                            id: 'q2'
+                        },
+                        {
+                            question: 'What is the powerhouse of the cell?',
+                            options: { A: 'Nucleus', B: 'Mitochondria', C: 'Ribosome', D: 'Chloroplast' },
+                            correctAnswer: 'B',
+                            difficulty: 'hard',
+                            points: 5,
+                            category: 'biology',
+                            position: 3,
+                            id: 'q3'
+                        }
+                    ]
+                }]
+            }
+        }
+    ];
+
+    // Initialize test library on page load
+    function initializeTestLibrary() {
+        // Load from localStorage
+        const savedTests = localStorage.getItem('quizTestLibrary');
+        if (savedTests) {
+            try {
+                testLibrary = JSON.parse(savedTests);
+            } catch (e) {
+                console.error('Error loading saved tests:', e);
+                testLibrary = [];
+            }
+        }
+        
+        // Add sample tests if library is empty
+        if (testLibrary.length === 0) {
+            testLibrary = [...sampleTests];
+            saveTestLibrary();
+        }
+        
+        renderTestLibrary();
+    }
+
+    function saveTestLibrary() {
+        localStorage.setItem('quizTestLibrary', JSON.stringify(testLibrary));
+    }
+
+    function renderTestLibrary() {
+        const container = document.getElementById('testLibrary');
+        container.innerHTML = '';
+
+        testLibrary.forEach(test => {
+            const testElement = document.createElement('div');
+            testElement.className = `test-item ${activeTestId === test.id ? 'active' : ''}`;
+            testElement.onclick = () => loadTestFromLibrary(test.id);
+
+            const metadata = generateTestMetadata(test.data.tests[0]);
+            
+            testElement.innerHTML = `
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">${test.name}</div>
+                <div style="font-size: 12px; color: ${activeTestId === test.id ? 'rgba(255,255,255,0.8)' : '#666'}; margin-bottom: 8px;">${test.description}</div>
+                <div class="test-metadata">
+                    <span class="test-badge">${metadata.questionCount} questions</span>
+                    <span class="test-badge">${metadata.totalPoints} pts</span>
+                    <span class="test-badge">${metadata.difficulty}</span>
+                </div>
+            `;
+
+            container.appendChild(testElement);
+        });
+    }
+
+    function generateTestMetadata(test) {
+        const questions = test.questions || [];
+        const totalPoints = questions.reduce((sum, q) => sum + (q.points || 1), 0);
+        
+        // Calculate difficulty mix
+        const difficulties = questions.map(q => q.difficulty || 'easy');
+        const diffCounts = difficulties.reduce((acc, diff) => {
+            acc[diff] = (acc[diff] || 0) + 1;
+            return acc;
+        }, {});
+        
+        const maxDiff = Object.keys(diffCounts).reduce((a, b) => 
+            diffCounts[a] > diffCounts[b] ? a : b, 'easy');
+
+        return {
+            questionCount: questions.length,
+            totalPoints,
+            difficulty: maxDiff
+        };
+    }
+
+    function loadTestFromLibrary(testId) {
+        const test = testLibrary.find(t => t.id === testId);
+        if (!test) return;
+
+        // Set as active
+        activeTestId = testId;
+        renderTestLibrary();
+
+        // Load the test data and convert format if needed
+        quizData = JSON.parse(JSON.stringify(test.data)); // Deep copy
+        
+        // Convert options format from {A, B, C, D} to {option1, option2, option3, option4}
+        if (quizData.tests && quizData.tests[0] && quizData.tests[0].questions) {
+            quizData.tests[0].questions = quizData.tests[0].questions.map(question => {
+                // Check if question uses the old options format {A, B, C, D}
+                if (question.options && typeof question.options === 'object' && question.options.A) {
+                    // Convert from options object to individual option fields
+                    return {
+                        ...question,
+                        option1: question.options.A || '',
+                        option2: question.options.B || '',
+                        option3: question.options.C || '',
+                        option4: question.options.D || '',
+                        correctAnswer: convertCorrectAnswer(question.correctAnswer),
+                        // Remove the old options object to avoid confusion
+                        options: undefined
+                    };
+                }
+                return question;
+            });
+        }
+        
+        currentTestIndex = 0;
+        
+        // Update UI
+        populateTestSelect();
+        selectTest(0);
+        updateCreateButtonText();
+    }
+
+    function convertCorrectAnswer(answer) {
+        // Convert from letter format (A, B, C, D) to option format (option1, option2, option3, option4)
+        const mapping = {
+            'A': 'option1',
+            'B': 'option2', 
+            'C': 'option3',
+            'D': 'option4'
+        };
+        return mapping[answer] || answer;
+        
+        // Auto-scroll to summary section
+        setTimeout(() => {
+            const summarySection = document.querySelector('div[style*="background: #e8f5e8"]');
+            if (summarySection) {
+                summarySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 500);
+        
+        // Show success message with guidance
+        showTestLoadedMessage(test.name);
+        
+        // Show guidance for next steps
+        setTimeout(() => {
+            showNextStepsGuidance();
+        }, 2000);
+    }
+
+    function showTestLoadedMessage(testName) {
+        // Create brief success toast
+        const successDiv = document.createElement('div');
+        successDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+            font-weight: 600;
+        `;
+        
+        successDiv.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px;">📚</span>
+                <span>Loaded: ${testName}</span>
+            </div>
+        `;
+
+        document.body.appendChild(successDiv);
+
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            if (successDiv.parentNode) {
+                successDiv.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    if (successDiv.parentNode) {
+                        successDiv.remove();
+                    }
+                }, 300);
+            }
+        }, 3000);
+    }
+
+    function loadTestFiles() {
+        document.getElementById('testFileInput').click();
+    }
+
+    function handleTestFiles(event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const testData = JSON.parse(e.target.result);
+                    addTestToLibrary(file.name, testData);
+                } catch (error) {
+                    alert(`Error loading ${file.name}: ${error.message}`);
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // Clear the input
+        event.target.value = '';
+    }
+
+    function addTestToLibrary(filename, testData) {
+        const testName = filename.replace('.json', '');
+        const test = testData.tests && testData.tests[0] ? testData.tests[0] : testData;
+        const proposedName = test.testName || testName;
+        
+        // Check for duplicates by name and content
+        const existingTest = testLibrary.find(t => 
+            t.name === proposedName || 
+            JSON.stringify(t.data) === JSON.stringify(testData.tests ? testData : { tests: [test] })
+        );
+        
+        if (existingTest) {
+            // Show duplicate warning
+            const confirmReplace = confirm(
+                `A test named "${proposedName}" already exists in your library.\n\n` +
+                'Do you want to replace it with the new version?'
+            );
+            
+            if (confirmReplace) {
+                // Replace existing test
+                const index = testLibrary.findIndex(t => t.id === existingTest.id);
+                testLibrary[index] = {
+                    ...existingTest,
+                    name: proposedName,
+                    description: `Updated from ${filename}`,
+                    data: testData.tests ? testData : { tests: [test] }
+                };
+                saveTestLibrary();
+                renderTestLibrary();
+                loadTestFromLibrary(existingTest.id);
+                
+                showTestLoadedMessage(`Updated: ${proposedName}`);
+            }
+            return;
+        }
+        
+        const newLibraryItem = {
+            id: 'user-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+            name: proposedName,
+            description: `Imported from ${filename}`,
+            data: testData.tests ? testData : { tests: [test] }
+        };
+
+        testLibrary.push(newLibraryItem);
+        saveTestLibrary();
+        renderTestLibrary();
+        
+        // Auto-load the newly added test
+        loadTestFromLibrary(newLibraryItem.id);
+    }
 
     function getImageExtension(imagePath) {
         if (!imagePath) return 'jpg';
@@ -566,7 +1048,39 @@
     }
 
 
+    function updateCreateButtonText() {
+        // Update button text based on whether we have a test loaded
+        const hasTestLoaded = currentTestIndex !== -1 && quizData.tests[currentTestIndex];
+        const mainButton = document.getElementById('createTestButton');
+        const summaryButton = document.getElementById('summaryCreateButton');
+        
+        if (hasTestLoaded) {
+            if (mainButton) mainButton.innerHTML = '➕ Add New Question';
+            if (summaryButton) summaryButton.innerHTML = '➕ Add New Question';
+        } else {
+            if (mainButton) mainButton.innerHTML = '✨ Create New Quiz';
+            if (summaryButton) summaryButton.innerHTML = '✨ Create New Test';
+        }
+    }
+
     function createNewTest() {
+        // If we already have a test loaded, just add a new question
+        if (currentTestIndex !== -1 && quizData.tests[currentTestIndex]) {
+            // Just scroll to question form to add new question
+            clearQuestionForm();
+            setTimeout(() => {
+                document.getElementById("question-form-section").scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                setTimeout(() => {
+                    document.getElementById("question").focus();
+                }, 500);
+            }, 300);
+            return;
+        }
+        
+        // Create completely new test
         const newTest = {
             testName: "New Test",
             testId: 'test-' + Math.floor(Math.random() * 1000000),
@@ -579,7 +1093,23 @@
         populateTestSelect();   // Refresh test selection menu
         selectTest(currentTestIndex); // Select new test and populate the rest of the form fields
         clearQuestionForm();
-
+        
+        // Clear active test from library (since we're creating new)
+        activeTestId = null;
+        renderTestLibrary();
+        updateCreateButtonText();
+        
+        // Scroll to question form
+        setTimeout(() => {
+            document.getElementById("question-form-section").scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+            // Focus on the question field
+            setTimeout(() => {
+                document.getElementById("question").focus();
+            }, 500);
+        }, 300);
     }
 
     function addOrUpdateQuestion() {
@@ -1565,6 +2095,121 @@
         document.getElementById("difficultyBreakdown").innerText = difficultyText;
     }
 
+    // Sidebar toggle functionality
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('sidebar-collapsed');
+        } else {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('sidebar-collapsed');
+        }
+    }
+
+    function showNextStepsGuidance() {
+        const hasQuestions = quizData.tests[currentTestIndex]?.questions?.length > 0;
+        
+        if (hasQuestions) {
+            // Test has questions - show editing options
+            showGuidanceMessage(
+                "Ready to Edit! 📝", 
+                "You can reorder questions with arrow buttons, edit them, or add more questions below.",
+                "#9b59b6"
+            );
+        } else {
+            // Empty test - guide to add questions
+            showGuidanceMessage(
+                "Add Your First Question! ➕", 
+                "This test is empty. Scroll down to the 'Add Questions' section to get started.",
+                "#e74c3c"
+            );
+        }
+    }
+
+    function showGuidanceMessage(title, message, color) {
+        const guidanceDiv = document.createElement('div');
+        guidanceDiv.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: scaleIn 0.3s ease;
+            text-align: center;
+            min-width: 350px;
+            border-top: 4px solid ${color};
+        `;
+        
+        guidanceDiv.innerHTML = `
+            <h3 style="margin: 0 0 15px 0; color: ${color}; font-size: 20px;">${title}</h3>
+            <p style="margin: 0 0 20px 0; color: #666; line-height: 1.5;">${message}</p>
+            <button onclick="closeGuidance()" style="
+                background: ${color};
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 600;
+            ">Got it!</button>
+        `;
+
+        // Add backdrop
+        const backdrop = document.createElement('div');
+        backdrop.id = 'guidance-backdrop';
+        backdrop.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            animation: fadeIn 0.3s ease;
+        `;
+        backdrop.onclick = closeGuidance;
+
+        document.body.appendChild(backdrop);
+        document.body.appendChild(guidanceDiv);
+        
+        // Store reference for closing
+        window.currentGuidance = guidanceDiv;
+    }
+
+    function closeGuidance() {
+        const guidance = window.currentGuidance;
+        const backdrop = document.getElementById('guidance-backdrop');
+        
+        if (guidance) {
+            guidance.style.animation = 'scaleOut 0.3s ease';
+            setTimeout(() => {
+                if (guidance.parentNode) guidance.remove();
+            }, 300);
+        }
+        
+        if (backdrop) {
+            backdrop.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => {
+                if (backdrop.parentNode) backdrop.remove();
+            }, 300);
+        }
+    }
+
+    // Initialize the test library when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeTestLibrary();
+        updateCreateButtonText();
+    });
+
 </script>
+</div> <!-- Close main-content -->
 </body>
 </html>
