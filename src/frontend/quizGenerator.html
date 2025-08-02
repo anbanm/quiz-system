@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Builder for Teachers</title>
     <script src="jszip.min.js"></script>
+    <!-- Quill.js Rich Text Editor (Offline) -->
+    <link href="lib/quill.snow.css" rel="stylesheet">
+    <script src="lib/quill.min.js"></script>
     <link rel="stylesheet" href="css/quiz-generator.css">
+    <link rel="stylesheet" href="css/quill-custom.css">
 </head>
 <body>
 <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Test Library">📚</button>
@@ -89,8 +93,8 @@
 
     <div style="margin: 20px 0; padding: 20px; background: white; border-radius: 8px; border: 2px solid #e8f4fd;">
         <label style="color: #2c3e50; font-size: 16px; font-weight: bold; display: block; margin-bottom: 10px;">❓ Your Question:</label>
-        <textarea id="question" placeholder="What is the capital of France?" style="width: 100%; height: 80px; resize: vertical; font-size: 16px; border: 2px solid #ddd; border-radius: 5px; padding: 12px; font-family: inherit;"></textarea>
-        <small style="color: #7f8c8d; display: block; margin-top: 8px; font-style: italic;">💡 Write a clear, specific question for your students</small>
+        <div id="question-editor" style="min-height: 80px; border: 2px solid #ddd; border-radius: 5px; background: white;"></div>
+        <small style="color: #7f8c8d; display: block; margin-top: 8px; font-style: italic;">💡 Write a clear, specific question with rich formatting (bold, italic, formulas, etc.)</small>
     </div>
 
     <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
@@ -125,31 +129,98 @@
 
     <div style="margin: 20px 0;">
         <h3 style="color: #2c3e50; margin-bottom: 15px;">📝 Answer Options:</h3>
+        <small style="color: #7f8c8d; display: block; margin-bottom: 15px; font-style: italic;">💡 Use superscript (x²) and subscript (H₂O) for scientific notation</small>
         
-        <div style="display: grid; gap: 10px;">
-            <div>
-                <label style="color: #27ae60; font-weight: bold;">A)</label>
-                <input type="text" id="option1" placeholder="First answer option" style="margin-left: 10px;">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="option-container option-a">
+                <label style="color: #27ae60; font-weight: bold; display: block; margin-bottom: 8px;">A)</label>
+                <div id="option1-toolbar" class="option-toolbar option-a-toolbar">
+                    <span class="ql-formats">
+                        <button class="ql-bold" title="Bold">B</button>
+                        <button class="ql-italic" title="Italic">I</button>
+                        <button class="ql-underline" title="Underline">U</button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-script" value="sub" title="Subscript">X₂</button>
+                        <button class="ql-script" value="super" title="Superscript">X²</button>
+                    </span>
+                </div>
+                <div id="option1-editor" class="option-editor-container option-a-editor"></div>
             </div>
-            <div>
-                <label style="color: #f39c12; font-weight: bold;">B)</label>
-                <input type="text" id="option2" placeholder="Second answer option" style="margin-left: 10px;">
+            <div class="option-container option-b">
+                <label style="color: #f39c12; font-weight: bold; display: block; margin-bottom: 8px;">B)</label>
+                <div id="option2-toolbar" class="option-toolbar option-b-toolbar">
+                    <span class="ql-formats">
+                        <button class="ql-bold" title="Bold">B</button>
+                        <button class="ql-italic" title="Italic">I</button>
+                        <button class="ql-underline" title="Underline">U</button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-script" value="sub" title="Subscript">X₂</button>
+                        <button class="ql-script" value="super" title="Superscript">X²</button>
+                    </span>
+                </div>
+                <div id="option2-editor" class="option-editor-container option-b-editor"></div>
             </div>
-            <div>
-                <label style="color: #3498db; font-weight: bold;">C)</label>
-                <input type="text" id="option3" placeholder="Third answer option" style="margin-left: 10px;">
+            <div class="option-container option-c">
+                <label style="color: #3498db; font-weight: bold; display: block; margin-bottom: 8px;">C)</label>
+                <div id="option3-toolbar" class="option-toolbar option-c-toolbar">
+                    <span class="ql-formats">
+                        <button class="ql-bold" title="Bold">B</button>
+                        <button class="ql-italic" title="Italic">I</button>
+                        <button class="ql-underline" title="Underline">U</button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-script" value="sub" title="Subscript">X₂</button>
+                        <button class="ql-script" value="super" title="Superscript">X²</button>
+                    </span>
+                </div>
+                <div id="option3-editor" class="option-editor-container option-c-editor"></div>
             </div>
-            <div>
-                <label style="color: #e74c3c; font-weight: bold;">D)</label>
-                <input type="text" id="option4" placeholder="Fourth answer option" style="margin-left: 10px;">
+            <div class="option-container option-d">
+                <label style="color: #e74c3c; font-weight: bold; display: block; margin-bottom: 8px;">D)</label>
+                <div id="option4-toolbar" class="option-toolbar option-d-toolbar">
+                    <span class="ql-formats">
+                        <button class="ql-bold" title="Bold">B</button>
+                        <button class="ql-italic" title="Italic">I</button>
+                        <button class="ql-underline" title="Underline">U</button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-script" value="sub" title="Subscript">X₂</button>
+                        <button class="ql-script" value="super" title="Superscript">X²</button>
+                    </span>
+                </div>
+                <div id="option4-editor" class="option-editor-container option-d-editor"></div>
             </div>
-            <div id="option5Container" style="display: none;">
-                <label style="color: #9b59b6; font-weight: bold;">E)</label>
-                <input type="text" id="option5" placeholder="Fifth answer option" style="margin-left: 10px;">
+            <div id="option5Container" class="option-container option-e" style="display: none;">
+                <label style="color: #9b59b6; font-weight: bold; display: block; margin-bottom: 8px;">E)</label>
+                <div id="option5-toolbar" class="option-toolbar option-e-toolbar">
+                    <span class="ql-formats">
+                        <button class="ql-bold" title="Bold">B</button>
+                        <button class="ql-italic" title="Italic">I</button>
+                        <button class="ql-underline" title="Underline">U</button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-script" value="sub" title="Subscript">X₂</button>
+                        <button class="ql-script" value="super" title="Superscript">X²</button>
+                    </span>
+                </div>
+                <div id="option5-editor" class="option-editor-container option-e-editor"></div>
             </div>
-            <div id="option6Container" style="display: none;">
-                <label style="color: #1abc9c; font-weight: bold;">F)</label>
-                <input type="text" id="option6" placeholder="Sixth answer option" style="margin-left: 10px;">
+            <div id="option6Container" class="option-container option-f" style="display: none;">
+                <label style="color: #1abc9c; font-weight: bold; display: block; margin-bottom: 8px;">F)</label>
+                <div id="option6-toolbar" class="option-toolbar option-f-toolbar">
+                    <span class="ql-formats">
+                        <button class="ql-bold" title="Bold">B</button>
+                        <button class="ql-italic" title="Italic">I</button>
+                        <button class="ql-underline" title="Underline">U</button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-script" value="sub" title="Subscript">X₂</button>
+                        <button class="ql-script" value="super" title="Superscript">X²</button>
+                    </span>
+                </div>
+                <div id="option6-editor" class="option-editor-container option-f-editor"></div>
             </div>
         </div>
     </div>
@@ -187,7 +258,7 @@
     </div>
 
     <div style="text-align: center; margin: 30px 0;">
-        <button onclick="addOrUpdateQuestion()" style="background: #27ae60; font-size: 18px; padding: 15px 30px; border-radius: 8px;">
+        <button id="addQuestionButton" onclick="addOrUpdateQuestion()" style="background: #27ae60; font-size: 18px; padding: 15px 30px; border-radius: 8px;">
             ➕ Add Question to Quiz
         </button>
     </div>

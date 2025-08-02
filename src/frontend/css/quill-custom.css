@@ -1,0 +1,273 @@
+/* Custom styles for Quill.js integration */
+
+/* Question editor styling */
+#question-editor {
+    font-family: inherit;
+    font-size: 16px;
+}
+
+#question-editor .ql-editor {
+    min-height: 60px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Question card rich text display */
+.question-card .ql-editor {
+    padding: 0;
+    border: none;
+    font-size: 16px;
+    line-height: 1.3;
+}
+
+/* Make Quill toolbar more compact */
+.ql-toolbar {
+    border-top: 2px solid #ddd;
+    border-left: 2px solid #ddd;
+    border-right: 2px solid #ddd;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.ql-container {
+    border-bottom: 2px solid #ddd;
+    border-left: 2px solid #ddd;
+    border-right: 2px solid #ddd;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+/* Formula display styling */
+.ql-formula {
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    padding: 2px 4px;
+    margin: 0 2px;
+}
+
+/* Option editors styling - ensure proper spacing and color coding */
+.option-container {
+    margin-bottom: 15px;
+    clear: both;
+    width: 100%;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.option-toolbar {
+    padding: 8px 12px;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.option-editor-container {
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+    background: white;
+    min-height: 50px;
+}
+
+.option-editor-container .ql-editor {
+    min-height: 40px;
+    font-size: 14px;
+    line-height: 1.4;
+    padding: 12px;
+    border: none;
+}
+
+.option-editor-container .ql-container {
+    border: none;
+    font-size: 14px;
+}
+
+/* Remove any default Quill toolbar styling conflicts */
+.option-editor-container .ql-toolbar {
+    display: none !important;
+}
+
+/* Color-coded option styling */
+.option-a .option-toolbar {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    border: 2px solid #27ae60;
+    color: white;
+}
+
+.option-a .option-editor-container {
+    border: 2px solid #27ae60;
+    border-top: none;
+}
+
+.option-a:hover {
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.option-b .option-toolbar {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    border: 2px solid #f39c12;
+    color: white;
+}
+
+.option-b .option-editor-container {
+    border: 2px solid #f39c12;
+    border-top: none;
+}
+
+.option-b:hover {
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+}
+
+.option-c .option-toolbar {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border: 2px solid #3498db;
+    color: white;
+}
+
+.option-c .option-editor-container {
+    border: 2px solid #3498db;
+    border-top: none;
+}
+
+.option-c:hover {
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.option-d .option-toolbar {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border: 2px solid #e74c3c;
+    color: white;
+}
+
+.option-d .option-editor-container {
+    border: 2px solid #e74c3c;
+    border-top: none;
+}
+
+.option-d:hover {
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.option-e .option-toolbar {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    border: 2px solid #9b59b6;
+    color: white;
+}
+
+.option-e .option-editor-container {
+    border: 2px solid #9b59b6;
+    border-top: none;
+}
+
+.option-e:hover {
+    box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
+}
+
+.option-f .option-toolbar {
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    border: 2px solid #1abc9c;
+    color: white;
+}
+
+.option-f .option-editor-container {
+    border: 2px solid #1abc9c;
+    border-top: none;
+}
+
+.option-f:hover {
+    box-shadow: 0 4px 12px rgba(26, 188, 156, 0.3);
+}
+
+/* Toolbar button styling for color-coded options */
+.option-toolbar button {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.option-toolbar button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.option-toolbar button.ql-active {
+    background: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Fix Quill editor default formatting issues */
+.option-editor-container .ql-editor p {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-weight: normal !important;
+    line-height: 1.4;
+    display: inline;
+}
+
+.option-editor-container .ql-editor {
+    font-weight: normal !important;
+    font-family: inherit !important;
+}
+
+.option-editor-container .ql-editor:before {
+    font-weight: normal !important;
+    font-style: normal !important;
+}
+
+/* Force inline content instead of block paragraphs */
+.option-editor-container .ql-editor > p:only-child {
+    display: inline !important;
+}
+
+.option-editor-container .ql-editor br {
+    display: none !important;
+}
+
+/* Student side - no editor styling, just content display */
+.quiz-question-content {
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.quiz-question-content p {
+    margin: 0 0 8px 0;
+}
+
+.quiz-question-content h1,
+.quiz-question-content h2,
+.quiz-question-content h3 {
+    margin: 10px 0 8px 0;
+    font-weight: bold;
+}
+
+.quiz-question-content ul,
+.quiz-question-content ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.quiz-question-content strong {
+    font-weight: bold;
+}
+
+.quiz-question-content em {
+    font-style: italic;
+}
+
+.quiz-question-content sup {
+    vertical-align: super;
+    font-size: smaller;
+}
+
+.quiz-question-content sub {
+    vertical-align: sub;
+    font-size: smaller;
+}

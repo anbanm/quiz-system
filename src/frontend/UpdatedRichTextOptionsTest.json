@@ -1,0 +1,107 @@
+{
+    "tests": [
+        {
+            "testName": "Updated Rich Text Options Showcase",
+            "testID": "rich-options-updated-2025",
+            "questions": [
+                {
+                    "question": "What is the chemical formula for water?",
+                    "questionHtml": "<p><strong>Chemistry Question:</strong> What is the chemical formula for <em>water</em>?</p>",
+                    "questionDelta": {"ops":[{"insert":"Chemistry Question:","attributes":{"bold":true}},{"insert":" What is the chemical formula for "},{"insert":"water","attributes":{"italic":true}},{"insert":"?"}]},
+                    "questionType": "multiple-choice",
+                    "optionCount": 4,
+                    "options": {
+                        "A": "H2O",
+                        "B": "CO2", 
+                        "C": "NaCl",
+                        "D": "O2"
+                    },
+                    "optionsHtml": {
+                        "A": "H<sub>2</sub>O <em>(water)</em>",
+                        "B": "CO<sub>2</sub> <em>(carbon dioxide)</em>",
+                        "C": "<strong>NaCl</strong> <em>(salt)</em>",
+                        "D": "O<sub>2</sub> <em>(oxygen gas)</em>"
+                    },
+                    "optionsDelta": {
+                        "A": {"ops":[{"insert":"H"},{"insert":"2","attributes":{"script":"sub"}},{"insert":"O "},{"insert":"(water)","attributes":{"italic":true}}]},
+                        "B": {"ops":[{"insert":"CO"},{"insert":"2","attributes":{"script":"sub"}},{"insert":" "},{"insert":"(carbon dioxide)","attributes":{"italic":true}}]},
+                        "C": {"ops":[{"insert":"NaCl","attributes":{"bold":true}},{"insert":" "},{"insert":"(salt)","attributes":{"italic":true}}]},
+                        "D": {"ops":[{"insert":"O"},{"insert":"2","attributes":{"script":"sub"}},{"insert":" "},{"insert":"(oxygen gas)","attributes":{"italic":true}}]}
+                    },
+                    "correctAnswer": "A",
+                    "category": "Chemistry",
+                    "difficulty": "easy",
+                    "points": 2,
+                    "position": 1,
+                    "id": "q-updated-001",
+                    "option1": "H2O",
+                    "option2": "CO2",
+                    "option3": "NaCl",
+                    "option4": "O2"
+                },
+                {
+                    "question": "Which equation represents Einstein's mass-energy equivalence?",
+                    "questionHtml": "<p><strong>Physics Question:</strong> Which equation represents Einstein's mass-energy equivalence?</p>",
+                    "questionDelta": {"ops":[{"insert":"Physics Question:","attributes":{"bold":true}},{"insert":" Which equation represents Einstein's mass-energy equivalence?"}]},
+                    "questionType": "multiple-choice",
+                    "optionCount": 4,
+                    "options": {
+                        "A": "F = ma",
+                        "B": "E = mc2",
+                        "C": "v = d/t",
+                        "D": "P = mv"
+                    },
+                    "optionsHtml": {
+                        "A": "<strong>F = ma</strong> <em>(Newton's 2nd law)</em>",
+                        "B": "<strong>E = mc<sup>2</sup></strong> <em>(Einstein's equation)</em>",
+                        "C": "<u>v = d/t</u> <em>(velocity formula)</em>",
+                        "D": "P = mv <em>(momentum formula)</em>"
+                    },
+                    "optionsDelta": {
+                        "A": {"ops":[{"insert":"F = ma","attributes":{"bold":true}},{"insert":" "},{"insert":"(Newton's 2nd law)","attributes":{"italic":true}}]},
+                        "B": {"ops":[{"insert":"E = mc","attributes":{"bold":true}},{"insert":"2","attributes":{"script":"super","bold":true}},{"insert":" "},{"insert":"(Einstein's equation)","attributes":{"italic":true}}]},
+                        "C": {"ops":[{"insert":"v = d/t","attributes":{"underline":true}},{"insert":" "},{"insert":"(velocity formula)","attributes":{"italic":true}}]},
+                        "D": {"ops":[{"insert":"P = mv "},{"insert":"(momentum formula)","attributes":{"italic":true}}]}
+                    },
+                    "correctAnswer": "B",
+                    "category": "Physics",
+                    "difficulty": "medium",
+                    "points": 3,
+                    "position": 2,
+                    "id": "q-updated-002",
+                    "option1": "F = ma",
+                    "option2": "E = mc2",
+                    "option3": "v = d/t",
+                    "option4": "P = mv"
+                },
+                {
+                    "question": "True or False: The Earth is flat",
+                    "questionHtml": "<p><strong>Geography:</strong> The Earth is <u>flat</u> and not spherical.</p>",
+                    "questionDelta": {"ops":[{"insert":"Geography:","attributes":{"bold":true}},{"insert":" The Earth is "},{"insert":"flat","attributes":{"underline":true}},{"insert":" and not spherical."}]},
+                    "questionType": "true-false",
+                    "optionCount": 2,
+                    "options": {
+                        "A": "True",
+                        "B": "False"
+                    },
+                    "optionsHtml": {
+                        "A": "<strong style=\"color: rgb(255, 0, 0);\">True</strong> <em>(incorrect)</em>",
+                        "B": "<strong style=\"color: rgb(0, 128, 0);\">False</strong> <em>(correct - Earth is spherical)</em>"
+                    },
+                    "optionsDelta": {
+                        "A": {"ops":[{"insert":"True","attributes":{"bold":true,"color":"#ff0000"}},{"insert":" "},{"insert":"(incorrect)","attributes":{"italic":true}}]},
+                        "B": {"ops":[{"insert":"False","attributes":{"bold":true,"color":"#008000"}},{"insert":" "},{"insert":"(correct - Earth is spherical)","attributes":{"italic":true}}]}
+                    },
+                    "correctAnswer": "B",
+                    "category": "Geography",
+                    "difficulty": "easy",
+                    "points": 1,
+                    "position": 3,
+                    "id": "q-updated-003",
+                    "option1": "True",
+                    "option2": "False"
+                }
+            ]
+        }
+    ]
+}

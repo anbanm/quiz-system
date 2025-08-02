@@ -264,4 +264,196 @@ test.describe('Quiz Test Runner - Student Interface', () => {
     await expect(page.locator('#resultContainer')).toContainText('Correct Answers: 3 / 3');
     await expect(page.locator('#resultContainer')).toContainText('Points Awarded: 15');
   });
+
+  test('should display rich text options with proper formatting', async ({ page }) => {
+    const richTextQuizData = {
+      tests: [{
+        testName: "Rich Text Options Quiz",
+        testID: "test-rich-options",
+        questions: [{
+          question: "Chemistry: What is the chemical formula for water?",
+          questionHtml: "<p><strong>Chemistry Question:</strong> What is the chemical formula for <em>water</em>?</p>",
+          questionType: "multiple-choice",
+          optionCount: 4,
+          options: {
+            A: "H2O",
+            B: "CO2", 
+            C: "NaCl",
+            D: "O2"
+          },
+          optionsHtml: {
+            A: "H<sub>2</sub>O",
+            B: "CO<sub>2</sub>",
+            C: "<strong>NaCl</strong>",
+            D: "O<sub>2</sub>"
+          },
+          optionsDelta: {
+            A: {"ops":[{"insert":"H"},{"insert":"2","attributes":{"script":"sub"}},{"insert":"O"}]},
+            B: {"ops":[{"insert":"CO"},{"insert":"2","attributes":{"script":"sub"}}]},
+            C: {"ops":[{"insert":"NaCl","attributes":{"bold":true}}]},
+            D: {"ops":[{"insert":"O"},{"insert":"2","attributes":{"script":"sub"}}]}
+          },
+          correctAnswer: "A",
+          category: "Chemistry",
+          difficulty: "easy",
+          points: 2,
+          id: "q-chem-001"
+        }]
+      }]
+    };
+
+    await page.evaluate((quizData) => {
+      window.loadTest(quizData);
+    }, richTextQuizData);
+
+    // Verify rich text question is displayed
+    await expect(page.locator('.question .quiz-question-content')).toContainText('Chemistry Question:');
+    await expect(page.locator('.question .quiz-question-content strong')).toContainText('Chemistry Question:');
+    await expect(page.locator('.question .quiz-question-content em')).toContainText('water');
+
+    // Verify rich text options are displayed with proper formatting
+    await expect(page.locator('label:has-text("A)") span')).toContainText('H2O');
+    await expect(page.locator('label:has-text("A)") span sub')).toContainText('2');
+    
+    await expect(page.locator('label:has-text("B)") span')).toContainText('CO2');
+    await expect(page.locator('label:has-text("B)") span sub')).toContainText('2');
+    
+    await expect(page.locator('label:has-text("C)") span strong')).toContainText('NaCl');
+    
+    await expect(page.locator('label:has-text("D)") span')).toContainText('O2');
+    await expect(page.locator('label:has-text("D)") span sub')).toContainText('2');
+
+    // Test answering with rich formatted options
+    await page.click('label:has-text("A)")');
+    await expect(page.locator('input[value="A"]')).toBeChecked();
+
+    // Submit and verify correct answer
+    await page.click('button:has-text("Submit Test")');
+    await expect(page.locator('#resultContainer')).toBeVisible();
+    await expect(page.locator('#resultContainer')).toContainText('Correct Answers: 1 / 1');
+    await expect(page.locator('#resultContainer')).toContainText('Points Awarded: 2');
+  });
+
+  test('should handle physics equations with superscripts', async ({ page }) => {
+    const physicsQuizData = {
+      tests: [{
+        testName: "Physics Equations Quiz",
+        testID: "test-physics-eq",
+        questions: [{
+          question: "Physics: Which equation represents Einstein's mass-energy equivalence?",
+          questionHtml: "<p><strong>Physics Question:</strong> Which equation represents Einstein's mass-energy equivalence?</p>",
+          questionType: "multiple-choice",
+          optionCount: 4,
+          options: {
+            A: "F = ma",
+            B: "E = mc2",
+            C: "v = d/t",
+            D: "P = mv"
+          },
+          optionsHtml: {
+            A: "<strong>F = ma</strong>",
+            B: "E = mc<sup>2</sup>",
+            C: "<em>v = d/t</em>",
+            D: "<u>P = mv</u>"
+          },
+          optionsDelta: {
+            A: {"ops":[{"insert":"F = ma","attributes":{"bold":true}}]},
+            B: {"ops":[{"insert":"E = mc"},{"insert":"2","attributes":{"script":"super"}}]},
+            C: {"ops":[{"insert":"v = d/t","attributes":{"italic":true}}]},
+            D: {"ops":[{"insert":"P = mv","attributes":{"underline":true}}]}
+          },
+          correctAnswer: "B",
+          category: "Physics",
+          difficulty: "medium",
+          points: 3,
+          id: "q-phys-001"
+        }]
+      }]
+    };
+
+    await page.evaluate((quizData) => {
+      window.loadTest(quizData);
+    }, physicsQuizData);
+
+    // Verify physics question is displayed
+    await expect(page.locator('.question .quiz-question-content')).toContainText('Physics Question:');
+
+    // Verify formatted options are displayed correctly
+    await expect(page.locator('label:has-text("A)") span strong')).toContainText('F = ma');
+    await expect(page.locator('label:has-text("B)") span')).toContainText('E = mc');
+    await expect(page.locator('label:has-text("B)") span sup')).toContainText('2');
+    await expect(page.locator('label:has-text("C)") span em')).toContainText('v = d/t');
+    await expect(page.locator('label:has-text("D)") span u')).toContainText('P = mv');
+
+    // Test answering the physics question
+    await page.click('label:has-text("B)")');
+    await expect(page.locator('input[value="B"]')).toBeChecked();
+
+    // Submit and verify correct answer
+    await page.click('button:has-text("Submit Test")');
+    await expect(page.locator('#resultContainer')).toBeVisible();
+    await expect(page.locator('#resultContainer')).toContainText('Correct Answers: 1 / 1');
+    await expect(page.locator('#resultContainer')).toContainText('Points Awarded: 3');
+  });
+
+  test('should handle true/false questions with rich text formatting', async ({ page }) => {
+    const trueFalseQuizData = {
+      tests: [{
+        testName: "True/False Rich Text Quiz",
+        testID: "test-tf-rich",
+        questions: [{
+          question: "True or False: The Earth is flat",
+          questionHtml: "<p><strong>Geography:</strong> The Earth is <u>flat</u> and not spherical.</p>",
+          questionType: "true-false",
+          optionCount: 2,
+          options: {
+            A: "True",
+            B: "False"
+          },
+          optionsHtml: {
+            A: "<strong style=\"color: rgb(255, 0, 0);\">True</strong> <em>(incorrect)</em>",
+            B: "<strong style=\"color: rgb(0, 128, 0);\">False</strong> <em>(correct - Earth is spherical)</em>"
+          },
+          optionsDelta: {
+            A: {"ops":[{"insert":"True","attributes":{"bold":true,"color":"#ff0000"}},{"insert":" "},{"insert":"(incorrect)","attributes":{"italic":true}}]},
+            B: {"ops":[{"insert":"False","attributes":{"bold":true,"color":"#008000"}},{"insert":" "},{"insert":"(correct - Earth is spherical)","attributes":{"italic":true}}]}
+          },
+          correctAnswer: "B",
+          category: "Geography",
+          difficulty: "easy",
+          points: 1,
+          id: "q-geo-001"
+        }]
+      }]
+    };
+
+    await page.evaluate((quizData) => {
+      window.loadTest(quizData);
+    }, trueFalseQuizData);
+
+    // Verify true/false question is displayed
+    await expect(page.locator('.question .quiz-question-content')).toContainText('Geography:');
+    await expect(page.locator('.question .quiz-question-content u')).toContainText('flat');
+
+    // Verify only 2 options are displayed for true/false
+    const options = page.locator('.question label');
+    await expect(options).toHaveCount(2);
+
+    // Verify colored formatting of true/false options
+    await expect(page.locator('label:has-text("A)") span strong')).toContainText('True');
+    await expect(page.locator('label:has-text("A)") span em')).toContainText('(incorrect)');
+    
+    await expect(page.locator('label:has-text("B)") span strong')).toContainText('False');
+    await expect(page.locator('label:has-text("B)") span em')).toContainText('(correct - Earth is spherical)');
+
+    // Test answering the true/false question
+    await page.click('label:has-text("B)")');
+    await expect(page.locator('input[value="B"]')).toBeChecked();
+
+    // Submit and verify correct answer
+    await page.click('button:has-text("Submit Test")');
+    await expect(page.locator('#resultContainer')).toBeVisible();
+    await expect(page.locator('#resultContainer')).toContainText('Correct Answers: 1 / 1');
+    await expect(page.locator('#resultContainer')).toContainText('Points Awarded: 1');
+  });
 });

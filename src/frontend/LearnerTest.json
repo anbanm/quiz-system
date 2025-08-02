@@ -1,0 +1,123 @@
+{
+    "tests": [
+        {
+            "testName": "Rich Text Feature Showcase",
+            "testID": "demo-rich-text-001",
+            "questions": [
+                {
+                    "question": "What is the chemical formula for water?",
+                    "questionHtml": "<p><strong>Chemistry Question:</strong> What is the chemical formula for <em>water</em>?</p>",
+                    "questionDelta": {"ops":[{"insert":"Chemistry Question:","attributes":{"bold":true}},{"insert":" What is the chemical formula for "},{"insert":"water","attributes":{"italic":true}},{"insert":"?"}]},
+                    "questionType": "multiple-choice",
+                    "optionCount": 4,
+                    "options": {
+                        "A": "H₂O",
+                        "B": "CO₂", 
+                        "C": "NaCl",
+                        "D": "O₂"
+                    },
+                    "correctAnswer": "A",
+                    "category": "Chemistry",
+                    "difficulty": "easy",
+                    "points": 2,
+                    "position": 1,
+                    "id": "q-demo-001",
+                    "option1": "H₂O",
+                    "option2": "CO₂",
+                    "option3": "NaCl",
+                    "option4": "O₂"
+                },
+                {
+                    "question": "Which equation represents Einstein's mass-energy equivalence?",
+                    "questionHtml": "<h2>Physics Question</h2><p>Which equation represents <span style=\"color: rgb(230, 0, 0);\">Einstein's</span> mass-energy equivalence?</p>",
+                    "questionDelta": {"ops":[{"insert":"Physics Question","attributes":{"header":2}},{"insert":"\nWhich equation represents "},{"insert":"Einstein's","attributes":{"color":"#e60000"}},{"insert":" mass-energy equivalence?\n"}]},
+                    "questionType": "multiple-choice",
+                    "optionCount": 4,
+                    "options": {
+                        "A": "F = ma",
+                        "B": "E = mc²",
+                        "C": "v = d/t",
+                        "D": "P = mv"
+                    },
+                    "correctAnswer": "B",
+                    "category": "Physics",
+                    "difficulty": "medium",
+                    "points": 3,
+                    "position": 2,
+                    "id": "q-demo-002",
+                    "option1": "F = ma",
+                    "option2": "E = mc²",
+                    "option3": "v = d/t",
+                    "option4": "P = mv"
+                },
+                {
+                    "question": "True or False: The Earth is the third planet from the Sun",
+                    "questionHtml": "<p><strong style=\"background-color: rgb(255, 255, 0);\">Astronomy:</strong> The Earth is the <sup>3rd</sup> planet from the Sun</p>",
+                    "questionDelta": {"ops":[{"insert":"Astronomy:","attributes":{"bold":true,"background":"#ffff00"}},{"insert":" The Earth is the "},{"insert":"3rd","attributes":{"script":"super"}},{"insert":" planet from the Sun"}]},
+                    "questionType": "true-false",
+                    "optionCount": 2,
+                    "options": {
+                        "A": "True",
+                        "B": "False"
+                    },
+                    "correctAnswer": "A",
+                    "category": "Astronomy",
+                    "difficulty": "easy",
+                    "points": 1,
+                    "position": 3,
+                    "id": "q-demo-003",
+                    "option1": "True",
+                    "option2": "False"
+                },
+                {
+                    "question": "Which of these programming concepts involves organizing code?",
+                    "questionHtml": "<h2 style=\"color: rgb(0, 102, 204);\">Programming Concepts</h2><p>Which of these involves <em><u>organizing</u></em> code into reusable blocks?</p><ol><li><strong>Key concepts to consider:</strong></li><li>Modularity and structure</li><li>Code reusability</li></ol>",
+                    "questionDelta": {"ops":[{"insert":"Programming Concepts","attributes":{"header":2,"color":"#0066cc"}},{"insert":"\nWhich of these involves "},{"insert":"organizing","attributes":{"italic":true,"underline":true}},{"insert":" code into reusable blocks?\n"},{"insert":"Key concepts to consider:","attributes":{"bold":true}},{"insert":"\nModularity and structure"},{"insert":"\nCode reusability","attributes":{"list":"ordered"}}]},
+                    "questionType": "multiple-choice",
+                    "optionCount": 6,
+                    "options": {
+                        "A": "Variables",
+                        "B": "Functions",
+                        "C": "Comments", 
+                        "D": "Loops",
+                        "E": "Arrays",
+                        "F": "Print statements"
+                    },
+                    "correctAnswer": "B",
+                    "category": "Computer Science",
+                    "difficulty": "medium",
+                    "points": 3,
+                    "position": 4,
+                    "id": "q-demo-004",
+                    "option1": "Variables",
+                    "option2": "Functions",
+                    "option3": "Comments",
+                    "option4": "Loops",
+                    "option5": "Arrays",
+                    "option6": "Print statements"
+                },
+                {
+                    "question": "What is 2 to the power of 5?",
+                    "questionHtml": "<p><span style=\"color: rgb(128, 0, 128);\">Mathematics:</span> What is 2<sup>5</sup> (two to the power of five)?</p><ul><li>Think about <strong>exponential growth</strong></li><li>Remember: 2<sup>1</sup> = 2, 2<sup>2</sup> = 4, 2<sup>3</sup> = 8...</li></ul>",
+                    "questionDelta": {"ops":[{"insert":"Mathematics:","attributes":{"color":"#800080"}},{"insert":" What is 2"},{"insert":"5","attributes":{"script":"super"}},{"insert":" (two to the power of five)?\n"},{"insert":"Think about "},{"insert":"exponential growth","attributes":{"bold":true}},{"insert":"\nRemember: 2"},{"insert":"1","attributes":{"script":"super"}},{"insert":" = 2, 2"},{"insert":"2","attributes":{"script":"super"}},{"insert":" = 4, 2"},{"insert":"3","attributes":{"script":"super"}},{"insert":" = 8...","attributes":{"list":"bullet"}}]},
+                    "questionType": "multiple-choice",
+                    "optionCount": 3,
+                    "options": {
+                        "A": "16",
+                        "B": "32", 
+                        "C": "64"
+                    },
+                    "correctAnswer": "B",
+                    "category": "Mathematics",
+                    "difficulty": "easy",
+                    "points": 2,
+                    "position": 5,
+                    "id": "q-demo-005",
+                    "option1": "16",
+                    "option2": "32",
+                    "option3": "64"
+                }
+            ]
+        }
+    ]
+}

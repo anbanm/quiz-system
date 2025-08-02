@@ -4,6 +4,33 @@
 let quizData = { tests: [] }; // Store all tests
 let currentTestIndex = -1;      // Index of the currently selected test
 let currentQuestionIndex = null // Index of the currently selected question
+let questionEditor = null;     // Quill rich text editor instance
+let optionEditors = [];        // Array to store option editor instances
+
+// Helper function to convert Quill Delta to HTML
+function deltaToHtml(delta) {
+    if (!delta || !delta.ops) return '';
+    
+    let html = '';
+    
+    for (const op of delta.ops) {
+        if (typeof op.insert === 'string') {
+            let text = op.insert.replace(/\n/g, ''); // Remove newlines
+            
+            if (op.attributes) {
+                if (op.attributes.bold) text = `<strong>${text}</strong>`;
+                if (op.attributes.italic) text = `<em>${text}</em>`;
+                if (op.attributes.underline) text = `<u>${text}</u>`;
+                if (op.attributes.script === 'sub') text = `<sub>${text}</sub>`;
+                if (op.attributes.script === 'super') text = `<sup>${text}</sup>`;
+            }
+            
+            html += text;
+        }
+    }
+    
+    return html.trim();
+}
 
 // Utility functions for flexible question format
 function convertInternalToLetter(internalAnswer) {
@@ -89,17 +116,15 @@ function updateQuestionTypeUI() {
         optionCount.value = '2';
         updateOptionCount(); // Update to show only A, B
         
-        // Pre-fill with True/False options
-        document.getElementById('option1').value = 'True';
-        document.getElementById('option2').value = 'False';
-        
-        // Make options readonly to prevent editing
-        const option1 = document.getElementById('option1');
-        const option2 = document.getElementById('option2');
-        option1.readOnly = true;
-        option2.readOnly = true;
-        option1.style.backgroundColor = '#f8f9fa';
-        option2.style.backgroundColor = '#f8f9fa';
+        // True/False questions should ALWAYS have "True" and "False" as options
+        if (optionEditors && optionEditors.length >= 2) {
+            optionEditors[0].setText('True');
+            optionEditors[1].setText('False');
+            
+            // Disable the option editors for true/false (make them read-only)
+            optionEditors[0].disable();
+            optionEditors[1].disable();
+        }
         
         // Update correct answer dropdown for true/false
         const correctAnswer = document.getElementById('correctAnswer');
@@ -113,21 +138,12 @@ function updateQuestionTypeUI() {
         optionCountContainer.style.display = 'block';
         updateOptionCount(); // Update based on current selection
         
-        // Clear pre-filled values and restore editing
-        document.getElementById('option1').value = '';
-        document.getElementById('option2').value = '';
-        
-        // Make options editable
-        const option1 = document.getElementById('option1');
-        const option2 = document.getElementById('option2');
-        option1.readOnly = false;
-        option2.readOnly = false;
-        option1.style.backgroundColor = '';
-        option2.style.backgroundColor = '';
-        
-        // Update placeholders
-        option1.placeholder = 'First answer option';
-        option2.placeholder = 'Second answer option';
+        // Enable all option editors for multiple choice
+        if (optionEditors && optionEditors.length >= 2) {
+            optionEditors.forEach(editor => {
+                editor.enable();
+            });
+        }
     }
 }
 
@@ -135,27 +151,24 @@ function updateOptionCount() {
     const optionCount = parseInt(document.getElementById('optionCount').value);
     const questionType = document.getElementById('questionType').value;
     
-    // Get all option elements and containers
-    const options = [
-        { input: document.getElementById('option1'), container: document.getElementById('option1').parentElement },
-        { input: document.getElementById('option2'), container: document.getElementById('option2').parentElement },
-        { input: document.getElementById('option3'), container: document.getElementById('option3').parentElement },
-        { input: document.getElementById('option4'), container: document.getElementById('option4').parentElement },
-        { input: document.getElementById('option5'), container: document.getElementById('option5Container') },
-        { input: document.getElementById('option6'), container: document.getElementById('option6Container') }
+    // Get all option editor containers
+    const optionContainers = [
+        document.getElementById('option1-editor').parentElement,
+        document.getElementById('option2-editor').parentElement,
+        document.getElementById('option3-editor').parentElement,
+        document.getElementById('option4-editor').parentElement,
+        document.getElementById('option5Container'),
+        document.getElementById('option6Container')
     ];
     
     // Show/hide options based on count
-    options.forEach((option, index) => {
+    optionContainers.forEach((container, index) => {
         if (index < optionCount) {
-            option.container.style.display = 'block';
-            // Clear values for newly shown options (except for true/false)
-            if (questionType !== 'true-false' && index >= 2) {
-                option.input.value = '';
-            }
+            container.style.display = 'block';
+            // Don't clear values when showing options - preserve existing content
         } else {
-            option.container.style.display = 'none';
-            option.input.value = '';
+            container.style.display = 'none';
+            // Don't clear hidden option values - they might be needed if user changes count again
         }
     });
     
@@ -522,6 +535,9 @@ function generateTestId() {
     // Update testName from the input element
     const testNameInput = document.getElementById("testName").value;
     quizData.tests[currentTestIndex].testName = testNameInput;
+    
+    // IMPORTANT: Update the actual quiz data with the new test ID
+    quizData.tests[currentTestIndex].testId = testId;
 
     return testId;
 }
@@ -589,16 +605,25 @@ function loadJSON(event) {
                                 // New format with A/B/C/D object
                                 return {
                                     question: q.question,
+                                    questionHtml: q.questionHtml,
+                                    questionDelta: q.questionDelta,
                                     image: q.image,
                                     imagePreviewData: q.image && q.image.startsWith('data:') ? q.image : null, // Only use data URLs as preview data
-                                    option1: q.options.A,
-                                    option2: q.options.B,
-                                    option3: q.options.C,
-                                    option4: q.options.D,
+                                    questionType: q.questionType || "multiple-choice",
+                                    optionCount: q.optionCount || 4,
+                                    options: q.options,
+                                    option1: q.options.A || q.option1,
+                                    option2: q.options.B || q.option2,
+                                    option3: q.options.C || q.option3,
+                                    option4: q.options.D || q.option4,
+                                    option5: q.options.E || q.option5,
+                                    option6: q.options.F || q.option6,
                                     correctAnswer: q.correctAnswer === 'A' ? 'option1' :
                                                   q.correctAnswer === 'B' ? 'option2' :
                                                   q.correctAnswer === 'C' ? 'option3' :
-                                                  q.correctAnswer === 'D' ? 'option4' : 'option1',
+                                                  q.correctAnswer === 'D' ? 'option4' :
+                                                  q.correctAnswer === 'E' ? 'option5' :
+                                                  q.correctAnswer === 'F' ? 'option6' : 'option1',
                                     category: q.category,
                                     difficulty: q.difficulty,
                                     points: q.points || 1,
@@ -680,21 +705,12 @@ function updateCreateButtonText() {
 }
 
 function createNewTest() {
-    // If we already have a test loaded, just add a new question
-    if (currentTestIndex !== -1 && quizData.tests[currentTestIndex]) {
-        // Just scroll to question form to add new question
-        clearQuestionForm();
-        setTimeout(() => {
-            document.getElementById("question-form-section").scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-            setTimeout(() => {
-                document.getElementById("question").focus();
-            }, 500);
-        }, 300);
-        return;
-    }
+    // Always create a completely new test - don't just add to existing
+    
+    // Reset global state to allow fresh start
+    activeTestId = null;
+    quizData = { tests: [] };
+    currentTestIndex = -1;
     
     // Create completely new test
     const newTest = {
@@ -710,10 +726,10 @@ function createNewTest() {
     selectTest(currentTestIndex); // Select new test and populate the rest of the form fields
     clearQuestionForm();
     
-    // Clear active test from library (since we're creating new)
-    activeTestId = null;
+    // Update UI to reflect clean state
     renderTestLibrary();
     updateCreateButtonText();
+    updateQuestionList(); // Clear any previously displayed questions
     
     // Scroll to question form
     setTimeout(() => {
@@ -723,7 +739,10 @@ function createNewTest() {
         });
         // Focus on the question field
         setTimeout(() => {
-            document.getElementById("question").focus();
+            // Focus on the Quill editor instead of the non-existent question field
+            if (questionEditor) {
+                questionEditor.focus();
+            }
         }, 500);
     }, 300);
 }
@@ -735,7 +754,10 @@ function addOrUpdateQuestion() {
         alert("No test selected!")
         return;
     }
-    const question = document.getElementById("question").value;
+    // Get rich text content from Quill editor
+    const questionText = questionEditor.getText().trim();
+    const questionHtml = questionEditor.root.innerHTML;
+    const questionDelta = questionEditor.getContents();
     let image = document.getElementById("imagePath").value;
     let imagePreviewData = null;
     
@@ -749,12 +771,58 @@ function addOrUpdateQuestion() {
     }
     const questionType = document.getElementById("questionType").value;
     const selectedOptionCount = questionType === 'true-false' ? 2 : parseInt(document.getElementById("optionCount").value);
-    const option1 = document.getElementById("option1").value;
-    const option2 = document.getElementById("option2").value;
-    const option3 = document.getElementById("option3").value;
-    const option4 = document.getElementById("option4").value;
-    const option5 = document.getElementById("option5").value;
-    const option6 = document.getElementById("option6").value;
+    
+    // Check if option editors are initialized
+    if (!optionEditors || optionEditors.length < 6) {
+        alert("Option editors not properly initialized. Please refresh the page.");
+        return;
+    }
+    
+    // Get rich text content from option editors with cleanup
+    const optionData = optionEditors.map(editor => {
+        if (!editor) {
+            return { text: '', html: '', delta: { ops: [] } };
+        }
+        
+        const text = editor.getText().replace(/\n/g, '').trim();
+        
+        // Get HTML by manually converting Delta to HTML
+        let html = '';
+        try {
+            const delta = editor.getContents();
+            html = deltaToHtml(delta);
+            console.log(`Option HTML extraction - Text: "${text}", HTML: "${html}"`);
+        } catch (e) {
+            console.error('HTML extraction failed:', e);
+            html = text; // Fallback to plain text
+        }
+        
+        // Final fallback to plain text if HTML is empty
+        if (!html) {
+            html = text;
+        }
+        
+        // Clean up delta - remove newlines and paragraph formatting
+        const delta = editor.getContents();
+        if (delta.ops) {
+            delta.ops = delta.ops.filter(op => op.insert !== '\n').map(op => {
+                if (typeof op.insert === 'string') {
+                    op.insert = op.insert.replace(/\n/g, '');
+                }
+                return op;
+            }).filter(op => op.insert !== '');
+        }
+        
+        return { text, html, delta };
+    });
+    
+    // Extract plain text values for backward compatibility
+    const option1 = optionData[0].text;
+    const option2 = optionData[1].text;
+    const option3 = optionData[2].text;
+    const option4 = optionData[3].text;
+    const option5 = optionData[4].text;
+    const option6 = optionData[5].text;
     const correctAnswer = document.getElementById("correctAnswer").value;
     const category = document.getElementById("category").value;
     const difficulty = document.getElementById("difficulty").value;
@@ -764,8 +832,15 @@ function addOrUpdateQuestion() {
     const allOptions = [option1, option2, option3, option4, option5, option6];
     const requiredOptions = allOptions.slice(0, selectedOptionCount);
     
-    if (!question || !category || !difficulty || !correctAnswer) {
+    // Validate required fields
+    if (!category || !difficulty || !correctAnswer) {
         alert("Please fill all the required fields");
+        return;
+    }
+    
+    // Validate question content
+    if (!questionText || questionText.trim() === '') {
+        alert("Please enter a question");
         return;
     }
     
@@ -778,25 +853,40 @@ function addOrUpdateQuestion() {
         }
     }
     
-    // Create flexible question structure
+    // Create flexible question structure with rich text support
     const options = {};
+    const optionsHtml = {};
+    const optionsDelta = {};
     const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
     
     for (let i = 0; i < selectedOptionCount; i++) {
-        options[letters[i]] = requiredOptions[i];
+        options[letters[i]] = requiredOptions[i];           // Plain text for backward compatibility
+        optionsHtml[letters[i]] = optionData[i].html;       // Rich HTML for display
+        optionsDelta[letters[i]] = optionData[i].delta;     // Delta format for editing
     }
     
     const newQuestion = {
-        question: question,
+        question: questionText,           // Plain text for fallback
+        questionHtml: questionHtml,       // Rich HTML for display
+        questionDelta: questionDelta,     // Delta format for editing
         image: image,
         imagePreviewData: imagePreviewData,
         questionType: questionType,
         optionCount: selectedOptionCount,
-        options: options,
+        options: options,               // Plain text options for backward compatibility
+        optionsHtml: optionsHtml,       // Rich HTML options for display
+        optionsDelta: optionsDelta,     // Delta format options for editing
         correctAnswer: convertInternalToLetter(correctAnswer), // Convert option1->A, etc.
         category: category,
         difficulty: difficulty,
-        points: points
+        points: points,
+        // ALSO store old format for backward compatibility
+        option1: option1,
+        option2: option2,
+        option3: option3,
+        option4: option4,
+        option5: option5,
+        option6: option6
     };
 
     const isEditing = currentQuestionIndex !== null;
@@ -823,6 +913,14 @@ function addOrUpdateQuestion() {
     // For new questions: show brief success + auto-scroll back to form
     if (!isEditing) {
         showBriefSuccessAndScrollToForm();
+    } else {
+        // For edited questions, just scroll to the questions list to show the updated question
+        setTimeout(() => {
+            document.getElementById("questionList").scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }, 300);
     }
 }
 
@@ -884,7 +982,7 @@ function renderQuestions(questions) {
                             ${question.category}
                         </span>
                     </div>
-                    <h4 style="margin: 0 0 8px 0; color: #2c3e50; font-size: 16px; line-height: 1.3;">${question.question}</h4>
+                    <div style="margin: 0 0 8px 0; color: #2c3e50; font-size: 16px; line-height: 1.3; font-weight: bold;">${question.questionHtml || question.question}</div>
                     <div style="display: flex; gap: 15px; font-size: 13px; color: #7f8c8d; flex-wrap: wrap;">
                         ${generateOptionDisplayHTML(question)}
                     </div>
@@ -951,8 +1049,17 @@ function editQuestion(index){
         }, 600);
     }, 500);
 
-    // Populate form fields
-    document.getElementById("question").value = question.question;
+    // Populate rich text editor
+    if (question.questionDelta) {
+        // Load rich content from Delta format
+        questionEditor.setContents(question.questionDelta);
+    } else if (question.questionHtml) {
+        // Fallback to HTML
+        questionEditor.root.innerHTML = question.questionHtml;
+    } else {
+        // Fallback to plain text
+        questionEditor.setText(question.question || '');
+    }
 
     if(question.image){
         document.getElementById("imagePath").value = question.image||"";
@@ -989,27 +1096,32 @@ function editQuestion(index){
     }
     updateQuestionTypeUI(); // This will set up the options visibility and dropdown
     
-    // Set options based on format (new or old)
-    const allOptionInputs = [
-        document.getElementById("option1"),
-        document.getElementById("option2"),
-        document.getElementById("option3"),
-        document.getElementById("option4"),
-        document.getElementById("option5"),
-        document.getElementById("option6")
-    ];
-    
-    if (question.options) {
-        // New format
+    // Set options in rich text editors
+    if (optionEditors && optionEditors.length >= 6) {
         const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
-        allOptionInputs.forEach((input, index) => {
-            input.value = question.options[letters[index]] || '';
-        });
-    } else {
-        // Old format
-        allOptionInputs.forEach((input, index) => {
-            input.value = question[`option${index + 1}`] || '';
-        });
+        
+        for (let i = 0; i < 6; i++) {
+            let optionText = '';
+            let optionHtml = '';
+            let optionDelta = null;
+            
+            // Check for rich text option data first
+            if (question.optionsDelta && question.optionsDelta[letters[i]]) {
+                optionDelta = question.optionsDelta[letters[i]];
+                optionEditors[i].setContents(optionDelta);
+            } else if (question.optionsHtml && question.optionsHtml[letters[i]]) {
+                optionHtml = question.optionsHtml[letters[i]];
+                optionEditors[i].root.innerHTML = optionHtml;
+            } else if (question.options && question.options[letters[i]]) {
+                // New plain text format
+                optionText = question.options[letters[i]];
+                optionEditors[i].setText(optionText);
+            } else {
+                // Old format fallback
+                optionText = question[`option${i + 1}`] || '';
+                optionEditors[i].setText(optionText);
+            }
+        }
     }
     
     // Set correct answer (handle both letter and internal format)
@@ -1025,6 +1137,7 @@ function editQuestion(index){
     document.getElementById("difficulty").value = question.difficulty;
 
     currentQuestionIndex = index;
+    updateQuestionButtonText(); // Update button text for editing mode
     
     // Focus on the question textarea for immediate editing
     setTimeout(() => {
@@ -1260,18 +1373,36 @@ function closeSuccessDialog() {
     }
 }
 
+function updateQuestionButtonText() {
+    const button = document.getElementById("addQuestionButton");
+    if (!button) return;
+    
+    if (currentQuestionIndex !== null) {
+        // Editing mode
+        button.innerHTML = "✏️ Update Question";
+        button.style.background = "#f39c12"; // Orange for update
+    } else {
+        // Adding mode
+        button.innerHTML = "➕ Add Question to Quiz";
+        button.style.background = "#27ae60"; // Green for add
+    }
+}
+
 function clearQuestionForm(){
-    document.getElementById("question").value = "";
+    // Clear rich text editor
+    if (questionEditor) {
+        questionEditor.setText('');
+    }
     document.getElementById("imagePath").value = "";
     document.getElementById("questionType").value = "multiple-choice";
     document.getElementById("optionCount").value = "4";
     updateQuestionTypeUI(); // Reset to multiple choice view
-    document.getElementById("option1").value = "";
-    document.getElementById("option2").value = "";
-    document.getElementById("option3").value = "";
-    document.getElementById("option4").value = "";
-    document.getElementById("option5").value = "";
-    document.getElementById("option6").value = "";
+    // Clear option editors
+    if (optionEditors && optionEditors.length >= 6) {
+        optionEditors.forEach(editor => {
+            editor.setText('');
+        });
+    }
     document.getElementById("correctAnswer").value = "option1";
     document.getElementById("category").value = "";
     document.getElementById("points").value = 1;
@@ -1284,6 +1415,7 @@ function clearQuestionForm(){
     preview.style.display = 'none';
     
     currentQuestionIndex = null;
+    updateQuestionButtonText(); // Update button text when clearing form
 }
 
 // JSON Generation and Export Functions
@@ -1306,18 +1438,27 @@ function generateJSON() {
         testName: test.testName,
         testID: test.testId,
         questions: sortedQuestions.map(question => {
-            // Export in the new flexible format
+            // Build options object (new format)
+            const options = question.options || {
+                A: question.option1,
+                B: question.option2,
+                C: question.option3,
+                D: question.option4
+            };
+            
+            // If we have E or F options, add them
+            if (question.option5) options.E = question.option5;
+            if (question.option6) options.F = question.option6;
+            
+            // Export in the new flexible format with BOTH old and new formats
             const exportQuestion = {
                 question: question.question,
+                questionHtml: question.questionHtml,
+                questionDelta: question.questionDelta,
                 image: question.image ? `images/${question.id}_image.${getImageExtension(question.image)}` : null,
                 questionType: question.questionType || "multiple-choice",
-                optionCount: question.optionCount || 4,
-                options: question.options || {
-                    A: question.option1,
-                    B: question.option2,
-                    C: question.option3,
-                    D: question.option4
-                },
+                optionCount: question.optionCount || Object.keys(options).length || 4,
+                options: options,
                 correctAnswer: question.correctAnswer && question.correctAnswer.match(/^[A-F]$/) 
                     ? question.correctAnswer 
                     : convertInternalToLetter(question.correctAnswer),
@@ -1327,6 +1468,14 @@ function generateJSON() {
                 position: question.position,
                 id: question.id
             };
+            
+            // Also include old format fields for backward compatibility
+            exportQuestion.option1 = options.A || '';
+            exportQuestion.option2 = options.B || '';
+            exportQuestion.option3 = options.C || '';
+            exportQuestion.option4 = options.D || '';
+            if (options.E) exportQuestion.option5 = options.E;
+            if (options.F) exportQuestion.option6 = options.F;
             
             return exportQuestion;
         })
@@ -1401,13 +1550,6 @@ function generateEmbeddedJSON() {
     const test = quizData.tests[currentTestIndex];
     test.testName = testNameInput;
 
-    const optionToLetter = {
-        'option1': 'A',
-        'option2': 'B', 
-        'option3': 'C',
-        'option4': 'D'
-    };
-    
     // Ensure all questions have positions and sort by position
     const sortedQuestions = test.questions
         .map((question, index) => ({
@@ -1419,22 +1561,66 @@ function generateEmbeddedJSON() {
     const outputTest = {
         testName: test.testName,
         testID: test.testId,
-        questions: sortedQuestions.map(question => ({
-            question: question.question,
-            image: question.imagePreviewData, // Use embedded image data
-            options: {
-                A: question.option1,
-                B: question.option2,
-                C: question.option3,
-                D: question.option4
-            },
-            correctAnswer: optionToLetter[question.correctAnswer],
-            category: question.category,
-            difficulty: question.difficulty,
-            points: question.points,
-            position: question.position,
-            id: question.id
-        }))
+        questions: sortedQuestions.map(question => {
+            // Handle both new and old question formats
+            let options = {};
+            let correctAnswer = '';
+            
+            if (question.options && question.questionType) {
+                // New format - use the flexible options structure
+                options = question.options;
+                correctAnswer = question.correctAnswer;
+            } else {
+                // Old format - convert from option1, option2, etc.
+                const optionToLetter = {
+                    'option1': 'A',
+                    'option2': 'B', 
+                    'option3': 'C',
+                    'option4': 'D',
+                    'option5': 'E',
+                    'option6': 'F'
+                };
+                
+                // Build options object from individual option fields
+                if (question.option1) options.A = question.option1;
+                if (question.option2) options.B = question.option2;
+                if (question.option3) options.C = question.option3;
+                if (question.option4) options.D = question.option4;
+                if (question.option5) options.E = question.option5;
+                if (question.option6) options.F = question.option6;
+                
+                correctAnswer = optionToLetter[question.correctAnswer] || 'A';
+            }
+
+            // Create output with BOTH old and new formats for maximum compatibility
+            const output = {
+                question: question.question,
+                questionHtml: question.questionHtml,
+                questionDelta: question.questionDelta,
+                image: question.imagePreviewData, // Use embedded image data
+                questionType: question.questionType || "multiple-choice",
+                optionCount: question.optionCount || Object.keys(options).length || 4,
+                options: options,
+                optionsHtml: question.optionsHtml,     // Rich HTML options for display
+                optionsDelta: question.optionsDelta,   // Delta format options for editing
+                correctAnswer: correctAnswer,
+                category: question.category,
+                difficulty: question.difficulty,
+                points: question.points,
+                position: question.position,
+                id: question.id
+            };
+            
+            // Also include old format fields for backward compatibility
+            output.option1 = options.A || '';
+            output.option2 = options.B || '';
+            output.option3 = options.C || '';
+            output.option4 = options.D || '';
+            if (options.E) output.option5 = options.E;
+            if (options.F) output.option6 = options.F;
+            
+            return output;
+        })
     };
 
     return JSON.stringify({tests: [outputTest]}, null, 4);
@@ -1593,8 +1779,135 @@ function closeGuidance() {
     }
 }
 
+// Initialize Quill rich text editor
+function initializeQuillEditor() {
+    if (questionEditor) return; // Already initialized
+    
+    questionEditor = new Quill('#question-editor', {
+        theme: 'snow',
+        placeholder: 'What is the capital of France?',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'header': [1, 2, false] }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'color': [] }, { 'background': [] }],
+                ['clean']
+            ]
+        }
+    });
+    
+    // Initialize option editors with minimal toolbar (just superscript/subscript)
+    initializeOptionEditors();
+}
+
+function initializeOptionEditors() {
+    // Destroy existing editors first
+    if (optionEditors && optionEditors.length > 0) {
+        optionEditors.forEach(editor => {
+            if (editor && editor.container) {
+                editor.container.remove();
+            }
+        });
+    }
+    
+    optionEditors = []; // Clear existing editors
+    
+    const optionConfigs = [
+        { editorId: 'option1-editor', toolbarId: 'option1-toolbar', placeholder: 'First answer option' },
+        { editorId: 'option2-editor', toolbarId: 'option2-toolbar', placeholder: 'Second answer option' },
+        { editorId: 'option3-editor', toolbarId: 'option3-toolbar', placeholder: 'Third answer option' },
+        { editorId: 'option4-editor', toolbarId: 'option4-toolbar', placeholder: 'Fourth answer option' },
+        { editorId: 'option5-editor', toolbarId: 'option5-toolbar', placeholder: 'Fifth answer option' },
+        { editorId: 'option6-editor', toolbarId: 'option6-toolbar', placeholder: 'Sixth answer option' }
+    ];
+    
+    optionConfigs.forEach((config, index) => {
+        const container = document.getElementById(config.editorId);
+        const toolbar = document.getElementById(config.toolbarId);
+        
+        if (!container) {
+            console.error(`Container ${config.editorId} not found`);
+            return;
+        }
+        
+        if (!toolbar) {
+            console.error(`Toolbar ${config.toolbarId} not found`);
+            return;
+        }
+        
+        // Clear any existing content
+        container.innerHTML = '';
+        
+        try {
+            const editor = new Quill(container, {
+                theme: 'snow',
+                placeholder: config.placeholder,
+                formats: ['bold', 'italic', 'underline', 'script'],
+                modules: {
+                    toolbar: {
+                        container: toolbar
+                    },
+                    keyboard: {
+                        bindings: {
+                            enter: {
+                                key: 'Enter',
+                                handler: function() {
+                                    return false; // Disable Enter completely
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Force the editor to start with plain text only
+            editor.setContents([{ insert: '' }]);
+            
+            // Override getText to remove any newlines
+            const originalGetText = editor.getText.bind(editor);
+            editor.getText = function() {
+                return originalGetText().replace(/\n/g, '').trim();
+            };
+            
+            // Store a custom getter for clean HTML
+            editor.getCleanHTML = function() {
+                const editorElement = this.root.querySelector('.ql-editor');
+                if (!editorElement) return '';
+                let html = editorElement.innerHTML;
+                
+                // If the content is just plain text in a paragraph, extract it
+                if (html.match(/^<p[^>]*>([^<]*)<\/p>$/)) {
+                    html = html.replace(/<p[^>]*>([^<]*)<\/p>/, '$1');
+                }
+                // Remove empty paragraphs and line breaks, but preserve formatting tags
+                html = html.replace(/<p[^>]*><\/p>/g, '').replace(/<br[^>]*>/g, '');
+                
+                // Only remove paragraph tags if they don't contain formatting
+                if (!html.includes('<') || html.match(/^<p[^>]*>.*<\/p>$/)) {
+                    html = html.replace(/<\/?p[^>]*>/g, '');
+                }
+                
+                return html.trim();
+            };
+            
+            // Add debug logging
+            console.log(`Initialized editor ${index} for ${config.editorId} with toolbar ${config.toolbarId}`);
+            
+            optionEditors.push(editor);
+        } catch (error) {
+            console.error(`Failed to initialize editor for ${config.editorId}:`, error);
+        }
+    });
+    
+    console.log(`Total option editors initialized: ${optionEditors.length}`);
+}
+
 // Initialize the test library when page loads
 document.addEventListener('DOMContentLoaded', function() {
     initializeTestLibrary();
     updateCreateButtonText();
+    updateQuestionButtonText(); // Initialize the add/update question button text
+    initializeQuillEditor(); // Initialize rich text editor
 });

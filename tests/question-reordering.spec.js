@@ -1,38 +1,47 @@
 const { test, expect } = require('@playwright/test');
 const path = require('path');
+const QuizGeneratorPage = require('./page-objects/QuizGeneratorPage');
 
 test.describe('Question Reordering', () => {
+    let quizPage;
+    
     test.beforeEach(async ({ page }) => {
-        // Navigate to quiz generator
-        const filePath = path.join(__dirname, '..', 'src', 'frontend', 'quizGenerator.html');
-        await page.goto(`file://${filePath}`);
+        quizPage = new QuizGeneratorPage(page);
+        await quizPage.navigate();
         
-        // Create a new test
-        await page.click('button:has-text("✨ Create New Quiz")');
+        // Initialize new quiz with clean state
+        await quizPage.createNewQuiz('Reordering Test Quiz');
         
         // Add multiple questions for reordering tests
         const questions = [
-            { text: "First Question", option1: "A1", option2: "B1", option3: "C1", option4: "D1", correct: "option1" },
-            { text: "Second Question", option1: "A2", option2: "B2", option3: "C2", option4: "D2", correct: "option2" },
-            { text: "Third Question", option1: "A3", option2: "B3", option3: "C3", option4: "D3", correct: "option3" }
+            {
+                text: "First Question",
+                options: ["A1", "B1", "C1", "D1"],
+                correctAnswer: "option1",
+                category: "Test"
+            },
+            {
+                text: "Second Question", 
+                options: ["A2", "B2", "C2", "D2"],
+                correctAnswer: "option2",
+                category: "Test"
+            },
+            {
+                text: "Third Question",
+                options: ["A3", "B3", "C3", "D3"], 
+                correctAnswer: "option3",
+                category: "Test"
+            }
         ];
         
         for (const q of questions) {
-            await page.fill('#question', q.text);
-            await page.fill('#option1', q.option1);
-            await page.fill('#option2', q.option2);
-            await page.fill('#option3', q.option3);
-            await page.fill('#option4', q.option4);
-            await page.selectOption('#correctAnswer', q.correct);
-            await page.fill('#category', 'Test Category');
-            await page.click('button:has-text("➕ Add Question to Quiz")');
-            
-            // Close the success dialog that appears after adding a question
-            const closeButton = page.locator('button:has-text("✕ Just Close This")');
-            if (await closeButton.isVisible()) {
-                await closeButton.click();
-            }
+            await quizPage.addBasicQuestion(q);
         }
+        
+        // Wait for all questions to appear in the list
+        await page.waitForFunction(() => {
+            return document.querySelectorAll('.question-card').length === 3;
+        }, { timeout: 15000 });
     });
 
     test('should display question order numbers correctly', async ({ page }) => {
@@ -61,9 +70,9 @@ test.describe('Question Reordering', () => {
     });
 
     test('should move question up with arrow button', async ({ page }) => {
-        // Get initial question text
-        const initialFirstQuestion = await page.locator('.question-card').first().locator('h4').textContent();
-        const initialSecondQuestion = await page.locator('.question-card').nth(1).locator('h4').textContent();
+        // Get initial question text (question text is in a div with specific styling)
+        const initialFirstQuestion = await page.locator('.question-card').first().locator('div[style*="font-size: 16px"][style*="font-weight: bold"]').textContent();
+        const initialSecondQuestion = await page.locator('.question-card').nth(1).locator('div[style*="font-size: 16px"][style*="font-weight: bold"]').textContent();
         
         expect(initialFirstQuestion).toBe('First Question');
         expect(initialSecondQuestion).toBe('Second Question');
@@ -72,8 +81,8 @@ test.describe('Question Reordering', () => {
         await page.locator('.question-card').nth(1).locator('button[title="Move up"]').click();
         
         // Check that order changed
-        const newFirstQuestion = await page.locator('.question-card').first().locator('h4').textContent();
-        const newSecondQuestion = await page.locator('.question-card').nth(1).locator('h4').textContent();
+        const newFirstQuestion = await page.locator('.question-card').first().locator('div[style*="font-size: 16px"][style*="font-weight: bold"]').textContent();
+        const newSecondQuestion = await page.locator('.question-card').nth(1).locator('div[style*="font-size: 16px"][style*="font-weight: bold"]').textContent();
         
         expect(newFirstQuestion).toBe('Second Question');
         expect(newSecondQuestion).toBe('First Question');
@@ -86,8 +95,8 @@ test.describe('Question Reordering', () => {
 
     test('should move question down with arrow button', async ({ page }) => {
         // Get initial question text
-        const initialSecondQuestion = await page.locator('.question-card').nth(1).locator('h4').textContent();
-        const initialThirdQuestion = await page.locator('.question-card').nth(2).locator('h4').textContent();
+        const initialSecondQuestion = await page.locator('.question-card').nth(1).locator('div[style*="font-size: 16px"][style*="font-weight: bold"]').textContent();
+        const initialThirdQuestion = await page.locator('.question-card').nth(2).locator('div[style*="font-size: 16px"][style*="font-weight: bold"]').textContent();
         
         expect(initialSecondQuestion).toBe('Second Question');
         expect(initialThirdQuestion).toBe('Third Question');
@@ -96,8 +105,8 @@ test.describe('Question Reordering', () => {
         await page.locator('.question-card').nth(1).locator('button[title="Move down"]').click();
         
         // Check that order changed
-        const newSecondQuestion = await page.locator('.question-card').nth(1).locator('h4').textContent();
-        const newThirdQuestion = await page.locator('.question-card').nth(2).locator('h4').textContent();
+        const newSecondQuestion = await page.locator('.question-card').nth(1).locator('div[style*="font-size: 16px"][style*="font-weight: bold"]').textContent();
+        const newThirdQuestion = await page.locator('.question-card').nth(2).locator('div[style*="font-size: 16px"][style*="font-weight: bold"]').textContent();
         
         expect(newSecondQuestion).toBe('Third Question');
         expect(newThirdQuestion).toBe('Second Question');
@@ -156,14 +165,28 @@ test.describe('Question Reordering', () => {
 
     test('should show success dialog after adding new question', async ({ page }) => {
         // Add a fourth question to trigger the success dialog
-        await page.fill('#question', 'Fourth Question');
-        await page.fill('#option1', 'A4');
-        await page.fill('#option2', 'B4');
-        await page.fill('#option3', 'C4');
-        await page.fill('#option4', 'D4');
-        await page.selectOption('#correctAnswer', 'option1');
-        await page.fill('#category', 'Test Category');
-        await page.click('button:has-text("➕ Add Question to Quiz")');
+        const fourthQuestion = {
+            text: "Fourth Question",
+            options: ["A4", "B4", "C4", "D4"],
+            correctAnswer: "option1",
+            category: "Test"
+        };
+        
+        // Fill question text
+        await quizPage.typeInRichEditor('questionForm.questionEditor', fourthQuestion.text);
+        
+        // Fill answer options
+        const optionKeys = ['option1', 'option2', 'option3', 'option4'];
+        for (let i = 0; i < fourthQuestion.options.length && i < optionKeys.length; i++) {
+            await quizPage.typeInRichEditor(`questionForm.answerOptions.${optionKeys[i]}`, fourthQuestion.options[i]);
+        }
+        
+        // Set other details
+        await quizPage.select('questionForm.correctAnswer', fourthQuestion.correctAnswer);
+        await quizPage.fill('questionForm.category', fourthQuestion.category);
+        
+        // Add question (but don't dismiss dialog automatically)
+        await quizPage.click('questionForm.addQuestionButton');
         
         // Check that success dialog appears
         const successDialog = page.locator('#success-choices');
@@ -181,38 +204,43 @@ test.describe('Question Reordering', () => {
 });
 
 test.describe('Question Reordering - Mobile', () => {
+    let quizPage;
+    
     test.use({ 
         viewport: { width: 375, height: 667 } // iPhone SE size
     });
 
     test.beforeEach(async ({ page }) => {
-        const filePath = path.join(__dirname, '..', 'src', 'frontend', 'quizGenerator.html');
-        await page.goto(`file://${filePath}`);
+        quizPage = new QuizGeneratorPage(page);
+        await quizPage.navigate();
         
-        await page.click('button:has-text("✨ Create New Quiz")');
+        // Initialize new quiz with clean state for mobile
+        await quizPage.createNewQuiz('Mobile Reordering Test');
         
         // Add two questions for mobile testing
         const questions = [
-            { text: "Mobile Question 1", option1: "A1", option2: "B1", option3: "C1", option4: "D1", correct: "option1" },
-            { text: "Mobile Question 2", option1: "A2", option2: "B2", option3: "C2", option4: "D2", correct: "option2" }
+            {
+                text: "Mobile Question 1",
+                options: ["A1", "B1", "C1", "D1"],
+                correctAnswer: "option1",
+                category: "Test"
+            },
+            {
+                text: "Mobile Question 2",
+                options: ["A2", "B2", "C2", "D2"],
+                correctAnswer: "option2", 
+                category: "Test"
+            }
         ];
         
         for (const q of questions) {
-            await page.fill('#question', q.text);
-            await page.fill('#option1', q.option1);
-            await page.fill('#option2', q.option2);
-            await page.fill('#option3', q.option3);
-            await page.fill('#option4', q.option4);
-            await page.selectOption('#correctAnswer', q.correct);
-            await page.fill('#category', 'Test Category');
-            await page.click('button:has-text("➕ Add Question to Quiz")');
-            
-            // Close the success dialog that appears after adding a question
-            const closeButton = page.locator('button:has-text("✕ Just Close This")');
-            if (await closeButton.isVisible()) {
-                await closeButton.click();
-            }
+            await quizPage.addBasicQuestion(q);
         }
+        
+        // Wait for both questions to appear in the list
+        await page.waitForFunction(() => {
+            return document.querySelectorAll('.question-card').length === 2;
+        }, { timeout: 15000 });
     });
 
     test('should have touch-friendly arrow buttons on mobile', async ({ page }) => {
@@ -241,7 +269,7 @@ test.describe('Question Reordering - Mobile', () => {
         await upButton.click();
         
         // Check that reordering worked
-        const newFirstQuestion = await page.locator('.question-card').first().locator('h4').textContent();
+        const newFirstQuestion = await page.locator('.question-card').first().locator('div[style*="font-size: 16px"][style*="font-weight: bold"]').textContent();
         expect(newFirstQuestion).toBe('Mobile Question 2');
     });
 });

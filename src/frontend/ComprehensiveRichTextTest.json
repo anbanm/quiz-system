@@ -1,0 +1,181 @@
+{
+    "tests": [
+        {
+            "testName": "Comprehensive Rich Text Test Suite",
+            "testID": "rich-text-comprehensive-2025",
+            "questions": [
+                {
+                    "question": "Chemistry: What is the chemical formula for water?",
+                    "questionHtml": "<p><strong>Chemistry Question:</strong> What is the chemical formula for <em>water</em>?</p>",
+                    "questionDelta": {"ops":[{"insert":"Chemistry Question:","attributes":{"bold":true}},{"insert":" What is the chemical formula for "},{"insert":"water","attributes":{"italic":true}},{"insert":"?"}]},
+                    "questionType": "multiple-choice",
+                    "optionCount": 4,
+                    "options": {
+                        "A": "H2O",
+                        "B": "CO2", 
+                        "C": "NaCl",
+                        "D": "O2"
+                    },
+                    "optionsHtml": {
+                        "A": "H<sub>2</sub>O",
+                        "B": "CO<sub>2</sub>",
+                        "C": "NaCl",
+                        "D": "O<sub>2</sub>"
+                    },
+                    "optionsDelta": {
+                        "A": {"ops":[{"insert":"H"},{"insert":"2","attributes":{"script":"sub"}},{"insert":"O"}]},
+                        "B": {"ops":[{"insert":"CO"},{"insert":"2","attributes":{"script":"sub"}}]},
+                        "C": {"ops":[{"insert":"NaCl"}]},
+                        "D": {"ops":[{"insert":"O"},{"insert":"2","attributes":{"script":"sub"}}]}
+                    },
+                    "correctAnswer": "A",
+                    "category": "Chemistry",
+                    "difficulty": "easy",
+                    "points": 2,
+                    "position": 1,
+                    "id": "q-chem-001",
+                    "option1": "H2O",
+                    "option2": "CO2",
+                    "option3": "NaCl",
+                    "option4": "O2"
+                },
+                {
+                    "question": "Physics: Which equation represents Einstein's mass-energy equivalence?",
+                    "questionHtml": "<h2 style=\"color: rgb(0, 102, 204);\">Physics Question</h2><p>Which equation represents <span style=\"color: rgb(230, 0, 0);\">Einstein's</span> mass-energy equivalence?</p>",
+                    "questionDelta": {"ops":[{"insert":"Physics Question","attributes":{"header":2,"color":"#0066cc"}},{"insert":"\\nWhich equation represents "},{"insert":"Einstein's","attributes":{"color":"#e60000"}},{"insert":" mass-energy equivalence?\\n"}]},
+                    "questionType": "multiple-choice",
+                    "optionCount": 4,
+                    "options": {
+                        "A": "F = ma",
+                        "B": "E = mc2",
+                        "C": "v = d/t",
+                        "D": "P = mv"
+                    },
+                    "optionsHtml": {
+                        "A": "<strong>F = ma</strong>",
+                        "B": "E = mc<sup>2</sup>",
+                        "C": "<em>v = d/t</em>",
+                        "D": "<u>P = mv</u>"
+                    },
+                    "optionsDelta": {
+                        "A": {"ops":[{"insert":"F = ma","attributes":{"bold":true}}]},
+                        "B": {"ops":[{"insert":"E = mc"},{"insert":"2","attributes":{"script":"super"}}]},
+                        "C": {"ops":[{"insert":"v = d/t","attributes":{"italic":true}}]},
+                        "D": {"ops":[{"insert":"P = mv","attributes":{"underline":true}}]}
+                    },
+                    "correctAnswer": "B",
+                    "category": "Physics",
+                    "difficulty": "medium",
+                    "points": 3,
+                    "position": 2,
+                    "id": "q-phys-001",
+                    "option1": "F = ma",
+                    "option2": "E = mc2",
+                    "option3": "v = d/t",
+                    "option4": "P = mv"
+                },
+                {
+                    "question": "Mathematics: What is 2 to the power of 5?",
+                    "questionHtml": "<p><span style=\"color: rgb(128, 0, 128);\">Mathematics:</span> What is 2<sup>5</sup> (two to the power of five)?</p>",
+                    "questionDelta": {"ops":[{"insert":"Mathematics:","attributes":{"color":"#800080"}},{"insert":" What is 2"},{"insert":"5","attributes":{"script":"super"}},{"insert":" (two to the power of five)?"}]},
+                    "questionType": "multiple-choice",
+                    "optionCount": 3,
+                    "options": {
+                        "A": "16",
+                        "B": "32", 
+                        "C": "64"
+                    },
+                    "optionsHtml": {
+                        "A": "2<sup>4</sup> = <strong>16</strong>",
+                        "B": "2<sup>5</sup> = <strong>32</strong>",
+                        "C": "2<sup>6</sup> = <strong>64</strong>"
+                    },
+                    "optionsDelta": {
+                        "A": {"ops":[{"insert":"2"},{"insert":"4","attributes":{"script":"super"}},{"insert":" = "},{"insert":"16","attributes":{"bold":true}}]},
+                        "B": {"ops":[{"insert":"2"},{"insert":"5","attributes":{"script":"super"}},{"insert":" = "},{"insert":"32","attributes":{"bold":true}}]},
+                        "C": {"ops":[{"insert":"2"},{"insert":"6","attributes":{"script":"super"}},{"insert":" = "},{"insert":"64","attributes":{"bold":true}}]}
+                    },
+                    "correctAnswer": "B",
+                    "category": "Mathematics",
+                    "difficulty": "easy",
+                    "points": 2,
+                    "position": 3,
+                    "id": "q-math-001",
+                    "option1": "16",
+                    "option2": "32",
+                    "option3": "64"
+                },
+                {
+                    "question": "True or False: The Earth is the third planet from the Sun",
+                    "questionHtml": "<p><strong style=\"background-color: rgb(255, 255, 0);\">Astronomy:</strong> The Earth is the <sup>3rd</sup> planet from the Sun</p>",
+                    "questionDelta": {"ops":[{"insert":"Astronomy:","attributes":{"bold":true,"background":"#ffff00"}},{"insert":" The Earth is the "},{"insert":"3rd","attributes":{"script":"super"}},{"insert":" planet from the Sun"}]},
+                    "questionType": "true-false",
+                    "optionCount": 2,
+                    "options": {
+                        "A": "True",
+                        "B": "False"
+                    },
+                    "optionsHtml": {
+                        "A": "<strong style=\"color: rgb(0, 128, 0);\">True</strong>",
+                        "B": "<strong style=\"color: rgb(255, 0, 0);\">False</strong>"
+                    },
+                    "optionsDelta": {
+                        "A": {"ops":[{"insert":"True","attributes":{"bold":true,"color":"#008000"}}]},
+                        "B": {"ops":[{"insert":"False","attributes":{"bold":true,"color":"#ff0000"}}]}
+                    },
+                    "correctAnswer": "A",
+                    "category": "Astronomy",
+                    "difficulty": "easy",
+                    "points": 1,
+                    "position": 4,
+                    "id": "q-astro-001",
+                    "option1": "True",
+                    "option2": "False"
+                },
+                {
+                    "question": "Computer Science: Which of these programming concepts involves organizing code?",
+                    "questionHtml": "<h2 style=\"color: rgb(0, 102, 204);\">Programming Concepts</h2><p>Which of these involves <em><u>organizing</u></em> code into reusable blocks?</p>",
+                    "questionDelta": {"ops":[{"insert":"Programming Concepts","attributes":{"header":2,"color":"#0066cc"}},{"insert":"\\nWhich of these involves "},{"insert":"organizing","attributes":{"italic":true,"underline":true}},{"insert":" code into reusable blocks?"}]},
+                    "questionType": "multiple-choice",
+                    "optionCount": 6,
+                    "options": {
+                        "A": "Variables",
+                        "B": "Functions",
+                        "C": "Comments", 
+                        "D": "Loops",
+                        "E": "Arrays",
+                        "F": "Print statements"
+                    },
+                    "optionsHtml": {
+                        "A": "<em>Variables</em>",
+                        "B": "<strong>Functions</strong>",
+                        "C": "<u>Comments</u>",
+                        "D": "For/While <strong>Loops</strong>",
+                        "E": "Data <em>Arrays</em>",
+                        "F": "Print <sub>statements</sub>"
+                    },
+                    "optionsDelta": {
+                        "A": {"ops":[{"insert":"Variables","attributes":{"italic":true}}]},
+                        "B": {"ops":[{"insert":"Functions","attributes":{"bold":true}}]},
+                        "C": {"ops":[{"insert":"Comments","attributes":{"underline":true}}]},
+                        "D": {"ops":[{"insert":"For/While "},{"insert":"Loops","attributes":{"bold":true}}]},
+                        "E": {"ops":[{"insert":"Data "},{"insert":"Arrays","attributes":{"italic":true}}]},
+                        "F": {"ops":[{"insert":"Print "},{"insert":"statements","attributes":{"script":"sub"}}]}
+                    },
+                    "correctAnswer": "B",
+                    "category": "Computer Science",
+                    "difficulty": "medium",
+                    "points": 3,
+                    "position": 5,
+                    "id": "q-cs-001",
+                    "option1": "Variables",
+                    "option2": "Functions",
+                    "option3": "Comments",
+                    "option4": "Loops",
+                    "option5": "Arrays",
+                    "option6": "Print statements"
+                }
+            ]
+        }
+    ]
+}

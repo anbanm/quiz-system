@@ -1,0 +1,304 @@
+{
+  "version": "1.0.0",
+  "description": "UI element mapping for quiz system - separates logical elements from implementation details",
+  
+  "pages": {
+    "quizGenerator": {
+      "url": "quizGenerator.html",
+      "elements": {
+        "navigation": {
+          "createNewQuizButton": {
+            "selector": "#createTestButton",
+            "type": "button",
+            "description": "Creates a new quiz"
+          },
+          "loadQuizButton": {
+            "selector": "input[type='file']#jsonUpload",
+            "type": "file-input",
+            "description": "Load existing quiz JSON"
+          },
+          "sidebarToggle": {
+            "selector": ".sidebar-toggle",
+            "type": "button",
+            "description": "Toggle test library sidebar"
+          }
+        },
+        
+        "quizDetails": {
+          "testNameInput": {
+            "selector": "#testName",
+            "type": "text-input",
+            "description": "Quiz title input"
+          },
+          "testIdInput": {
+            "selector": "#testId",
+            "type": "text-input",
+            "description": "Quiz ID input (auto-generated)"
+          }
+        },
+        
+        "questionForm": {
+          "questionEditor": {
+            "selector": "#question-editor .ql-editor",
+            "type": "rich-text-editor", 
+            "description": "Main question text editor",
+            "toolbar": "#question-toolbar"
+          },
+          
+          "questionType": {
+            "selector": "#questionType",
+            "type": "select",
+            "description": "Question type selector (multiple-choice, true-false)"
+          },
+          
+          "optionCount": {
+            "selector": "#optionCount", 
+            "type": "select",
+            "description": "Number of answer options (2-6)"
+          },
+          
+          "answerOptions": {
+            "option1": {
+              "editor": "#option1-editor .ql-editor",
+              "toolbar": "#option1-toolbar",
+              "type": "rich-text-editor",
+              "description": "Answer option A"
+            },
+            "option2": {
+              "editor": "#option2-editor .ql-editor", 
+              "toolbar": "#option2-toolbar",
+              "type": "rich-text-editor",
+              "description": "Answer option B"
+            },
+            "option3": {
+              "editor": "#option3-editor .ql-editor",
+              "toolbar": "#option3-toolbar", 
+              "type": "rich-text-editor",
+              "description": "Answer option C"
+            },
+            "option4": {
+              "editor": "#option4-editor .ql-editor",
+              "toolbar": "#option4-toolbar",
+              "type": "rich-text-editor", 
+              "description": "Answer option D"
+            },
+            "option5": {
+              "editor": "#option5-editor .ql-editor",
+              "toolbar": "#option5-toolbar",
+              "type": "rich-text-editor",
+              "description": "Answer option E"
+            },
+            "option6": {
+              "editor": "#option6-editor .ql-editor", 
+              "toolbar": "#option6-toolbar",
+              "type": "rich-text-editor",
+              "description": "Answer option F"
+            }
+          },
+          
+          "correctAnswer": {
+            "selector": "#correctAnswer",
+            "type": "select",
+            "description": "Correct answer selector"
+          },
+          
+          "category": {
+            "selector": "#category",
+            "type": "text-input",
+            "description": "Question category/subject"
+          },
+          
+          "difficulty": {
+            "selector": "#difficulty", 
+            "type": "select",
+            "description": "Question difficulty level"
+          },
+          
+          "points": {
+            "selector": "#points",
+            "type": "number-input",
+            "description": "Points awarded for correct answer"
+          },
+          
+          "addQuestionButton": {
+            "selector": "button:has-text('Add Question to Quiz')",
+            "type": "button",
+            "description": "Adds current question to quiz"
+          }
+        },
+        
+        "imageUpload": {
+          "imagePathDisplay": {
+            "selector": "#imagePath",
+            "type": "text-input",
+            "description": "Selected image file path display"
+          },
+          "imagePreview": {
+            "selector": "#imagePreview",
+            "type": "image",
+            "description": "Image preview display"
+          },
+          "chooseImageButton": {
+            "selector": "button:has-text('Choose Image')",
+            "type": "button", 
+            "description": "Opens image file selector"
+          }
+        },
+        
+        "quizSummary": {
+          "questionCount": {
+            "selector": "#questionCount",
+            "type": "text",
+            "description": "Number of questions in quiz"
+          },
+          "totalPoints": {
+            "selector": "#totalPointsDisplay", 
+            "type": "text",
+            "description": "Total points possible"
+          },
+          "questionsList": {
+            "selector": "#questions",
+            "type": "container",
+            "description": "List of added questions"
+          },
+          "questionCard": {
+            "selector": ".question-card",
+            "type": "container",
+            "description": "Individual question card in list",
+            "children": {
+              "questionText": "h4",
+              "orderNumber": ".question-order", 
+              "moveUpButton": "button[title='Move up']",
+              "moveDownButton": "button[title='Move down']",
+              "editButton": "button:has-text('Edit')",
+              "deleteButton": "button:has-text('Delete')"
+            }
+          }
+        },
+        
+        "exportOptions": {
+          "previewJsonButton": {
+            "selector": "button:has-text('Preview Quiz Data')",
+            "type": "button",
+            "description": "Shows JSON preview"
+          },
+          "downloadZipButton": {
+            "selector": "button:has-text('📦 Download ZIP Package')",
+            "type": "button", 
+            "description": "Downloads complete quiz package"
+          },
+          "downloadJsonButton": {
+            "selector": "button:has-text('📄 Download JSON Only')",
+            "type": "button",
+            "description": "Downloads JSON file only"
+          }
+        },
+        
+        "dialogs": {
+          "successDialog": {
+            "container": "#success-choices",
+            "type": "modal",
+            "description": "Success options after adding question",
+            "elements": {
+              "addAnotherButton": "button:has-text('Add Another Question')",
+              "reviewOrderButton": "button:has-text('Review & Reorder Questions')", 
+              "saveExportButton": "button:has-text('Save & Export Quiz')",
+              "closeButton": "button:has-text('✕ Just Close This')"
+            }
+          }
+        }
+      }
+    },
+    
+    "quizTestRunner": {
+      "url": "WebTest.html",
+      "elements": {
+        "controls": {
+          "modeToggle": {
+            "selector": "button:has-text('Toggle Mode')",
+            "type": "button",
+            "description": "Switch between Unity and Local File mode"
+          },
+          "modeIndicator": {
+            "selector": "#modeIndicator", 
+            "type": "text",
+            "description": "Current mode display"
+          }
+        },
+        
+        "fileUpload": {
+          "zipUpload": {
+            "selector": "#zipUpload",
+            "type": "file-input",
+            "description": "ZIP package upload"
+          },
+          "jsonUpload": {
+            "selector": "#fileUpload", 
+            "type": "file-input",
+            "description": "JSON file upload"
+          }
+        },
+        
+        "quiz": {
+          "questionContainer": {
+            "selector": ".question",
+            "type": "container",
+            "description": "Individual question container",
+            "children": {
+              "questionText": ".quiz-question-content",
+              "questionImage": "img",
+              "answerOptions": "label",
+              "radioButton": "input[type='radio']"
+            }
+          },
+          "submitButton": {
+            "selector": "button:has-text('Submit Test')",
+            "type": "button",
+            "description": "Submit completed quiz"
+          }
+        },
+        
+        "results": {
+          "resultContainer": {
+            "selector": "#resultContainer",
+            "type": "container", 
+            "description": "Quiz results display"
+          }
+        }
+      }
+    }
+  },
+  
+  "richTextFormatting": {
+    "toolbar": {
+      "bold": ".ql-bold",
+      "italic": ".ql-italic", 
+      "underline": ".ql-underline",
+      "subscript": ".ql-script[value='sub']",
+      "superscript": ".ql-script[value='super']"
+    }
+  },
+  
+  "workflows": {
+    "createBasicQuiz": [
+      "navigation.createNewQuizButton",
+      "quizDetails.testNameInput", 
+      "questionForm.questionEditor",
+      "questionForm.answerOptions.option1",
+      "questionForm.answerOptions.option2",
+      "questionForm.answerOptions.option3", 
+      "questionForm.answerOptions.option4",
+      "questionForm.correctAnswer",
+      "questionForm.addQuestionButton"
+    ],
+    
+    "createRichTextQuestion": [
+      "navigation.createNewQuizButton",
+      "questionForm.questionEditor",
+      {"element": "questionForm.answerOptions.option1", "formatting": ["bold", "subscript"]},
+      {"element": "questionForm.answerOptions.option2", "formatting": ["italic"]},
+      "questionForm.correctAnswer",
+      "questionForm.addQuestionButton"
+    ]
+  }
+}

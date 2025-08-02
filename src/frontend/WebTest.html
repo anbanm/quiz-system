@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Quiz Test</title>
     <script src="jszip.min.js"></script>
+    <!-- Quill.js for rich text display (Offline) -->
+    <link href="lib/quill.snow.css" rel="stylesheet">
+    <link href="css/quill-custom.css" rel="stylesheet">
     <style>
         /* Mobile-first responsive design */
         body {
@@ -419,7 +422,9 @@
                 const q = questions[index];
                 let questionBlock = document.createElement("div");
                 questionBlock.classList.add("question");
-                questionBlock.innerHTML = `<p><strong>${q.question}</strong></p>`;
+                // Display rich text question if available, otherwise fallback to plain text
+                const questionContent = q.questionHtml || `<p><strong>${q.question}</strong></p>`;
+                questionBlock.innerHTML = `<div class="quiz-question-content">${questionContent}</div>`;
 
                 // Handle image loading asynchronously
                 const resolvedImagePath = await resolveImagePath(q.image);
@@ -443,10 +448,14 @@
                     // New format: options as object with A/B/C/D keys
                     Object.entries(q.options).forEach(([letter, option]) => {
                         const optionId = `q${index}_option${letter}`;
+                        // Use rich HTML option if available, otherwise fallback to plain text
+                        const optionContent = (q.optionsHtml && q.optionsHtml[letter]) 
+                            ? q.optionsHtml[letter] 
+                            : option;
                         questionBlock.innerHTML += `
                             <label for="${optionId}">
                                 <input type="radio" id="${optionId}" name="q${index}" value="${letter}" onchange="saveAnswer(${index}, '${letter}')">
-                                <span>${letter}) ${option}</span>
+                                <span>${letter}) ${optionContent}</span>
                             </label>
                         `;
                     });
@@ -473,7 +482,7 @@
                 // Handle backward compatibility: convert old index-based answers to letters
                 if (Array.isArray(q.options) && typeof userAnswer === 'string' && !isNaN(userAnswer)) {
                     // Old format with array options, convert index to letter
-                    const indexToLetter = ['A', 'B', 'C', 'D'];
+                    const indexToLetter = ['A', 'B', 'C', 'D', 'E', 'F'];
                     userAnswer = indexToLetter[parseInt(userAnswer)] || userAnswer;
                 }
                 
