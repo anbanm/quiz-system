@@ -5,6 +5,74 @@ let quizData = { tests: [] }; // Store all tests
 let currentTestIndex = -1;      // Index of the currently selected test
 let currentQuestionIndex = null // Index of the currently selected question
 
+// Utility functions for flexible question format
+function convertInternalToLetter(internalAnswer) {
+    const mapping = {
+        'option1': 'A',
+        'option2': 'B', 
+        'option3': 'C',
+        'option4': 'D',
+        'option5': 'E',
+        'option6': 'F'
+    };
+    return mapping[internalAnswer] || 'A';
+}
+
+function convertLetterToInternal(letter) {
+    const mapping = {
+        'A': 'option1',
+        'B': 'option2',
+        'C': 'option3', 
+        'D': 'option4',
+        'E': 'option5',
+        'F': 'option6'
+    };
+    return mapping[letter] || 'option1';
+}
+
+function getLetterForIndex(index) {
+    return String.fromCharCode(65 + index); // A=65, B=66, etc.
+}
+
+function createBackwardCompatibleQuestion(question) {
+    // Convert new format to old format for backward compatibility
+    if (question.options && question.questionType) {
+        // New format - convert to old for internal use
+        const options = question.options;
+        return {
+            ...question,
+            option1: options.A || '',
+            option2: options.B || '',
+            option3: options.C || '',
+            option4: options.D || '',
+            option5: options.E || '',
+            option6: options.F || '',
+            correctAnswer: convertLetterToInternal(question.correctAnswer)
+        };
+    } else if (question.option1) {
+        // Old format - convert to new
+        const optionCount = [question.option1, question.option2, question.option3, question.option4, question.option5, question.option6]
+            .filter(opt => opt && opt.trim()).length;
+        
+        const options = {};
+        if (question.option1) options.A = question.option1;
+        if (question.option2) options.B = question.option2;
+        if (question.option3) options.C = question.option3;
+        if (question.option4) options.D = question.option4;
+        if (question.option5) options.E = question.option5;
+        if (question.option6) options.F = question.option6;
+        
+        return {
+            ...question,
+            questionType: question.questionType || "multiple-choice",
+            optionCount: optionCount,
+            options: options,
+            correctAnswer: convertInternalToLetter(question.correctAnswer)
+        };
+    }
+    return question;
+}
+
 // Test Library Management
 let testLibrary = [];
 let activeTestId = null;
@@ -172,24 +240,10 @@ function loadTestFromLibrary(testId) {
     // Load the test data and convert format if needed
     quizData = JSON.parse(JSON.stringify(test.data)); // Deep copy
     
-    // Convert options format from {A, B, C, D} to {option1, option2, option3, option4}
+    // Convert all questions to backward compatible format for internal use
     if (quizData.tests && quizData.tests[0] && quizData.tests[0].questions) {
         quizData.tests[0].questions = quizData.tests[0].questions.map(question => {
-            // Check if question uses the old options format {A, B, C, D}
-            if (question.options && typeof question.options === 'object' && question.options.A) {
-                // Convert from options object to individual option fields
-                return {
-                    ...question,
-                    option1: question.options.A || '',
-                    option2: question.options.B || '',
-                    option3: question.options.C || '',
-                    option4: question.options.D || '',
-                    correctAnswer: convertCorrectAnswer(question.correctAnswer),
-                    // Remove the old options object to avoid confusion
-                    options: undefined
-                };
-            }
-            return question;
+            return createBackwardCompatibleQuestion(question);
         });
     }
     
@@ -588,15 +642,20 @@ function addOrUpdateQuestion() {
         alert("Please fill all the fields")
         return;
     }
+    // Create flexible question structure
     const newQuestion = {
         question: question,
         image: image,
         imagePreviewData: imagePreviewData,
-        option1: option1,
-        option2: option2,
-        option3: option3,
-        option4: option4,
-        correctAnswer: correctAnswer,
+        questionType: "multiple-choice", // Default for now, will add UI selector
+        optionCount: 4, // Default for now, will add UI selector
+        options: {
+            A: option1,
+            B: option2,
+            C: option3,
+            D: option4
+        },
+        correctAnswer: convertInternalToLetter(correctAnswer), // Convert option1->A, etc.
         category: category,
         difficulty: difficulty,
         points: points
@@ -689,10 +748,10 @@ function renderQuestions(questions) {
                     </div>
                     <h4 style="margin: 0 0 8px 0; color: #2c3e50; font-size: 16px; line-height: 1.3;">${question.question}</h4>
                     <div style="display: flex; gap: 15px; font-size: 13px; color: #7f8c8d; flex-wrap: wrap;">
-                        <span><strong>A)</strong> ${question.option1}</span>
-                        <span><strong>B)</strong> ${question.option2}</span>
-                        <span><strong>C)</strong> ${question.option3}</span>
-                        <span><strong>D)</strong> ${question.option4}</span>
+                        <span><strong>A)</strong> ${question.options?.A || question.option1 || ''}</span>
+                        <span><strong>B)</strong> ${question.options?.B || question.option2 || ''}</span>
+                        <span><strong>C)</strong> ${question.options?.C || question.option3 || ''}</span>
+                        <span><strong>D)</strong> ${question.options?.D || question.option4 || ''}</span>
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
@@ -1071,30 +1130,29 @@ function generateJSON() {
         testName: test.testName,
         testID: test.testId,
         questions: sortedQuestions.map(question => {
-            // Convert option selection to letter
-            const optionToLetter = {
-                'option1': 'A',
-                'option2': 'B', 
-                'option3': 'C',
-                'option4': 'D'
-            };
-            
-            return {
+            // Export in the new flexible format
+            const exportQuestion = {
                 question: question.question,
                 image: question.image ? `images/${question.id}_image.${getImageExtension(question.image)}` : null,
-                options: {
+                questionType: question.questionType || "multiple-choice",
+                optionCount: question.optionCount || 4,
+                options: question.options || {
                     A: question.option1,
                     B: question.option2,
                     C: question.option3,
                     D: question.option4
                 },
-                correctAnswer: optionToLetter[question.correctAnswer],
+                correctAnswer: question.correctAnswer && question.correctAnswer.match(/^[A-F]$/) 
+                    ? question.correctAnswer 
+                    : convertInternalToLetter(question.correctAnswer),
                 category: question.category,
                 difficulty: question.difficulty,
                 points: question.points,
                 position: question.position,
                 id: question.id
             };
+            
+            return exportQuestion;
         })
     };
 
