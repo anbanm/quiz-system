@@ -1,0 +1,197 @@
+name: ❓ Question or Help
+description: Ask a question about using the Quiz System
+title: "[Question]: "
+labels: ["question", "help-wanted"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # ❓ Quiz System Support
+        
+        Need help with the Quiz System? We're here to assist! 
+        
+        **Quick Links:**
+        - 📖 [README Documentation](https://github.com/anbanm/quiz-system#readme)
+        - 🚀 [Quick Start Guide](https://github.com/anbanm/quiz-system#quick-start)
+        - 🎯 [Latest Release](https://github.com/anbanm/quiz-system/releases/latest)
+
+  - type: dropdown
+    id: question-type
+    attributes:
+      label: 🎯 Question Type
+      description: What type of help do you need?
+      options:
+        - Setup & Installation
+        - Creating Quizzes
+        - Rich Text & Mathematical Formulas
+        - Taking Quizzes (Student View)
+        - Importing/Exporting Quizzes
+        - Browser Compatibility
+        - Mobile Usage
+        - Troubleshooting Issues
+        - Development & Contributing
+        - General Usage Question
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: ❓ Your Question
+      description: What would you like to know?
+      placeholder: "I'm trying to... but I'm having trouble with..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 📋 Context & Background
+      description: Provide some context about what you're trying to achieve
+      placeholder: |
+        - What are you trying to accomplish?
+        - What have you tried so far?
+        - What specific part are you stuck on?
+
+  - type: dropdown
+    id: user-role
+    attributes:
+      label: 👤 Your Role
+      description: How are you planning to use the Quiz System?
+      options:
+        - Teacher (Creating quizzes)
+        - Student (Taking quizzes)
+        - Administrator (Managing quiz systems)
+        - Developer (Contributing to project)
+        - Researcher (Educational technology)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: experience-level
+    attributes:
+      label: 📊 Technical Experience
+      description: What's your technical comfort level?
+      options:
+        - Beginner (New to web tools)
+        - Intermediate (Comfortable with computers)
+        - Advanced (Technical background)
+        - Expert (Developer/IT professional)
+
+  - type: checkboxes
+    id: tried-resources
+    attributes:
+      label: ✅ Resources Already Checked
+      description: What have you already looked at? (This helps us provide better targeted help)
+      options:
+        - label: Read the README documentation
+        - label: Checked the Quick Start guide
+        - label: Browsed existing issues for similar questions
+        - label: Tried the basic troubleshooting steps
+        - label: Tested in a different browser
+        - label: Looked at the release notes
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 💻 Your Environment (if relevant)
+      description: If this is a technical question, what's your setup?
+      placeholder: |
+        - Browser: Chrome 91.0.4472.124
+        - Device: Desktop/Mobile/Tablet
+        - Operating System: Windows 11 / macOS 12 / etc.
+        - Quiz System Version: v1.3.1
+
+  - type: checkboxes
+    id: specific-areas
+    attributes:
+      label: 🧮 Specific Feature Areas (check any that apply)
+      description: Which Quiz System features is your question related to?
+      options:
+        - label: Rich text editor (creating formatted questions)
+        - label: Mathematical formulas (H₂O, E=mc², subscripts, superscripts)
+        - label: Question types (multiple choice, true/false)
+        - label: Image upload and display
+        - label: Color-coded answer options
+        - label: Quiz export (ZIP/JSON packages)
+        - label: Quiz import (loading existing quizzes)
+        - label: Student interface (taking quizzes)
+        - label: Mobile responsiveness
+        - label: Offline functionality
+        - label: Browser compatibility
+        - label: Testing and quality assurance
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: 🎯 Specific Examples
+      description: Can you provide specific examples of what you're trying to do?
+      placeholder: |
+        For example:
+        - "I want to create a chemistry quiz with molecular formulas like H₂SO₄"
+        - "My students are having trouble viewing quizzes on iPads"
+        - "I can't figure out how to add images to my questions"
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: ⏰ Urgency Level
+      description: How urgent is this question?
+      options:
+        - No rush (Learning for future use)
+        - Moderate (Planning to use soon)
+        - Urgent (Need for upcoming class/event)
+        - Critical (Blocking current work)
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-outcome
+    attributes:
+      label: 🎯 What You Hope to Achieve
+      description: What would a good answer look like for you?
+      placeholder: |
+        After getting help, I should be able to:
+        - Create a quiz with mathematical formulas
+        - Export it for my students
+        - Have students take it on their devices
+        - etc.
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: 📝 Additional Information
+      description: Anything else that might help us provide better assistance?
+      placeholder: |
+        - Subject area you're teaching (math, science, history, etc.)
+        - Number of students you plan to serve
+        - Any special requirements or constraints
+        - Timeline for implementation
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 🎓 Educational Use Cases We Support
+        
+        **Popular Subject Areas:**
+        - **Mathematics**: Complex equations, geometric formulas
+        - **Chemistry**: Molecular formulas (H₂O, C₆H₁₂O₆), reaction equations  
+        - **Physics**: Scientific notation (E=mc², F=ma), units and measurements
+        - **Biology**: Scientific names, genetic notation
+        - **General Education**: Any subject with formatted text needs
+        
+        **Key Features:**
+        - ✅ **Offline First**: No internet required for quiz creation or taking
+        - ✅ **Cross-Platform**: Works on Windows, Mac, iOS, Android
+        - ✅ **Rich Text**: Mathematical formulas with proper formatting
+        - ✅ **Mobile Ready**: Responsive design for all screen sizes
+        - ✅ **Quality Assured**: 210 automated tests ensure reliability
+        
+        **Response Time**: We typically respond to questions within 24-48 hours. For urgent educational needs, mention your timeline in the question.
+        
+        Thank you for using the Quiz System for education! 🚀

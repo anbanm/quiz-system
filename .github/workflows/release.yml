@@ -1,0 +1,257 @@
+name: 🚀 Quiz System Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.3.2)'
+        required: true
+        type: string
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Job 1: Validate release with full test suite
+  validate-release:
+    name: 🧪 Validate Release (Full Test Suite)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    
+    outputs:
+      test-status: ${{ steps.test-results.outputs.status }}
+      total-tests: ${{ steps.test-results.outputs.total }}
+      passed-tests: ${{ steps.test-results.outputs.passed }}
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    - name: 🎭 Install Playwright browsers
+      run: npx playwright install --with-deps
+      
+    - name: 🎯 Run Complete Test Suite (All 210 Tests)
+      id: run-tests
+      run: |
+        echo "🎯 Running complete test suite for release validation..."
+        npx playwright test --reporter=line,json:release-test-results.json
+        
+    - name: 📊 Analyze Test Results
+      id: test-results
+      run: |
+        if [ -f "release-test-results.json" ]; then
+          PASSED=$(jq -r '.stats.expected' release-test-results.json)
+          FAILED=$(jq -r '.stats.unexpected' release-test-results.json)
+          TOTAL=$((PASSED + FAILED))
+          
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          
+          if [ "$FAILED" -eq "0" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "✅ All $TOTAL tests passed! Release validation successful." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "❌ $FAILED out of $TOTAL tests failed. Release validation failed." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        else
+          echo "status=no-results" >> $GITHUB_OUTPUT
+          echo "⚠️ No test results found." >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+        
+    - name: 📁 Upload Release Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-validation-results
+        path: |
+          playwright-report/
+          test-results/
+          release-test-results.json
+        retention-days: 90
+
+  # Job 2: Create GitHub Release
+  create-release:
+    name: 🚀 Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: validate-release
+    if: needs.validate-release.outputs.test-status == 'success'
+    timeout-minutes: 10
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for changelog
+        
+    - name: 🏷️ Get tag information
+      id: tag-info
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          TAG="${{ github.event.inputs.tag }}"
+        else
+          TAG=${GITHUB_REF#refs/tags/}
+        fi
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+        echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+        
+        # Get previous tag for changelog
+        PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+        echo "previous-tag=$PREV_TAG" >> $GITHUB_OUTPUT
+        
+    - name: 📝 Generate Release Notes
+      id: release-notes
+      run: |
+        TAG="${{ steps.tag-info.outputs.tag }}"
+        VERSION="${{ steps.tag-info.outputs.version }}"
+        PREV_TAG="${{ steps.tag-info.outputs.previous-tag }}"
+        
+        # Create release notes
+        cat > release-notes.md << EOF
+        # 🎉 Quiz System $TAG
+        
+        ## 🚀 Release Validation
+        - ✅ **Test Status**: ${{ needs.validate-release.outputs.passed-tests }}/${{ needs.validate-release.outputs.total-tests }} tests passing
+        - 🧮 **Rich Text**: Mathematical formulas (H₂O, E=mc²) validated
+        - 🌐 **Cross-Browser**: Chromium, Firefox, WebKit compatibility confirmed
+        - 📱 **Mobile**: Android & iOS responsive design verified
+        - 🏗️ **Architecture**: UI mapping abstraction layer tested
+        
+        ## 🔧 What's Included
+        - **Rich Text Editor**: Complete Quill.js integration for mathematical formulas
+        - **Quiz Generator**: Teacher-friendly interface with color-coded options
+        - **Test Runner**: Student interface with rich text display
+        - **Cross-Platform**: Works on all modern browsers offline
+        - **Test Suite**: 210 automated tests ensuring quality
+        
+        ## 📦 Download & Usage
+        1. Download the source code or release assets
+        2. Open \`src/frontend/quizGenerator.html\` in any browser
+        3. Create quizzes with rich text mathematical formulas
+        4. Export and share with students using \`WebTest.html\`
+        
+        ## 🧮 Rich Text Features
+        - **Chemical Formulas**: H₂O, CO₂, NaCl with subscripts
+        - **Physics Equations**: E=mc², F=ma with superscripts  
+        - **Visual Formatting**: Bold, italic, underline across all options
+        - **Color-Coded Interface**: Each answer option has themed editor
+        
+        ## 🎯 Quality Assurance
+        This release has been validated with our comprehensive test suite:
+        - ✅ Clean Architecture Tests
+        - ✅ Rich Text Integration Tests
+        - ✅ Cross-Browser Compatibility Tests
+        - ✅ Mobile Responsiveness Tests
+        - ✅ End-to-End Workflow Tests
+        
+        EOF
+        
+        if [ -n "$PREV_TAG" ]; then
+          echo "## 📋 Changelog" >> release-notes.md
+          echo "" >> release-notes.md
+          echo "**Full Changelog**: [\$PREV_TAG...$TAG](https://github.com/\${{ github.repository }}/compare/\$PREV_TAG...$TAG)" >> release-notes.md
+        fi
+        
+        echo "---" >> release-notes.md
+        echo "" >> release-notes.md
+        echo "🤖 **Auto-generated release with validated test suite**" >> release-notes.md
+        echo "👨‍💻 **Co-Authored-By**: Claude & Development Team" >> release-notes.md
+        
+        # Set output for use in release creation
+        {
+          echo 'notes<<EOF'
+          cat release-notes.md
+          echo 'EOF'
+        } >> $GITHUB_OUTPUT
+        
+    - name: 🚀 Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag-info.outputs.tag }}
+        release_name: "Quiz System ${{ steps.tag-info.outputs.tag }} - Rich Text Revolution"
+        body: ${{ steps.release-notes.outputs.notes }}
+        draft: false
+        prerelease: false
+        
+    - name: 📊 Release Summary
+      run: |
+        echo "## 🚀 Release Created Successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tag**: ${{ steps.tag-info.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tests**: ${{ needs.validate-release.outputs.passed-tests }}/${{ needs.validate-release.outputs.total-tests }} passing" >> $GITHUB_STEP_SUMMARY
+        echo "- **Quality**: ✅ Validated" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status**: 🎉 Ready for use!" >> $GITHUB_STEP_SUMMARY
+
+  # Job 3: Handle release failure
+  release-failure:
+    name: 🚨 Handle Release Failure
+    runs-on: ubuntu-latest
+    needs: validate-release
+    if: needs.validate-release.outputs.test-status != 'success'
+    timeout-minutes: 5
+    
+    steps:
+    - name: 📝 Create Failure Issue
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const tag = context.ref.replace('refs/tags/', '');
+          const title = `🚨 Release Failure: ${tag} - Test Validation Failed`;
+          const body = `## 🚨 Release Validation Failure
+          
+          **Tag**: ${tag}
+          **Test Status**: ${{ needs.validate-release.outputs.test-status }}
+          **Tests Passed**: ${{ needs.validate-release.outputs.passed-tests }}/${{ needs.validate-release.outputs.total-tests }}
+          
+          ### 🔍 Issue Details
+          The automated release process failed because not all tests passed validation.
+          
+          ### 📊 Expected vs Actual
+          - **Expected**: 210/210 tests passing (TRUE 100%)
+          - **Actual**: ${{ needs.validate-release.outputs.passed-tests }}/${{ needs.validate-release.outputs.total-tests }} tests passing
+          
+          ### 🛠️ Next Steps
+          1. Review the [failed workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId})
+          2. Download test artifacts to identify specific failures
+          3. Fix the failing tests
+          4. Re-run the release process
+          
+          ### 🎯 Areas to Check
+          - Rich text functionality (H₂O, E=mc² formulas)
+          - Cross-browser compatibility
+          - Mobile responsiveness
+          - UI mapping and Page Object Model
+          - End-to-end workflow
+          
+          **Auto-generated by release workflow** 🤖`;
+          
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            body: body,
+            labels: ['bug', 'release-failure', 'automated-issue', 'high-priority']
+          });
+          
+    - name: 📊 Failure Summary
+      run: |
+        echo "## 🚨 Release Failed" >> $GITHUB_STEP_SUMMARY
+        echo "- **Reason**: Test validation failed" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tests**: ${{ needs.validate-release.outputs.passed-tests }}/${{ needs.validate-release.outputs.total-tests }} passing" >> $GITHUB_STEP_SUMMARY
+        echo "- **Required**: 210/210 tests must pass" >> $GITHUB_STEP_SUMMARY
+        echo "- **Action**: Issue created for investigation" >> $GITHUB_STEP_SUMMARY

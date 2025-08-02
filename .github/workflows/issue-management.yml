@@ -1,0 +1,410 @@
+name: 🏷️ Issue Management & Auto-Labeling
+
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled]
+  issue_comment:
+    types: [created]
+  pull_request:
+    types: [opened, edited, labeled, unlabeled]
+  workflow_dispatch:
+
+jobs:
+  # Job 1: Auto-label issues based on content
+  auto-label:
+    name: 🏷️ Auto-Label Issues
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    timeout-minutes: 2
+    
+    steps:
+    - name: 🏷️ Auto-label based on issue content
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = context.payload.issue;
+          const body = issue.body.toLowerCase();
+          const title = issue.title.toLowerCase();
+          const labels = [];
+          
+          // Quiz System specific labels
+          if (title.includes('rich text') || body.includes('rich text') || body.includes('quill') || body.includes('h₂o') || body.includes('e=mc²')) {
+            labels.push('rich-text');
+          }
+          
+          if (title.includes('formula') || body.includes('formula') || body.includes('mathematical') || body.includes('subscript') || body.includes('superscript')) {
+            labels.push('mathematical-formulas');
+          }
+          
+          if (title.includes('test') || body.includes('test') || body.includes('playwright') || body.includes('ci')) {
+            labels.push('testing');
+          }
+          
+          if (title.includes('mobile') || body.includes('mobile') || body.includes('responsive') || body.includes('touch')) {
+            labels.push('mobile');
+          }
+          
+          if (title.includes('browser') || body.includes('browser') || body.includes('chrome') || body.includes('firefox') || body.includes('safari')) {
+            labels.push('browser-compatibility');
+          }
+          
+          if (title.includes('ui') || body.includes('interface') || body.includes('design') || body.includes('color')) {
+            labels.push('ui-ux');
+          }
+          
+          // Priority labels
+          if (title.includes('urgent') || title.includes('critical') || body.includes('urgent') || body.includes('critical')) {
+            labels.push('high-priority');
+          }
+          
+          if (title.includes('crash') || title.includes('broken') || title.includes('error') || title.includes('fail')) {
+            labels.push('bug');
+          }
+          
+          if (title.includes('feature') || title.includes('enhancement') || body.includes('feature request') || body.includes('enhancement')) {
+            labels.push('enhancement');
+          }
+          
+          if (title.includes('question') || title.includes('help') || body.includes('how to') || body.includes('question')) {
+            labels.push('question');
+          }
+          
+          if (title.includes('documentation') || title.includes('docs') || body.includes('documentation') || body.includes('readme')) {
+            labels.push('documentation');
+          }
+          
+          // Performance related
+          if (title.includes('slow') || title.includes('performance') || body.includes('performance') || body.includes('timeout')) {
+            labels.push('performance');
+          }
+          
+          // Security related
+          if (title.includes('security') || body.includes('security') || body.includes('vulnerability')) {
+            labels.push('security');
+          }
+          
+          // Apply labels if any were identified
+          if (labels.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: labels
+            });
+            
+            console.log(`Applied labels: ${labels.join(', ')}`);
+            
+            // Add comment explaining the auto-labeling
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `🏷️ **Auto-labeling complete!** 
+              
+Applied labels: ${labels.map(label => `\`${label}\``).join(', ')}
+
+This helps us categorize and prioritize your issue. If any labels seem incorrect, please feel free to remove or adjust them.
+
+**Quiz System Areas:**
+- \`rich-text\`: Quill.js editor and mathematical formulas (H₂O, E=mc²)
+- \`mathematical-formulas\`: Subscript/superscript functionality
+- \`testing\`: Playwright tests and CI/CD issues
+- \`mobile\`: Touch interfaces and responsive design
+- \`browser-compatibility\`: Cross-browser functionality
+- \`ui-ux\`: Interface design and user experience
+
+Thanks for contributing to the Quiz System! 🎯`
+            });
+          }
+
+  # Job 2: Welcome new contributors
+  welcome-contributor:
+    name: 👋 Welcome New Contributors
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    timeout-minutes: 2
+    
+    steps:
+    - name: 👋 Welcome message for first-time contributors
+      uses: actions/github-script@v7
+      with:
+        script: |
+          // Check if this is the user's first issue
+          const issue = context.payload.issue;
+          const author = issue.user.login;
+          
+          // Get all issues by this user
+          const issues = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            creator: author,
+            state: 'all'
+          });
+          
+          // If this is their first issue, send welcome message
+          if (issues.data.length === 1) {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `## 👋 Welcome to the Quiz System Project!
+
+Thank you for opening your first issue, @${author}! We're excited to have you contribute to our educational quiz platform.
+
+### 🎯 About Quiz System
+This project helps teachers create rich text quizzes with mathematical formulas (H₂O, E=mc²) and provides comprehensive testing across all browsers and devices.
+
+### 🚀 Key Features You Should Know
+- **Rich Text Editor**: Quill.js integration for mathematical formulas
+- **Cross-Browser**: Works on Chrome, Firefox, Safari, Edge
+- **Mobile Ready**: Responsive design for tablets and phones  
+- **Offline First**: No internet required for quiz creation or taking
+- **100% Test Coverage**: 210 automated tests ensure quality
+
+### 🛠️ How We Can Help
+- **Questions?** We're here to help explain any part of the system
+- **Bug Reports?** Please include browser, device, and steps to reproduce
+- **Feature Ideas?** We love suggestions for educational improvements
+- **Testing?** Run \`npm test\` to verify your environment
+
+### 🎓 Educational Focus
+Remember, this tool is designed for teachers and students, so we prioritize:
+- User-friendly interfaces
+- Reliable offline functionality  
+- Cross-platform compatibility
+- Educational best practices
+
+Thanks for being part of our community! 🎉
+
+**Maintainer Team** 🤖`
+            });
+          }
+
+  # Job 3: Issue triage and assignment
+  issue-triage:
+    name: 🔍 Issue Triage
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    timeout-minutes: 3
+    
+    steps:
+    - name: 🔍 Analyze issue for triage
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = context.payload.issue;
+          const body = issue.body.toLowerCase();
+          const title = issue.title.toLowerCase();
+          
+          // Check for critical issues that need immediate attention
+          const criticalKeywords = ['crash', 'broken', 'urgent', 'critical', 'security', 'data loss'];
+          const isCritical = criticalKeywords.some(keyword => title.includes(keyword) || body.includes(keyword));
+          
+          if (isCritical) {
+            // Add high priority label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: ['high-priority', 'needs-immediate-attention']
+            });
+            
+            // Create urgent notification comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `🚨 **CRITICAL ISSUE DETECTED** 🚨
+
+This issue has been flagged as potentially critical and requires immediate attention.
+
+**Next Steps:**
+1. Maintainers will be notified immediately
+2. This issue will be prioritized in our development queue
+3. We aim to provide an initial response within 24 hours
+4. If this is a security issue, please email us directly for faster response
+
+**Expected Response Time:** Within 24 hours
+**Priority Level:** HIGH
+
+Thank you for reporting this critical issue! 🎯`
+            });
+          }
+          
+          // Check if issue has enough information
+          const hasReproSteps = body.includes('steps to reproduce') || body.includes('how to reproduce');
+          const hasBrowserInfo = body.includes('browser') || body.includes('chrome') || body.includes('firefox') || body.includes('safari');
+          const hasVersion = body.includes('version') || body.includes('v1.');
+          
+          if (!hasReproSteps && title.includes('bug')) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: ['needs-reproduction-steps']
+            });
+          }
+          
+          if (!hasBrowserInfo && (title.includes('bug') || title.includes('error'))) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: ['needs-browser-info']
+            });
+          }
+          
+          // Suggest issue template if missing key information
+          if (!hasReproSteps && !hasBrowserInfo && title.includes('bug')) {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `📋 **Missing Information for Bug Report**
+
+To help us resolve this issue quickly, could you please provide:
+
+### 🔍 Reproduction Steps
+1. What specific actions did you take?
+2. What did you expect to happen?
+3. What actually happened?
+
+### 🌐 Environment Details
+- **Browser**: Chrome/Firefox/Safari/Edge (include version)
+- **Device**: Desktop/Mobile/Tablet
+- **Operating System**: Windows/Mac/Linux/iOS/Android
+- **Quiz System Version**: (check About section or latest release)
+
+### 🧮 Rich Text Related (if applicable)
+- Were you using mathematical formulas (H₂O, E=mc²)?
+- Which rich text features were involved?
+- Did the issue occur in quiz creation or quiz taking?
+
+### 📱 Mobile Specific (if applicable)
+- Screen size/orientation
+- Touch vs mouse interaction
+- Any responsive design issues?
+
+The more details you provide, the faster we can help! 🚀
+
+**Helpful tip**: You can run our test suite with \`npm test\` to check if it's a known issue.`
+            });
+          }
+
+  # Job 4: Pull request labeling
+  pr-auto-label:
+    name: 🏷️ Auto-Label Pull Requests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    timeout-minutes: 2
+    
+    steps:
+    - name: 🏷️ Auto-label pull requests
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const pr = context.payload.pull_request;
+          const title = pr.title.toLowerCase();
+          const body = (pr.body || '').toLowerCase();
+          const labels = [];
+          
+          // Check changed files for more specific labeling
+          const files = await github.rest.pulls.listFiles({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: pr.number
+          });
+          
+          const changedFiles = files.data.map(file => file.filename);
+          const hasTestChanges = changedFiles.some(file => file.includes('test') || file.includes('spec'));
+          const hasDocChanges = changedFiles.some(file => file.includes('README') || file.includes('.md'));
+          const hasWorkflowChanges = changedFiles.some(file => file.includes('.github/workflows'));
+          const hasJSChanges = changedFiles.some(file => file.endsWith('.js'));
+          const hasCSSChanges = changedFiles.some(file => file.endsWith('.css'));
+          const hasHTMLChanges = changedFiles.some(file => file.endsWith('.html'));
+          
+          // Categorize by change type
+          if (title.includes('feat') || title.includes('feature')) {
+            labels.push('enhancement');
+          }
+          
+          if (title.includes('fix') || title.includes('bug')) {
+            labels.push('bug-fix');
+          }
+          
+          if (title.includes('docs') || hasDocChanges) {
+            labels.push('documentation');
+          }
+          
+          if (hasTestChanges) {
+            labels.push('testing');
+          }
+          
+          if (hasWorkflowChanges) {
+            labels.push('ci-cd');
+          }
+          
+          // Categorize by affected area
+          if (title.includes('rich text') || title.includes('quill') || hasJSChanges) {
+            labels.push('rich-text');
+          }
+          
+          if (title.includes('ui') || title.includes('design') || hasCSSChanges || hasHTMLChanges) {
+            labels.push('ui-ux');
+          }
+          
+          if (title.includes('mobile') || title.includes('responsive')) {
+            labels.push('mobile');
+          }
+          
+          if (title.includes('test') || title.includes('ci') || title.includes('workflow')) {
+            labels.push('testing');
+          }
+          
+          // Size estimation based on changed files
+          const totalChanges = files.data.reduce((sum, file) => sum + file.changes, 0);
+          if (totalChanges > 500) {
+            labels.push('large-change');
+          } else if (totalChanges > 100) {
+            labels.push('medium-change');
+          } else {
+            labels.push('small-change');
+          }
+          
+          // Apply labels
+          if (labels.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: labels
+            });
+          }
+          
+          // Add review request comment for significant changes
+          if (totalChanges > 200 || labels.includes('rich-text') || labels.includes('testing')) {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body: `🔍 **Automatic Review Request**
+
+This PR has been identified as potentially significant and may benefit from thorough review.
+
+**Detected Changes:**
+- **Files Modified**: ${changedFiles.length}
+- **Total Changes**: ${totalChanges} lines
+- **Categories**: ${labels.filter(l => !l.includes('change')).join(', ')}
+
+**Review Focus Areas:**
+${labels.includes('rich-text') ? '- 🧮 **Rich Text**: Verify mathematical formulas (H₂O, E=mc²) work correctly\n' : ''}${labels.includes('testing') ? '- 🧪 **Testing**: Ensure all 210 tests still pass\n' : ''}${labels.includes('ui-ux') ? '- 🎨 **UI/UX**: Check visual design and user experience\n' : ''}${labels.includes('mobile') ? '- 📱 **Mobile**: Test responsive design on different devices\n' : ''}${labels.includes('ci-cd') ? '- 🔧 **CI/CD**: Verify workflow changes don\'t break automation\n' : ''}
+
+**Testing Checklist:**
+- [ ] Run \`npm test\` (should show 210/210 passing)
+- [ ] Test rich text formulas in different browsers
+- [ ] Verify offline functionality works
+- [ ] Check mobile responsiveness
+
+Thanks for the contribution! 🚀`
+            });
+          }
