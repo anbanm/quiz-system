@@ -119,12 +119,21 @@ test.describe('Question Reordering', () => {
         // Reorder questions: move second question up
         await page.locator('.question-card').nth(1).locator('button[title="Move up"]').click();
         
+        // Ensure sidebar is closed to prevent interference
+        const sidebar = page.locator('#sidebar');
+        if (await sidebar.isVisible()) {
+            await page.locator('.sidebar-toggle').click();
+        }
+        
         // Set test name
         await page.fill('#testName', 'Reorder Test');
         
+        // Scroll to download section
+        await page.locator('button:has-text("📄 Download JSON Only")').scrollIntoViewIfNeeded();
+        
         // Start download and capture the JSON
         const downloadPromise = page.waitForEvent('download');
-        await page.click('button:has-text("📄 Download JSON Only")');
+        await page.locator('button:has-text("📄 Download JSON Only")').click();
         const download = await downloadPromise;
         
         // Save and read the downloaded file

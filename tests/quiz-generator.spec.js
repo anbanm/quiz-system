@@ -47,6 +47,12 @@ test.describe('Quiz Generator - Teacher Interface', () => {
     // Add question to quiz
     await page.click('button:has-text("Add Question to Quiz")');
     
+    // Close the success dialog that appears after adding a question
+    const closeButton = page.locator('button:has-text("✕ Just Close This")');
+    if (await closeButton.isVisible()) {
+        await closeButton.click();
+    }
+    
     // Verify question appears in summary
     await expect(page.locator('#questions')).toContainText('What is the capital of France?');
     await expect(page.locator('#questions')).toContainText('Paris');
@@ -68,6 +74,12 @@ test.describe('Quiz Generator - Teacher Interface', () => {
     await page.fill('#category', 'Test');
     
     await page.click('button:has-text("Add Question to Quiz")');
+    
+    // Close the success dialog that appears after adding a question
+    const closeButton2 = page.locator('button:has-text("✕ Just Close This")');
+    if (await closeButton2.isVisible()) {
+        await closeButton2.click();
+    }
     
     // Generate JSON
     await page.click('button:has-text("Preview Quiz Data")');
@@ -130,6 +142,12 @@ test.describe('Quiz Generator - Teacher Interface', () => {
     
     await page.click('button:has-text("Add Question to Quiz")');
     
+    // Close the success dialog that appears after adding a question
+    const closeButton3 = page.locator('button:has-text("✕ Just Close This")');
+    if (await closeButton3.isVisible()) {
+        await closeButton3.click();
+    }
+    
     // Verify question with image was added
     await expect(page.locator('#questions')).toContainText('What does this formula represent?');
     await expect(page.locator('#questions')).toContainText('Mass-Energy Equivalence');
@@ -156,6 +174,12 @@ test.describe('Quiz Generator - Teacher Interface', () => {
     }, testImages.greenDiagram);
     
     await page.click('button:has-text("Add Question to Quiz")');
+    
+    // Close the success dialog that appears after adding a question
+    const closeButton = page.locator('button:has-text("✕ Just Close This")');
+    if (await closeButton.isVisible()) {
+        await closeButton.click();
+    }
     
     // Verify both questions are in the quiz
     await expect(page.locator('#questionCount')).toHaveText('2');
