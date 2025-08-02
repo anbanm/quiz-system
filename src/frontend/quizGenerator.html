@@ -88,6 +88,124 @@
             border-radius: 5px;
             border: 1px solid #ddd;
         }
+
+        /* Question reordering styles */
+        .question-card.dragging {
+            opacity: 0.3;
+            transform: rotate(3deg) scale(1.02);
+            z-index: 1000;
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .question-card.drag-over-top {
+            border-top: 4px solid #3498db !important;
+            transform: translateY(-3px);
+            transition: all 0.2s ease;
+        }
+        
+        .question-card.drag-over-bottom {
+            border-bottom: 4px solid #3498db !important;
+            transform: translateY(3px);
+            transition: all 0.2s ease;
+        }
+
+        .drag-handle:hover {
+            background-color: #ecf0f1;
+            border-radius: 4px;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        /* Animations for success messages */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes scaleOut {
+            from {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Mobile-friendly touch targets for reordering */
+        @media (max-width: 768px) {
+            .question-card {
+                margin: 15px 0 !important;
+            }
+            
+            .question-card div[style*="flex-direction: column"] button {
+                min-height: 44px !important;
+                padding: 8px 12px !important;
+                font-size: 14px !important;
+            }
+            
+            #add-another-prompt {
+                margin: 15px 0 !important;
+                padding: 15px !important;
+            }
+            
+            #add-another-prompt div[style*="flex"] {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -130,7 +248,7 @@
         </div>
     </details>
 
-    <h2 style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-top: 30px;">❓ Add Questions</h2>
+    <h2 id="question-form-section" style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-top: 30px;">❓ Add Questions</h2>
     
     <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 20px 0;">
         <strong>💡 Quick Tips:</strong>
@@ -511,18 +629,31 @@
             points: points
         };
 
+        const isEditing = currentQuestionIndex !== null;
+        
         if(currentQuestionIndex !== null){
+            // Editing existing question - preserve position
             test.questions[currentQuestionIndex] = {...test.questions[currentQuestionIndex], ...newQuestion};
             currentQuestionIndex = null;
 
         }else{
+            // Adding new question - assign next available position
             newQuestion.id = 'q-' + Math.floor(Math.random() * 1000000);
-            test.questions.push(newQuestion)
+            newQuestion.position = test.questions.length + 1;
+            test.questions.push(newQuestion);
+            
+            // Ensure all questions have positions and update them
+            updateQuestionPositions(test.questions);
         }
 
         clearQuestionForm();
         renderQuestions(test.questions);
         updateTotalPoints(test.questions);
+        
+        // For new questions: show brief success + auto-scroll back to form
+        if (!isEditing) {
+            showBriefSuccessAndScrollToForm();
+        }
 
     }
 
@@ -542,8 +673,18 @@
         
         emptyState.style.display = "none";
         
-        questions.forEach((question, index) => {
+        // Ensure all questions have positions and sort by position for display
+        const sortedQuestions = questions
+            .map((question, index) => ({
+                ...question,
+                position: question.position || (index + 1)
+            }))
+            .sort((a, b) => a.position - b.position);
+        
+        sortedQuestions.forEach((question, index) => {
             const questionCard = document.createElement("div");
+            questionCard.className = "question-card";
+            questionCard.dataset.index = index;
             questionCard.style.cssText = `
                 background: white; 
                 padding: 15px; 
@@ -551,6 +692,7 @@
                 border-radius: 8px; 
                 border-left: 4px solid ${getDifficultyColor(question.difficulty)}; 
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                transition: all 0.2s ease;
             `;
             
             const difficultyEmoji = getDifficultyEmoji(question.difficulty);
@@ -560,6 +702,9 @@
             
             questionCard.innerHTML = `
                 <div style="display: flex; gap: 15px; align-items: center;">
+                    <div class="question-order" style="flex-shrink: 0; background: #34495e; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">
+                        ${index + 1}
+                    </div>
                     ${imagePreview ? `<div style="flex-shrink: 0;">${imagePreview}</div>` : ''}
                     <div style="flex: 1; min-width: 0;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
@@ -581,12 +726,21 @@
                             <span><strong>D)</strong> ${question.option4}</span>
                         </div>
                     </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
+                        <button onclick="moveQuestionUp(${index})" ${index === 0 ? 'disabled' : ''} 
+                                style="background: ${index === 0 ? '#bdc3c7' : '#9b59b6'}; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: ${index === 0 ? 'not-allowed' : 'pointer'}; font-size: 14px; min-height: 36px; font-weight: bold;" 
+                                title="Move up">↑</button>
+                        <button onclick="moveQuestionDown(${index})" ${index === sortedQuestions.length - 1 ? 'disabled' : ''} 
+                                style="background: ${index === sortedQuestions.length - 1 ? '#bdc3c7' : '#9b59b6'}; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: ${index === sortedQuestions.length - 1 ? 'not-allowed' : 'pointer'}; font-size: 14px; min-height: 36px; font-weight: bold;" 
+                                title="Move down">↓</button>
+                    </div>
                     <div style="display: flex; gap: 8px; flex-shrink: 0;">
-                        <button onclick="editQuestion(${index})" style="background: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">✏️ Edit</button>
-                        <button onclick="deleteQuestion(${index})" style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">🗑️ Delete</button>
+                        <button onclick="editQuestion(${index})" style="background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">✏️ Edit</button>
+                        <button onclick="deleteQuestion(${index})" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🗑️ Delete</button>
                     </div>
                 </div>
             `;
+            
             questionsList.appendChild(questionCard);
         });
     }
@@ -602,10 +756,10 @@
     
     function getDifficultyEmoji(difficulty) {
         switch(difficulty) {
-            case 'easy': return '🟢';
-            case 'medium': return '🟡';
-            case 'hard': return '🔴';
-            default: return '⚪';
+            case 'easy': return '✓';
+            case 'medium': return '⚡';
+            case 'hard': return '⭐';
+            default: return '•';
         }
     }
 
@@ -615,6 +769,28 @@
         const test = quizData.tests[currentTestIndex];
         const question = test.questions[index];
 
+        // Smooth scroll to form with animation
+        const formSection = document.getElementById("question-form-section");
+        formSection.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+
+        // Add visual feedback to the form
+        setTimeout(() => {
+            const formContainer = formSection.parentElement;
+            formContainer.style.transition = 'all 0.3s ease';
+            formContainer.style.transform = 'scale(1.02)';
+            formContainer.style.boxShadow = '0 4px 20px rgba(52, 152, 219, 0.3)';
+            
+            // Reset after animation
+            setTimeout(() => {
+                formContainer.style.transform = '';
+                formContainer.style.boxShadow = '';
+            }, 600);
+        }, 500);
+
+        // Populate form fields
         document.getElementById("question").value = question.question;
 
         if(question.image){
@@ -652,6 +828,11 @@
         document.getElementById("difficulty").value = question.difficulty;
 
         currentQuestionIndex = index;
+        
+        // Focus on the question textarea for immediate editing
+        setTimeout(() => {
+            document.getElementById("question").focus();
+        }, 800);
     }
 
 
@@ -660,6 +841,507 @@
         test.questions.splice(index, 1);
         renderQuestions(test.questions);
         updateTotalPoints(test.questions);
+    }
+
+    // Position management function
+    function updateQuestionPositions(questions) {
+        questions.forEach((question, index) => {
+            question.position = index + 1;
+        });
+    }
+
+    // Question reordering functions
+    function moveQuestionUp(index) {
+        if (index <= 0) return;
+        
+        const test = quizData.tests[currentTestIndex];
+        const questions = test.questions;
+        
+        // Swap questions
+        [questions[index - 1], questions[index]] = [questions[index], questions[index - 1]];
+        
+        // Update positions
+        updateQuestionPositions(questions);
+        
+        // Re-render and update
+        renderQuestions(questions);
+        updateTotalPoints(questions);
+    }
+
+    function moveQuestionDown(index) {
+        const test = quizData.tests[currentTestIndex];
+        const questions = test.questions;
+        
+        if (index >= questions.length - 1) return;
+        
+        // Swap questions
+        [questions[index], questions[index + 1]] = [questions[index + 1], questions[index]];
+        
+        // Update positions
+        updateQuestionPositions(questions);
+        
+        // Re-render and update
+        renderQuestions(questions);
+        updateTotalPoints(questions);
+    }
+
+    // Drag and drop functionality
+    let draggedElement = null;
+    let draggedIndex = null;
+    let isDragging = false;
+
+    function handleDragStart(e) {
+        if (!e.target.closest('.drag-handle')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        draggedElement = this;
+        draggedIndex = parseInt(this.dataset.index);
+        isDragging = true;
+        
+        // Add dragging class for smooth CSS transitions
+        this.classList.add('dragging');
+        
+        // Set drag image to be the entire card
+        const dragImage = this.cloneNode(true);
+        dragImage.style.transform = 'rotate(3deg)';
+        dragImage.style.opacity = '0.8';
+        e.dataTransfer.setDragImage(dragImage, e.offsetX, e.offsetY);
+        
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', draggedIndex.toString());
+        
+        // Delay to prevent immediate style application
+        setTimeout(() => {
+            if (isDragging) {
+                this.style.opacity = '0.3';
+            }
+        }, 0);
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        
+        if (!isDragging || this === draggedElement) {
+            return;
+        }
+        
+        // Get the bounding rectangle and mouse position
+        const rect = this.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        
+        // Determine if we're in the top or bottom half
+        if (e.clientY < midY) {
+            this.classList.add('drag-over-top');
+            this.classList.remove('drag-over-bottom');
+        } else {
+            this.classList.add('drag-over-bottom');
+            this.classList.remove('drag-over-top');
+        }
+        
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDragLeave(e) {
+        // Only remove classes if we're actually leaving the element
+        if (!this.contains(e.relatedTarget)) {
+            this.classList.remove('drag-over-top', 'drag-over-bottom');
+        }
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (!isDragging || this === draggedElement) {
+            return;
+        }
+        
+        const dropIndex = parseInt(this.dataset.index);
+        const rect = this.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        
+        // Determine final drop position
+        let finalDropIndex = dropIndex;
+        if (e.clientY >= midY) {
+            finalDropIndex = dropIndex + 1;
+        }
+        
+        // Adjust for removal of dragged element
+        if (draggedIndex < finalDropIndex) {
+            finalDropIndex--;
+        }
+        
+        if (draggedIndex !== finalDropIndex) {
+            const test = quizData.tests[currentTestIndex];
+            const questions = test.questions;
+            
+            // Remove the dragged item and insert it at the new position
+            const draggedQuestion = questions.splice(draggedIndex, 1)[0];
+            questions.splice(finalDropIndex, 0, draggedQuestion);
+            
+            // Update positions
+            updateQuestionPositions(questions);
+            
+            // Re-render with smooth transition
+            renderQuestions(questions);
+            updateTotalPoints(questions);
+        }
+        
+        // Clear all visual feedback
+        clearDragStyles();
+    }
+
+    function handleDragEnd(e) {
+        isDragging = false;
+        clearDragStyles();
+    }
+    
+    function clearDragStyles() {
+        // Clear drag state
+        draggedElement = null;
+        draggedIndex = null;
+        
+        // Remove all drag-related classes and styles
+        const allCards = document.querySelectorAll('.question-card');
+        allCards.forEach(card => {
+            card.classList.remove('dragging', 'drag-over-top', 'drag-over-bottom');
+            card.style.opacity = '';
+            card.style.transform = '';
+        });
+    }
+
+    function showBriefSuccessAndScrollToForm() {
+        // Show success message with user choices
+        showSuccessWithChoices();
+    }
+
+    function showSuccessWithChoices() {
+        // Remove any existing choice dialog
+        const existing = document.getElementById('success-choices');
+        if (existing) existing.remove();
+
+        // Create success dialog with choices
+        const choiceDiv = document.createElement('div');
+        choiceDiv.id = 'success-choices';
+        choiceDiv.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: scaleIn 0.3s ease;
+            text-align: center;
+            min-width: 400px;
+            max-width: 90vw;
+        `;
+        
+        choiceDiv.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">✅</div>
+                <h2 style="margin: 0 0 10px 0; color: #27ae60; font-size: 24px;">Question Added Successfully!</h2>
+                <p style="margin: 0; color: #7f8c8d; font-size: 16px;">What would you like to do next?</p>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button onclick="addAnotherQuestion()" style="
+                    background: linear-gradient(135deg, #3498db, #2980b9);
+                    color: white;
+                    border: none;
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <span style="font-size: 20px;">➕</span>
+                    <span>Add Another Question</span>
+                </button>
+                
+                <button onclick="reviewAndOrder()" style="
+                    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+                    color: white;
+                    border: none;
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <span style="font-size: 20px;">📝</span>
+                    <span>Review & Reorder Questions</span>
+                </button>
+                
+                <button onclick="saveQuiz()" style="
+                    background: linear-gradient(135deg, #27ae60, #229954);
+                    color: white;
+                    border: none;
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <span style="font-size: 20px;">💾</span>
+                    <span>Save & Export Quiz</span>
+                </button>
+                
+                <button onclick="closeSuccessDialog()" style="
+                    background: none;
+                    color: #95a5a6;
+                    border: 2px solid #ecf0f1;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    margin-top: 10px;
+                ">
+                    ✕ Just Close This
+                </button>
+            </div>
+        `;
+
+        // Add backdrop
+        const backdrop = document.createElement('div');
+        backdrop.id = 'success-backdrop';
+        backdrop.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            animation: fadeIn 0.3s ease;
+        `;
+        backdrop.onclick = closeSuccessDialog;
+
+        document.body.appendChild(backdrop);
+        document.body.appendChild(choiceDiv);
+    }
+
+    function addAnotherQuestion() {
+        closeSuccessDialog();
+        document.getElementById("question-form-section").scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+        setTimeout(() => {
+            document.getElementById("question").focus();
+        }, 500);
+    }
+
+    function reviewAndOrder() {
+        closeSuccessDialog();
+        document.getElementById("questionList").scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+    }
+
+    function saveQuiz() {
+        closeSuccessDialog();
+        // Scroll to the download section
+        const downloadSection = document.querySelector('h2:contains("Download")') || document.querySelector('[style*="Download"]');
+        if (downloadSection) {
+            downloadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            // Fallback: scroll to bottom where download buttons typically are
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    }
+
+    function closeSuccessDialog() {
+        const dialog = document.getElementById('success-choices');
+        const backdrop = document.getElementById('success-backdrop');
+        
+        if (dialog) {
+            dialog.style.animation = 'scaleOut 0.3s ease';
+            setTimeout(() => {
+                if (dialog.parentNode) dialog.remove();
+            }, 300);
+        }
+        
+        if (backdrop) {
+            backdrop.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => {
+                if (backdrop.parentNode) backdrop.remove();
+            }, 300);
+        }
+    }
+
+    function showAddAnotherQuestionPrompt() {
+        console.log('showAddAnotherQuestionPrompt called');
+        
+        // Remove any existing prompt
+        const existingPrompt = document.getElementById('add-another-prompt');
+        if (existingPrompt) {
+            console.log('Removing existing prompt');
+            existingPrompt.remove();
+        }
+
+        // Create success message with add another option
+        const promptDiv = document.createElement('div');
+        promptDiv.id = 'add-another-prompt';
+        promptDiv.style.cssText = `
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+            text-align: center;
+            animation: slideIn 0.5s ease;
+        `;
+        
+        promptDiv.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                <span style="font-size: 24px;">✅</span>
+                <h3 style="margin: 0; font-size: 18px;">Question Added Successfully!</h3>
+            </div>
+            <p style="margin: 10px 0; opacity: 0.9;">Your question has been added to the quiz.</p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="scrollToAddQuestion()" style="
+                    background: white; 
+                    color: #27ae60; 
+                    border: none; 
+                    padding: 12px 24px; 
+                    border-radius: 8px; 
+                    cursor: pointer; 
+                    font-weight: bold;
+                    font-size: 14px;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    ➕ Add Another Question
+                </button>
+                <button onclick="scrollToQuestionList()" style="
+                    background: rgba(255,255,255,0.2); 
+                    color: white; 
+                    border: 2px solid white; 
+                    padding: 10px 24px; 
+                    border-radius: 8px; 
+                    cursor: pointer; 
+                    font-weight: bold;
+                    font-size: 14px;
+                    transition: all 0.2s ease;
+                " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    📋 View All Questions
+                </button>
+                <button onclick="hideAddAnotherPrompt()" style="
+                    background: none; 
+                    color: white; 
+                    border: none; 
+                    padding: 10px; 
+                    cursor: pointer; 
+                    font-size: 12px; 
+                    opacity: 0.7;
+                    text-decoration: underline;
+                ">
+                    ✕ Dismiss
+                </button>
+            </div>
+        `;
+
+        // Try multiple insertion strategies
+        const formSection = document.getElementById("question-form-section");
+        console.log('Form section found:', formSection);
+        
+        let inserted = false;
+        
+        // Strategy 1: Insert after form section
+        if (formSection && formSection.parentNode) {
+            formSection.parentNode.insertBefore(promptDiv, formSection.nextSibling);
+            console.log('Prompt inserted after form section');
+            inserted = true;
+        }
+        
+        // Strategy 2: Insert after the entire form container
+        if (!inserted) {
+            const container = document.querySelector('.container');
+            if (container) {
+                // Find the form area and insert after it
+                const formArea = container.querySelector('h2#question-form-section').parentElement;
+                if (formArea) {
+                    formArea.appendChild(promptDiv);
+                    console.log('Prompt appended to form area');
+                    inserted = true;
+                }
+            }
+        }
+        
+        // Strategy 3: Insert at top of body as fallback
+        if (!inserted) {
+            document.body.insertBefore(promptDiv, document.body.firstChild);
+            console.log('Prompt inserted at top of body as fallback');
+        }
+
+        // Auto-hide after 8 seconds
+        setTimeout(() => {
+            if (promptDiv.parentNode) {
+                promptDiv.style.transition = 'all 0.5s ease';
+                promptDiv.style.opacity = '0';
+                promptDiv.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    if (promptDiv.parentNode) {
+                        promptDiv.remove();
+                    }
+                }, 500);
+            }
+        }, 8000);
+    }
+
+    function scrollToAddQuestion() {
+        hideAddAnotherPrompt();
+        document.getElementById("question-form-section").scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+        setTimeout(() => {
+            document.getElementById("question").focus();
+        }, 500);
+    }
+
+    function scrollToQuestionList() {
+        hideAddAnotherPrompt();
+        document.getElementById("questionList").scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+    }
+
+    function hideAddAnotherPrompt() {
+        const prompt = document.getElementById('add-another-prompt');
+        if (prompt) {
+            prompt.style.transition = 'all 0.3s ease';
+            prompt.style.opacity = '0';
+            prompt.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                if (prompt.parentNode) {
+                    prompt.remove();
+                }
+            }, 300);
+        }
     }
 
     function clearQuestionForm(){
@@ -689,11 +1371,19 @@
         const test = quizData.tests[currentTestIndex];
         test.testName = testNameInput;
 
+        // Ensure all questions have positions and sort by position
+        const sortedQuestions = test.questions
+            .map((question, index) => ({
+                ...question,
+                position: question.position || (index + 1)
+            }))
+            .sort((a, b) => a.position - b.position);
+
         // Create a new object for JSON output
         const outputTest = {
             testName: test.testName,
             testID: test.testId,
-            questions: test.questions.map(question => {
+            questions: sortedQuestions.map(question => {
                 // Convert option selection to letter
                 const optionToLetter = {
                     'option1': 'A',
@@ -715,6 +1405,7 @@
                     category: question.category,
                     difficulty: question.difficulty,
                     points: question.points,
+                    position: question.position,
                     id: question.id
                 };
             })
@@ -797,10 +1488,18 @@
             'option4': 'D'
         };
         
+        // Ensure all questions have positions and sort by position
+        const sortedQuestions = test.questions
+            .map((question, index) => ({
+                ...question,
+                position: question.position || (index + 1)
+            }))
+            .sort((a, b) => a.position - b.position);
+
         const outputTest = {
             testName: test.testName,
             testID: test.testId,
-            questions: test.questions.map(question => ({
+            questions: sortedQuestions.map(question => ({
                 question: question.question,
                 image: question.imagePreviewData, // Use embedded image data
                 options: {
@@ -813,6 +1512,7 @@
                 category: question.category,
                 difficulty: question.difficulty,
                 points: question.points,
+                position: question.position,
                 id: question.id
             }))
         };

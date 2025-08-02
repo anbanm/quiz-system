@@ -1,0 +1,231 @@
+const { test, expect } = require('@playwright/test');
+const path = require('path');
+
+test.describe('Question Reordering', () => {
+    test.beforeEach(async ({ page }) => {
+        // Navigate to quiz generator
+        const filePath = path.join(__dirname, '..', 'src', 'frontend', 'quizGenerator.html');
+        await page.goto(`file://${filePath}`);
+        
+        // Create a new test
+        await page.click('button:has-text("✨ Create New Quiz")');
+        
+        // Add multiple questions for reordering tests
+        const questions = [
+            { text: "First Question", option1: "A1", option2: "B1", option3: "C1", option4: "D1", correct: "option1" },
+            { text: "Second Question", option1: "A2", option2: "B2", option3: "C2", option4: "D2", correct: "option2" },
+            { text: "Third Question", option1: "A3", option2: "B3", option3: "C3", option4: "D3", correct: "option3" }
+        ];
+        
+        for (const q of questions) {
+            await page.fill('#question', q.text);
+            await page.fill('#option1', q.option1);
+            await page.fill('#option2', q.option2);
+            await page.fill('#option3', q.option3);
+            await page.fill('#option4', q.option4);
+            await page.selectOption('#correctAnswer', q.correct);
+            await page.click('button:has-text("➕ Add Question to Quiz")');
+        }
+    });
+
+    test('should display question order numbers correctly', async ({ page }) => {
+        // Check that questions are numbered 1, 2, 3
+        const orderNumbers = await page.locator('.question-order').allTextContents();
+        expect(orderNumbers).toEqual(['1', '2', '3']);
+    });
+
+    test('should show drag handles for all questions', async ({ page }) => {
+        // Check that drag handles are present
+        const dragHandles = page.locator('.drag-handle');
+        await expect(dragHandles).toHaveCount(3);
+        
+        // Check that question cards are draggable
+        const questionCards = page.locator('.question-card');
+        for (let i = 0; i < 3; i++) {
+            await expect(questionCards.nth(i)).toHaveAttribute('draggable', 'true');
+        }
+    });
+
+    test('should move question up with arrow button', async ({ page }) => {
+        // Get initial question text
+        const initialFirstQuestion = await page.locator('.question-card').first().locator('h4').textContent();
+        const initialSecondQuestion = await page.locator('.question-card').nth(1).locator('h4').textContent();
+        
+        expect(initialFirstQuestion).toBe('First Question');
+        expect(initialSecondQuestion).toBe('Second Question');
+        
+        // Click up arrow on second question
+        await page.locator('.question-card').nth(1).locator('button[title="Move up"]').click();
+        
+        // Check that order changed
+        const newFirstQuestion = await page.locator('.question-card').first().locator('h4').textContent();
+        const newSecondQuestion = await page.locator('.question-card').nth(1).locator('h4').textContent();
+        
+        expect(newFirstQuestion).toBe('Second Question');
+        expect(newSecondQuestion).toBe('First Question');
+        
+        // Check that order numbers updated
+        const orderNumbers = await page.locator('.question-order').allTextContents();
+        expect(orderNumbers).toEqual(['1', '2', '3']);
+    });
+
+    test('should move question down with arrow button', async ({ page }) => {
+        // Get initial question text
+        const initialSecondQuestion = await page.locator('.question-card').nth(1).locator('h4').textContent();
+        const initialThirdQuestion = await page.locator('.question-card').nth(2).locator('h4').textContent();
+        
+        expect(initialSecondQuestion).toBe('Second Question');
+        expect(initialThirdQuestion).toBe('Third Question');
+        
+        // Click down arrow on second question
+        await page.locator('.question-card').nth(1).locator('button[title="Move down"]').click();
+        
+        // Check that order changed
+        const newSecondQuestion = await page.locator('.question-card').nth(1).locator('h4').textContent();
+        const newThirdQuestion = await page.locator('.question-card').nth(2).locator('h4').textContent();
+        
+        expect(newSecondQuestion).toBe('Third Question');
+        expect(newThirdQuestion).toBe('Second Question');
+    });
+
+    test('should disable up arrow for first question', async ({ page }) => {
+        const firstQuestionUpButton = page.locator('.question-card').first().locator('button[title="Move up"]');
+        await expect(firstQuestionUpButton).toBeDisabled();
+        await expect(firstQuestionUpButton).toHaveCSS('background-color', 'rgb(189, 195, 199)'); // #bdc3c7
+    });
+
+    test('should disable down arrow for last question', async ({ page }) => {
+        const lastQuestionDownButton = page.locator('.question-card').last().locator('button[title="Move down"]');
+        await expect(lastQuestionDownButton).toBeDisabled();
+        await expect(lastQuestionDownButton).toHaveCSS('background-color', 'rgb(189, 195, 199)'); // #bdc3c7
+    });
+
+    test('should maintain question order in JSON export', async ({ page }) => {
+        // Reorder questions: move second question up
+        await page.locator('.question-card').nth(1).locator('button[title="Move up"]').click();
+        
+        // Set test name
+        await page.fill('#testName', 'Reorder Test');
+        
+        // Start download and capture the JSON
+        const downloadPromise = page.waitForEvent('download');
+        await page.click('button:has-text("📥 Download JSON File")');
+        const download = await downloadPromise;
+        
+        // Save and read the downloaded file
+        const downloadPath = path.join(__dirname, 'temp_reorder_test.json');
+        await download.saveAs(downloadPath);
+        
+        const fs = require('fs');
+        const jsonContent = fs.readFileSync(downloadPath, 'utf8');
+        const quizData = JSON.parse(jsonContent);
+        
+        // Check that questions are in the new order
+        const questions = quizData.tests[0].questions;
+        expect(questions[0].question).toBe('Second Question');
+        expect(questions[1].question).toBe('First Question');
+        expect(questions[2].question).toBe('Third Question');
+        
+        // Clean up
+        fs.unlinkSync(downloadPath);
+    });
+
+    test('should support drag and drop reordering', async ({ page }) => {
+        // Get initial state
+        const initialFirstQuestion = await page.locator('.question-card').first().locator('h4').textContent();
+        const initialThirdQuestion = await page.locator('.question-card').nth(2).locator('h4').textContent();
+        
+        expect(initialFirstQuestion).toBe('First Question');
+        expect(initialThirdQuestion).toBe('Third Question');
+        
+        // Drag first question to third position
+        const firstCard = page.locator('.question-card').first();
+        const thirdCard = page.locator('.question-card').nth(2);
+        
+        await firstCard.dragTo(thirdCard);
+        
+        // Check new order
+        const newFirstQuestion = await page.locator('.question-card').first().locator('h4').textContent();
+        const newThirdQuestion = await page.locator('.question-card').nth(2).locator('h4').textContent();
+        
+        expect(newFirstQuestion).toBe('Second Question');
+        expect(newThirdQuestion).toBe('First Question');
+        
+        // Verify order numbers updated
+        const orderNumbers = await page.locator('.question-order').allTextContents();
+        expect(orderNumbers).toEqual(['1', '2', '3']);
+    });
+
+    test('should provide visual feedback during drag operations', async ({ page }) => {
+        const firstCard = page.locator('.question-card').first();
+        
+        // Start dragging
+        await firstCard.hover();
+        await page.mouse.down();
+        
+        // Check for visual feedback (opacity change)
+        await expect(firstCard).toHaveCSS('opacity', '0.5');
+        
+        // End drag
+        await page.mouse.up();
+        
+        // Check that visual feedback is cleared
+        await expect(firstCard).toHaveCSS('opacity', '1');
+    });
+});
+
+test.describe('Question Reordering - Mobile', () => {
+    test.use({ 
+        viewport: { width: 375, height: 667 } // iPhone SE size
+    });
+
+    test.beforeEach(async ({ page }) => {
+        const filePath = path.join(__dirname, '..', 'src', 'frontend', 'quizGenerator.html');
+        await page.goto(`file://${filePath}`);
+        
+        await page.click('button:has-text("✨ Create New Quiz")');
+        
+        // Add two questions for mobile testing
+        const questions = [
+            { text: "Mobile Question 1", option1: "A1", option2: "B1", option3: "C1", option4: "D1", correct: "option1" },
+            { text: "Mobile Question 2", option1: "A2", option2: "B2", option3: "C2", option4: "D2", correct: "option2" }
+        ];
+        
+        for (const q of questions) {
+            await page.fill('#question', q.text);
+            await page.fill('#option1', q.option1);
+            await page.fill('#option2', q.option2);
+            await page.fill('#option3', q.option3);
+            await page.fill('#option4', q.option4);
+            await page.selectOption('#correctAnswer', q.correct);
+            await page.click('button:has-text("➕ Add Question to Quiz")');
+        }
+    });
+
+    test('should have touch-friendly arrow buttons on mobile', async ({ page }) => {
+        // Check that up/down buttons meet minimum touch target size (44px)
+        const upButton = page.locator('.question-card').nth(1).locator('button[title="Move up"]');
+        const downButton = page.locator('.question-card').first().locator('button[title="Move down"]');
+        
+        // Check minimum height
+        await expect(upButton).toHaveCSS('min-height', '44px');
+        await expect(downButton).toHaveCSS('min-height', '44px');
+    });
+
+    test('should have enlarged drag handles on mobile', async ({ page }) => {
+        const dragHandle = page.locator('.drag-handle').first();
+        
+        // Check that drag handle has proper padding for touch
+        await expect(dragHandle).toHaveCSS('padding', '10px');
+    });
+
+    test('should work with touch events for reordering', async ({ page }) => {
+        // Simulate touch tap on up arrow
+        const upButton = page.locator('.question-card').nth(1).locator('button[title="Move up"]');
+        await upButton.tap();
+        
+        // Check that reordering worked
+        const newFirstQuestion = await page.locator('.question-card').first().locator('h4').textContent();
+        expect(newFirstQuestion).toBe('Mobile Question 2');
+    });
+});

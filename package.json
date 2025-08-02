@@ -30,7 +30,8 @@
     "test:report": "playwright show-report",
     "test:mobile": "playwright test mobile-responsiveness.spec.js",
     "test:generator": "playwright test quiz-generator.spec.js",
-    "test:runner": "playwright test quiz-test-runner.spec.js"
+    "test:runner": "playwright test quiz-test-runner.spec.js",
+    "test:reordering": "playwright test question-reordering.spec.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2"
