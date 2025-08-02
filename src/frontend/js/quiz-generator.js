@@ -77,6 +77,69 @@ function createBackwardCompatibleQuestion(question) {
 let testLibrary = [];
 let activeTestId = null;
 
+// Question type management
+function updateQuestionTypeUI() {
+    const questionType = document.getElementById('questionType').value;
+    const option1 = document.getElementById('option1');
+    const option2 = document.getElementById('option2');
+    const option3 = document.getElementById('option3');
+    const option4 = document.getElementById('option4');
+    const correctAnswer = document.getElementById('correctAnswer');
+    
+    if (questionType === 'true-false') {
+        // Pre-fill with True/False options
+        option1.value = 'True';
+        option2.value = 'False';
+        option3.value = '';
+        option4.value = '';
+        
+        // Hide options C and D for true/false
+        option3.parentElement.style.display = 'none';
+        option4.parentElement.style.display = 'none';
+        
+        // Update correct answer dropdown
+        correctAnswer.innerHTML = `
+            <option value="option1">A (True)</option>
+            <option value="option2">B (False)</option>
+        `;
+        
+        // Make options readonly to prevent editing
+        option1.readOnly = true;
+        option2.readOnly = true;
+        option1.style.backgroundColor = '#f8f9fa';
+        option2.style.backgroundColor = '#f8f9fa';
+        
+    } else if (questionType === 'multiple-choice') {
+        // Clear pre-filled values and restore editing
+        option1.value = '';
+        option2.value = '';
+        option3.value = '';
+        option4.value = '';
+        
+        // Show all options
+        option3.parentElement.style.display = 'block';
+        option4.parentElement.style.display = 'block';
+        
+        // Restore correct answer dropdown
+        correctAnswer.innerHTML = `
+            <option value="option1">A</option>
+            <option value="option2">B</option>
+            <option value="option3">C</option>
+            <option value="option4">D</option>
+        `;
+        
+        // Make options editable
+        option1.readOnly = false;
+        option2.readOnly = false;
+        option1.style.backgroundColor = '';
+        option2.style.backgroundColor = '';
+        
+        // Update placeholders
+        option1.placeholder = 'First answer option';
+        option2.placeholder = 'Second answer option';
+    }
+}
+
 // Built-in sample tests
 const sampleTests = [
     {
@@ -628,6 +691,7 @@ function addOrUpdateQuestion() {
         const preview = document.getElementById("imagePreview");
         imagePreviewData = preview.dataset.imageData || null;
     }
+    const questionType = document.getElementById("questionType").value;
     const option1 = document.getElementById("option1").value;
     const option2 = document.getElementById("option2").value;
     const option3 = document.getElementById("option3").value;
@@ -637,24 +701,40 @@ function addOrUpdateQuestion() {
     const difficulty = document.getElementById("difficulty").value;
     const points = parseInt(document.getElementById("points").value);
 
-    if(!question || !option1 || !option2 || !option3 || !option4 || !correctAnswer || !category || !difficulty)
-    {
-        alert("Please fill all the fields")
-        return;
+    // Validate based on question type
+    if (questionType === 'true-false') {
+        if(!question || !option1 || !option2 || !correctAnswer || !category || !difficulty) {
+            alert("Please fill all the required fields for True/False question")
+            return;
+        }
+    } else {
+        if(!question || !option1 || !option2 || !option3 || !option4 || !correctAnswer || !category || !difficulty) {
+            alert("Please fill all the fields")
+            return;
+        }
     }
+    
     // Create flexible question structure
+    const optionCount = questionType === 'true-false' ? 2 : 4;
+    const options = {};
+    
+    if (questionType === 'true-false') {
+        options.A = option1; // "True"
+        options.B = option2; // "False"
+    } else {
+        options.A = option1;
+        options.B = option2;
+        options.C = option3;
+        options.D = option4;
+    }
+    
     const newQuestion = {
         question: question,
         image: image,
         imagePreviewData: imagePreviewData,
-        questionType: "multiple-choice", // Default for now, will add UI selector
-        optionCount: 4, // Default for now, will add UI selector
-        options: {
-            A: option1,
-            B: option2,
-            C: option3,
-            D: option4
-        },
+        questionType: questionType,
+        optionCount: optionCount,
+        options: options,
         correctAnswer: convertInternalToLetter(correctAnswer), // Convert option1->A, etc.
         category: category,
         difficulty: difficulty,
@@ -750,8 +830,10 @@ function renderQuestions(questions) {
                     <div style="display: flex; gap: 15px; font-size: 13px; color: #7f8c8d; flex-wrap: wrap;">
                         <span><strong>A)</strong> ${question.options?.A || question.option1 || ''}</span>
                         <span><strong>B)</strong> ${question.options?.B || question.option2 || ''}</span>
+                        ${question.questionType !== 'true-false' ? `
                         <span><strong>C)</strong> ${question.options?.C || question.option3 || ''}</span>
                         <span><strong>D)</strong> ${question.options?.D || question.option4 || ''}</span>
+                        ` : ''}
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
@@ -844,11 +926,34 @@ function editQuestion(index){
         preview.dataset.imageData = '';
         preview.style.display = 'none';
     }
-    document.getElementById("option1").value = question.option1;
-    document.getElementById("option2").value = question.option2;
-    document.getElementById("option3").value = question.option3;
-    document.getElementById("option4").value = question.option4;
-    document.getElementById("correctAnswer").value = question.correctAnswer;
+    // Set question type and update UI accordingly
+    const questionType = question.questionType || 'multiple-choice';
+    document.getElementById("questionType").value = questionType;
+    updateQuestionTypeUI(); // This will set up the options visibility and dropdown
+    
+    // Set options based on format (new or old)
+    if (question.options) {
+        // New format
+        document.getElementById("option1").value = question.options.A || '';
+        document.getElementById("option2").value = question.options.B || '';
+        document.getElementById("option3").value = question.options.C || '';
+        document.getElementById("option4").value = question.options.D || '';
+    } else {
+        // Old format
+        document.getElementById("option1").value = question.option1 || '';
+        document.getElementById("option2").value = question.option2 || '';
+        document.getElementById("option3").value = question.option3 || '';
+        document.getElementById("option4").value = question.option4 || '';
+    }
+    
+    // Set correct answer (handle both letter and internal format)
+    if (question.correctAnswer && question.correctAnswer.match(/^[A-F]$/)) {
+        // Letter format - convert to internal
+        document.getElementById("correctAnswer").value = convertLetterToInternal(question.correctAnswer);
+    } else {
+        // Internal format
+        document.getElementById("correctAnswer").value = question.correctAnswer;
+    }
     document.getElementById("category").value = question.category;
     document.getElementById("points").value = question.points;
     document.getElementById("difficulty").value = question.difficulty;
@@ -1092,6 +1197,8 @@ function closeSuccessDialog() {
 function clearQuestionForm(){
     document.getElementById("question").value = "";
     document.getElementById("imagePath").value = "";
+    document.getElementById("questionType").value = "multiple-choice";
+    updateQuestionTypeUI(); // Reset to multiple choice view
     document.getElementById("option1").value = "";
     document.getElementById("option2").value = "";
     document.getElementById("option3").value = "";

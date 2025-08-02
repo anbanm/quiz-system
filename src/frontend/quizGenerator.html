@@ -103,6 +103,15 @@
     </div>
 
     <div style="margin: 20px 0;">
+        <label style="color: #2c3e50; font-size: 16px; font-weight: bold; display: block; margin-bottom: 10px;">🎯 Question Type:</label>
+        <select id="questionType" onchange="updateQuestionTypeUI()" style="width: 100%; font-size: 16px; padding: 8px; border: 2px solid #ddd; border-radius: 5px; margin-bottom: 20px;">
+            <option value="multiple-choice">Multiple Choice (A, B, C, D)</option>
+            <option value="true-false">True/False</option>
+        </select>
+        <small style="color: #7f8c8d; display: block; margin-bottom: 20px; font-style: italic;">💡 Choose between multiple choice questions or simple true/false questions</small>
+    </div>
+
+    <div style="margin: 20px 0;">
         <h3 style="color: #2c3e50; margin-bottom: 15px;">📝 Answer Options:</h3>
         
         <div style="display: grid; gap: 10px;">
