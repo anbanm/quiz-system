@@ -23,7 +23,7 @@ test.describe('Quiz Generator - Clean Architecture Tests', () => {
     // Verify quiz creation elements are visible
     await quizPage.expectVisible('questionForm.questionEditor');
     await quizPage.expectVisible('questionForm.answerOptions.option1');
-    await quizPage.expectValue('quizDetails.testNameInput', 'Clean Architecture Test Quiz');
+    await quizPage.expectValue('quizDetails.quizNameInput', 'Clean Architecture Test Quiz');
   });
 
   test('should add simple question using page object', async ({ page }) => {

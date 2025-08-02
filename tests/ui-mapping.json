@@ -8,9 +8,14 @@
       "elements": {
         "navigation": {
           "createNewQuizButton": {
-            "selector": "#createTestButton",
+            "selector": "#createQuizButton",
             "type": "button",
-            "description": "Creates a new quiz"
+            "description": "Creates a new quiz or adds new question (context-dependent)"
+          },
+          "startFreshQuizButton": {
+            "selector": "#newQuizButton",
+            "type": "button",
+            "description": "Always creates a completely new quiz (shown when quiz loaded)"
           },
           "loadQuizButton": {
             "selector": "input[type='file']#jsonUpload",
@@ -25,13 +30,13 @@
         },
         
         "quizDetails": {
-          "testNameInput": {
-            "selector": "#testName",
+          "quizNameInput": {
+            "selector": "#quizName",
             "type": "text-input",
             "description": "Quiz title input"
           },
-          "testIdInput": {
-            "selector": "#testId",
+          "quizIdInput": {
+            "selector": "#quizId",
             "type": "text-input",
             "description": "Quiz ID input (auto-generated)"
           }

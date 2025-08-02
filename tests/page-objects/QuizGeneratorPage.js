@@ -17,10 +17,10 @@ class QuizGeneratorPage {
     await this.page.waitForLoadState('networkidle');
   }
 
-  async createNewQuiz(testName = 'Test Quiz') {
+  async createNewQuiz(quizName = 'Test Quiz') {
     await this.click('navigation.createNewQuizButton');
-    if (testName) {
-      await this.fill('quizDetails.testNameInput', testName);
+    if (quizName) {
+      await this.fill('quizDetails.quizNameInput', quizName);
     }
     await this.ensureCleanState();
   }
@@ -214,9 +214,9 @@ class QuizGeneratorPage {
 
   async downloadZip() {
     // Ensure we have a test name set for the download
-    const testNameValue = await this.page.locator('#testName').inputValue();
-    if (!testNameValue) {
-      await this.fill('quizDetails.testNameInput', 'Test Quiz');
+    const quizNameValue = await this.page.locator('#quizName').inputValue();
+    if (!quizNameValue) {
+      await this.fill('quizDetails.quizNameInput', 'Test Quiz');
     }
     
     // Ensure sidebar is closed

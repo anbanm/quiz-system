@@ -528,18 +528,18 @@ function getImageExtension(imagePath) {
     return ['jpg', 'png', 'gif', 'webp'].includes(normalizedExt) ? normalizedExt : 'jpg';
 }
 
-function generateTestId() {
-    const testId = 'test-' + Math.floor(Math.random() * 1000000);
-    document.getElementById("testId").value = testId;
+function generateQuizId() {
+    const quizId = 'quiz-' + Math.floor(Math.random() * 1000000);
+    document.getElementById("quizId").value = quizId;
 
     // Update testName from the input element
-    const testNameInput = document.getElementById("testName").value;
-    quizData.tests[currentTestIndex].testName = testNameInput;
+    const quizNameInput = document.getElementById("quizName").value;
+    quizData.tests[currentTestIndex].testName = quizNameInput;
     
     // IMPORTANT: Update the actual quiz data with the new test ID
-    quizData.tests[currentTestIndex].testId = testId;
+    quizData.tests[currentTestIndex].testId = quizId;
 
-    return testId;
+    return quizId;
 }
 
 function handleFileSelect(event) {
@@ -647,8 +647,8 @@ function loadJSON(event) {
 }
 
 function populateTestSelect() {
-    const testSelectContainer = document.getElementById("testSelectContainer");
-    testSelectContainer.innerHTML = ""; // Clear previous options
+    const quizSelectContainer = document.getElementById("quizSelectContainer");
+    quizSelectContainer.innerHTML = ""; // Clear previous options
 
     if (quizData.tests.length > 0) {
         const select = document.createElement("select");
@@ -662,26 +662,26 @@ function populateTestSelect() {
             select.appendChild(option);
         });
 
-        testSelectContainer.appendChild(select);
-        testSelectContainer.style.display = "block";
+        quizSelectContainer.appendChild(select);
+        quizSelectContainer.style.display = "block";
         selectTest(0); // Select the first test by default if there are any tests.
     } else {
-        testSelectContainer.style.display = "none";
+        quizSelectContainer.style.display = "none";
     }
-    document.getElementById("testDetailsContainer").style.display = "block";
+    document.getElementById("quizDetailsContainer").style.display = "block";
 }
 
 function selectTest(index) {
     currentTestIndex = index;
     const test = quizData.tests[index];
 
-    const testNameInput = document.getElementById("testName");
-    testNameInput.value = test.testName;
-    testNameInput.onchange = () => {
-        test.testName = testNameInput.value;
+    const quizNameInput = document.getElementById("quizName");
+    quizNameInput.value = test.testName;
+    quizNameInput.onchange = () => {
+        test.testName = quizNameInput.value;
     };
 
-    document.getElementById("testId").value = test.testId;
+    document.getElementById("quizId").value = test.testId;
 
     // Load Questions of selected test
     const questions = test.questions || [];
@@ -692,19 +692,24 @@ function selectTest(index) {
 function updateCreateButtonText() {
     // Update button text based on whether we have a test loaded
     const hasTestLoaded = currentTestIndex !== -1 && quizData.tests[currentTestIndex];
-    const mainButton = document.getElementById('createTestButton');
+    const mainButton = document.getElementById('createQuizButton');
     const summaryButton = document.getElementById('summaryCreateButton');
+    const newQuizButton = document.getElementById('newQuizButton');
     
     if (hasTestLoaded) {
         if (mainButton) mainButton.innerHTML = '➕ Add New Question';
         if (summaryButton) summaryButton.innerHTML = '➕ Add New Question';
+        // Show the "Start Fresh Quiz" button when a quiz is loaded
+        if (newQuizButton) newQuizButton.style.display = 'inline-block';
     } else {
         if (mainButton) mainButton.innerHTML = '✨ Create New Quiz';
-        if (summaryButton) summaryButton.innerHTML = '✨ Create New Test';
+        if (summaryButton) summaryButton.innerHTML = '✨ Create New Quiz';
+        // Hide the "Start Fresh Quiz" button when no quiz is loaded
+        if (newQuizButton) newQuizButton.style.display = 'none';
     }
 }
 
-function createNewTest() {
+function createNewQuiz() {
     // Always create a completely new test - don't just add to existing
     
     // Reset global state to allow fresh start
@@ -712,14 +717,14 @@ function createNewTest() {
     quizData = { tests: [] };
     currentTestIndex = -1;
     
-    // Create completely new test
-    const newTest = {
-        testName: "New Test",
-        testId: 'test-' + Math.floor(Math.random() * 1000000),
+    // Create completely new quiz
+    const newQuiz = {
+        testName: "New Quiz",
+        testId: 'quiz-' + Math.floor(Math.random() * 1000000),
         questions: []
     };
 
-    quizData.tests.push(newTest);
+    quizData.tests.push(newQuiz);
     currentTestIndex = quizData.tests.length - 1;  // Switch to the last test.
 
     populateTestSelect();   // Refresh test selection menu
@@ -1421,9 +1426,9 @@ function clearQuestionForm(){
 // JSON Generation and Export Functions
 function generateJSON() {
     // Update testName from the input element
-    const testNameInput = document.getElementById("testName").value;
+    const quizNameInput = document.getElementById("quizName").value;
     const test = quizData.tests[currentTestIndex];
-    test.testName = testNameInput;
+    test.testName = quizNameInput;
 
     // Ensure all questions have positions and sort by position
     const sortedQuestions = test.questions
@@ -1546,9 +1551,9 @@ async function downloadZIP() {
 
 // Generate JSON with embedded images for standalone use
 function generateEmbeddedJSON() {
-    const testNameInput = document.getElementById("testName").value;
+    const quizNameInput = document.getElementById("quizName").value;
     const test = quizData.tests[currentTestIndex];
-    test.testName = testNameInput;
+    test.testName = quizNameInput;
 
     // Ensure all questions have positions and sort by position
     const sortedQuestions = test.questions
