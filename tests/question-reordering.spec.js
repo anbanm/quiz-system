@@ -24,25 +24,39 @@ test.describe('Question Reordering', () => {
             await page.fill('#option3', q.option3);
             await page.fill('#option4', q.option4);
             await page.selectOption('#correctAnswer', q.correct);
+            await page.fill('#category', 'Test Category');
             await page.click('button:has-text("➕ Add Question to Quiz")');
+            
+            // Close the success dialog that appears after adding a question
+            const closeButton = page.locator('button:has-text("✕ Just Close This")');
+            if (await closeButton.isVisible()) {
+                await closeButton.click();
+            }
         }
     });
 
     test('should display question order numbers correctly', async ({ page }) => {
         // Check that questions are numbered 1, 2, 3
         const orderNumbers = await page.locator('.question-order').allTextContents();
-        expect(orderNumbers).toEqual(['1', '2', '3']);
+        const trimmedNumbers = orderNumbers.map(num => num.trim());
+        expect(trimmedNumbers).toEqual(['1', '2', '3']);
     });
 
-    test('should show drag handles for all questions', async ({ page }) => {
-        // Check that drag handles are present
-        const dragHandles = page.locator('.drag-handle');
-        await expect(dragHandles).toHaveCount(3);
+    test('should show arrow buttons for reordering', async ({ page }) => {
+        // Check that up arrows are present (except for first question)
+        const upButtons = page.locator('button[title="Move up"]');
+        await expect(upButtons).toHaveCount(3);
         
-        // Check that question cards are draggable
+        // Check that down arrows are present (except for last question)
+        const downButtons = page.locator('button[title="Move down"]');
+        await expect(downButtons).toHaveCount(3);
+        
+        // Check that question cards are not draggable (we removed drag & drop)
         const questionCards = page.locator('.question-card');
         for (let i = 0; i < 3; i++) {
-            await expect(questionCards.nth(i)).toHaveAttribute('draggable', 'true');
+            const card = questionCards.nth(i);
+            const draggable = await card.getAttribute('draggable');
+            expect(draggable).toBeFalsy();
         }
     });
 
@@ -130,47 +144,29 @@ test.describe('Question Reordering', () => {
         fs.unlinkSync(downloadPath);
     });
 
-    test('should support drag and drop reordering', async ({ page }) => {
-        // Get initial state
-        const initialFirstQuestion = await page.locator('.question-card').first().locator('h4').textContent();
-        const initialThirdQuestion = await page.locator('.question-card').nth(2).locator('h4').textContent();
+    test('should show success dialog after adding new question', async ({ page }) => {
+        // Add a fourth question to trigger the success dialog
+        await page.fill('#question', 'Fourth Question');
+        await page.fill('#option1', 'A4');
+        await page.fill('#option2', 'B4');
+        await page.fill('#option3', 'C4');
+        await page.fill('#option4', 'D4');
+        await page.selectOption('#correctAnswer', 'option1');
+        await page.fill('#category', 'Test Category');
+        await page.click('button:has-text("➕ Add Question to Quiz")');
         
-        expect(initialFirstQuestion).toBe('First Question');
-        expect(initialThirdQuestion).toBe('Third Question');
+        // Check that success dialog appears
+        const successDialog = page.locator('#success-choices');
+        await expect(successDialog).toBeVisible();
         
-        // Drag first question to third position
-        const firstCard = page.locator('.question-card').first();
-        const thirdCard = page.locator('.question-card').nth(2);
+        // Check that it has the expected options
+        await expect(page.locator('button:has-text("Add Another Question")')).toBeVisible();
+        await expect(page.locator('button:has-text("Review & Reorder Questions")')).toBeVisible();
+        await expect(page.locator('button:has-text("Save & Export Quiz")')).toBeVisible();
         
-        await firstCard.dragTo(thirdCard);
-        
-        // Check new order
-        const newFirstQuestion = await page.locator('.question-card').first().locator('h4').textContent();
-        const newThirdQuestion = await page.locator('.question-card').nth(2).locator('h4').textContent();
-        
-        expect(newFirstQuestion).toBe('Second Question');
-        expect(newThirdQuestion).toBe('First Question');
-        
-        // Verify order numbers updated
-        const orderNumbers = await page.locator('.question-order').allTextContents();
-        expect(orderNumbers).toEqual(['1', '2', '3']);
-    });
-
-    test('should provide visual feedback during drag operations', async ({ page }) => {
-        const firstCard = page.locator('.question-card').first();
-        
-        // Start dragging
-        await firstCard.hover();
-        await page.mouse.down();
-        
-        // Check for visual feedback (opacity change)
-        await expect(firstCard).toHaveCSS('opacity', '0.5');
-        
-        // End drag
-        await page.mouse.up();
-        
-        // Check that visual feedback is cleared
-        await expect(firstCard).toHaveCSS('opacity', '1');
+        // Close the dialog
+        await page.click('button:has-text("✕ Just Close This")');
+        await expect(successDialog).not.toBeVisible();
     });
 });
 
@@ -198,7 +194,14 @@ test.describe('Question Reordering - Mobile', () => {
             await page.fill('#option3', q.option3);
             await page.fill('#option4', q.option4);
             await page.selectOption('#correctAnswer', q.correct);
+            await page.fill('#category', 'Test Category');
             await page.click('button:has-text("➕ Add Question to Quiz")');
+            
+            // Close the success dialog that appears after adding a question
+            const closeButton = page.locator('button:has-text("✕ Just Close This")');
+            if (await closeButton.isVisible()) {
+                await closeButton.click();
+            }
         }
     });
 
