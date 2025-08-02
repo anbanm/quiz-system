@@ -80,55 +80,46 @@ let activeTestId = null;
 // Question type management
 function updateQuestionTypeUI() {
     const questionType = document.getElementById('questionType').value;
-    const option1 = document.getElementById('option1');
-    const option2 = document.getElementById('option2');
-    const option3 = document.getElementById('option3');
-    const option4 = document.getElementById('option4');
-    const correctAnswer = document.getElementById('correctAnswer');
+    const optionCountContainer = document.getElementById('optionCountContainer');
+    const optionCount = document.getElementById('optionCount');
     
     if (questionType === 'true-false') {
+        // Hide option count selector for true/false
+        optionCountContainer.style.display = 'none';
+        optionCount.value = '2';
+        updateOptionCount(); // Update to show only A, B
+        
         // Pre-fill with True/False options
-        option1.value = 'True';
-        option2.value = 'False';
-        option3.value = '';
-        option4.value = '';
-        
-        // Hide options C and D for true/false
-        option3.parentElement.style.display = 'none';
-        option4.parentElement.style.display = 'none';
-        
-        // Update correct answer dropdown
-        correctAnswer.innerHTML = `
-            <option value="option1">A (True)</option>
-            <option value="option2">B (False)</option>
-        `;
+        document.getElementById('option1').value = 'True';
+        document.getElementById('option2').value = 'False';
         
         // Make options readonly to prevent editing
+        const option1 = document.getElementById('option1');
+        const option2 = document.getElementById('option2');
         option1.readOnly = true;
         option2.readOnly = true;
         option1.style.backgroundColor = '#f8f9fa';
         option2.style.backgroundColor = '#f8f9fa';
         
-    } else if (questionType === 'multiple-choice') {
-        // Clear pre-filled values and restore editing
-        option1.value = '';
-        option2.value = '';
-        option3.value = '';
-        option4.value = '';
-        
-        // Show all options
-        option3.parentElement.style.display = 'block';
-        option4.parentElement.style.display = 'block';
-        
-        // Restore correct answer dropdown
+        // Update correct answer dropdown for true/false
+        const correctAnswer = document.getElementById('correctAnswer');
         correctAnswer.innerHTML = `
-            <option value="option1">A</option>
-            <option value="option2">B</option>
-            <option value="option3">C</option>
-            <option value="option4">D</option>
+            <option value="option1">A (True)</option>
+            <option value="option2">B (False)</option>
         `;
         
+    } else if (questionType === 'multiple-choice') {
+        // Show option count selector for multiple choice
+        optionCountContainer.style.display = 'block';
+        updateOptionCount(); // Update based on current selection
+        
+        // Clear pre-filled values and restore editing
+        document.getElementById('option1').value = '';
+        document.getElementById('option2').value = '';
+        
         // Make options editable
+        const option1 = document.getElementById('option1');
+        const option2 = document.getElementById('option2');
         option1.readOnly = false;
         option2.readOnly = false;
         option1.style.backgroundColor = '';
@@ -138,6 +129,71 @@ function updateQuestionTypeUI() {
         option1.placeholder = 'First answer option';
         option2.placeholder = 'Second answer option';
     }
+}
+
+function updateOptionCount() {
+    const optionCount = parseInt(document.getElementById('optionCount').value);
+    const questionType = document.getElementById('questionType').value;
+    
+    // Get all option elements and containers
+    const options = [
+        { input: document.getElementById('option1'), container: document.getElementById('option1').parentElement },
+        { input: document.getElementById('option2'), container: document.getElementById('option2').parentElement },
+        { input: document.getElementById('option3'), container: document.getElementById('option3').parentElement },
+        { input: document.getElementById('option4'), container: document.getElementById('option4').parentElement },
+        { input: document.getElementById('option5'), container: document.getElementById('option5Container') },
+        { input: document.getElementById('option6'), container: document.getElementById('option6Container') }
+    ];
+    
+    // Show/hide options based on count
+    options.forEach((option, index) => {
+        if (index < optionCount) {
+            option.container.style.display = 'block';
+            // Clear values for newly shown options (except for true/false)
+            if (questionType !== 'true-false' && index >= 2) {
+                option.input.value = '';
+            }
+        } else {
+            option.container.style.display = 'none';
+            option.input.value = '';
+        }
+    });
+    
+    // Update correct answer dropdown
+    updateCorrectAnswerDropdown(optionCount, questionType);
+}
+
+function updateCorrectAnswerDropdown(optionCount, questionType) {
+    const correctAnswer = document.getElementById('correctAnswer');
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const optionValues = ['option1', 'option2', 'option3', 'option4', 'option5', 'option6'];
+    
+    let dropdownHTML = '';
+    
+    for (let i = 0; i < optionCount; i++) {
+        if (questionType === 'true-false') {
+            if (i === 0) dropdownHTML += `<option value="${optionValues[i]}">${letters[i]} (True)</option>`;
+            if (i === 1) dropdownHTML += `<option value="${optionValues[i]}">${letters[i]} (False)</option>`;
+        } else {
+            dropdownHTML += `<option value="${optionValues[i]}">${letters[i]}</option>`;
+        }
+    }
+    
+    correctAnswer.innerHTML = dropdownHTML;
+}
+
+function generateOptionDisplayHTML(question) {
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const optionCount = question.optionCount || 4;
+    let html = '';
+    
+    for (let i = 0; i < optionCount; i++) {
+        const letter = letters[i];
+        const optionValue = question.options?.[letter] || question[`option${i+1}`] || '';
+        html += `<span><strong>${letter})</strong> ${optionValue}</span>`;
+    }
+    
+    return html;
 }
 
 // Built-in sample tests
@@ -692,40 +748,42 @@ function addOrUpdateQuestion() {
         imagePreviewData = preview.dataset.imageData || null;
     }
     const questionType = document.getElementById("questionType").value;
+    const selectedOptionCount = questionType === 'true-false' ? 2 : parseInt(document.getElementById("optionCount").value);
     const option1 = document.getElementById("option1").value;
     const option2 = document.getElementById("option2").value;
     const option3 = document.getElementById("option3").value;
     const option4 = document.getElementById("option4").value;
+    const option5 = document.getElementById("option5").value;
+    const option6 = document.getElementById("option6").value;
     const correctAnswer = document.getElementById("correctAnswer").value;
     const category = document.getElementById("category").value;
     const difficulty = document.getElementById("difficulty").value;
     const points = parseInt(document.getElementById("points").value);
 
-    // Validate based on question type
-    if (questionType === 'true-false') {
-        if(!question || !option1 || !option2 || !correctAnswer || !category || !difficulty) {
-            alert("Please fill all the required fields for True/False question")
-            return;
-        }
-    } else {
-        if(!question || !option1 || !option2 || !option3 || !option4 || !correctAnswer || !category || !difficulty) {
-            alert("Please fill all the fields")
+    // Validate based on question type and option count
+    const allOptions = [option1, option2, option3, option4, option5, option6];
+    const requiredOptions = allOptions.slice(0, selectedOptionCount);
+    
+    if (!question || !category || !difficulty || !correctAnswer) {
+        alert("Please fill all the required fields");
+        return;
+    }
+    
+    // Check that all required options are filled
+    for (let i = 0; i < selectedOptionCount; i++) {
+        if (!requiredOptions[i] || requiredOptions[i].trim() === '') {
+            const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+            alert(`Please fill in option ${letters[i]}`);
             return;
         }
     }
     
     // Create flexible question structure
-    const optionCount = questionType === 'true-false' ? 2 : 4;
     const options = {};
+    const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
     
-    if (questionType === 'true-false') {
-        options.A = option1; // "True"
-        options.B = option2; // "False"
-    } else {
-        options.A = option1;
-        options.B = option2;
-        options.C = option3;
-        options.D = option4;
+    for (let i = 0; i < selectedOptionCount; i++) {
+        options[letters[i]] = requiredOptions[i];
     }
     
     const newQuestion = {
@@ -733,7 +791,7 @@ function addOrUpdateQuestion() {
         image: image,
         imagePreviewData: imagePreviewData,
         questionType: questionType,
-        optionCount: optionCount,
+        optionCount: selectedOptionCount,
         options: options,
         correctAnswer: convertInternalToLetter(correctAnswer), // Convert option1->A, etc.
         category: category,
@@ -828,12 +886,7 @@ function renderQuestions(questions) {
                     </div>
                     <h4 style="margin: 0 0 8px 0; color: #2c3e50; font-size: 16px; line-height: 1.3;">${question.question}</h4>
                     <div style="display: flex; gap: 15px; font-size: 13px; color: #7f8c8d; flex-wrap: wrap;">
-                        <span><strong>A)</strong> ${question.options?.A || question.option1 || ''}</span>
-                        <span><strong>B)</strong> ${question.options?.B || question.option2 || ''}</span>
-                        ${question.questionType !== 'true-false' ? `
-                        <span><strong>C)</strong> ${question.options?.C || question.option3 || ''}</span>
-                        <span><strong>D)</strong> ${question.options?.D || question.option4 || ''}</span>
-                        ` : ''}
+                        ${generateOptionDisplayHTML(question)}
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
@@ -926,24 +979,37 @@ function editQuestion(index){
         preview.dataset.imageData = '';
         preview.style.display = 'none';
     }
-    // Set question type and update UI accordingly
+    // Set question type and option count
     const questionType = question.questionType || 'multiple-choice';
+    const optionCount = question.optionCount || 4;
+    
     document.getElementById("questionType").value = questionType;
+    if (questionType === 'multiple-choice') {
+        document.getElementById("optionCount").value = optionCount;
+    }
     updateQuestionTypeUI(); // This will set up the options visibility and dropdown
     
     // Set options based on format (new or old)
+    const allOptionInputs = [
+        document.getElementById("option1"),
+        document.getElementById("option2"),
+        document.getElementById("option3"),
+        document.getElementById("option4"),
+        document.getElementById("option5"),
+        document.getElementById("option6")
+    ];
+    
     if (question.options) {
         // New format
-        document.getElementById("option1").value = question.options.A || '';
-        document.getElementById("option2").value = question.options.B || '';
-        document.getElementById("option3").value = question.options.C || '';
-        document.getElementById("option4").value = question.options.D || '';
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+        allOptionInputs.forEach((input, index) => {
+            input.value = question.options[letters[index]] || '';
+        });
     } else {
         // Old format
-        document.getElementById("option1").value = question.option1 || '';
-        document.getElementById("option2").value = question.option2 || '';
-        document.getElementById("option3").value = question.option3 || '';
-        document.getElementById("option4").value = question.option4 || '';
+        allOptionInputs.forEach((input, index) => {
+            input.value = question[`option${index + 1}`] || '';
+        });
     }
     
     // Set correct answer (handle both letter and internal format)
@@ -1198,11 +1264,14 @@ function clearQuestionForm(){
     document.getElementById("question").value = "";
     document.getElementById("imagePath").value = "";
     document.getElementById("questionType").value = "multiple-choice";
+    document.getElementById("optionCount").value = "4";
     updateQuestionTypeUI(); // Reset to multiple choice view
     document.getElementById("option1").value = "";
     document.getElementById("option2").value = "";
     document.getElementById("option3").value = "";
     document.getElementById("option4").value = "";
+    document.getElementById("option5").value = "";
+    document.getElementById("option6").value = "";
     document.getElementById("correctAnswer").value = "option1";
     document.getElementById("category").value = "";
     document.getElementById("points").value = 1;
