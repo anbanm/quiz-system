@@ -111,6 +111,18 @@
         <small style="color: #7f8c8d; display: block; margin-bottom: 20px; font-style: italic;">💡 Choose between multiple choice questions or simple true/false questions</small>
     </div>
 
+    <div style="margin: 20px 0;" id="optionCountContainer">
+        <label style="color: #2c3e50; font-size: 16px; font-weight: bold; display: block; margin-bottom: 10px;">🔢 Number of Options:</label>
+        <select id="optionCount" onchange="updateOptionCount()" style="width: 100%; font-size: 16px; padding: 8px; border: 2px solid #ddd; border-radius: 5px; margin-bottom: 10px;">
+            <option value="2">2 Options (A, B)</option>
+            <option value="3">3 Options (A, B, C)</option>
+            <option value="4" selected>4 Options (A, B, C, D)</option>
+            <option value="5">5 Options (A, B, C, D, E)</option>
+            <option value="6">6 Options (A, B, C, D, E, F)</option>
+        </select>
+        <small style="color: #7f8c8d; display: block; margin-bottom: 20px; font-style: italic;">💡 Choose how many answer choices to provide for this question</small>
+    </div>
+
     <div style="margin: 20px 0;">
         <h3 style="color: #2c3e50; margin-bottom: 15px;">📝 Answer Options:</h3>
         
@@ -140,18 +152,6 @@
                 <input type="text" id="option6" placeholder="Sixth answer option" style="margin-left: 10px;">
             </div>
         </div>
-    </div>
-
-    <div style="margin: 20px 0;" id="optionCountContainer">
-        <label style="color: #2c3e50; font-size: 16px; font-weight: bold; display: block; margin-bottom: 10px;">🔢 Number of Options:</label>
-        <select id="optionCount" onchange="updateOptionCount()" style="width: 100%; font-size: 16px; padding: 8px; border: 2px solid #ddd; border-radius: 5px; margin-bottom: 10px;">
-            <option value="2">2 Options (A, B)</option>
-            <option value="3">3 Options (A, B, C)</option>
-            <option value="4" selected>4 Options (A, B, C, D)</option>
-            <option value="5">5 Options (A, B, C, D, E)</option>
-            <option value="6">6 Options (A, B, C, D, E, F)</option>
-        </select>
-        <small style="color: #7f8c8d; display: block; margin-bottom: 10px; font-style: italic;">💡 Choose how many answer choices to provide for this question</small>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 20px 0;">
