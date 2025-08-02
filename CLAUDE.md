@@ -2,7 +2,7 @@
 
 ## Project Overview
 **Location:** `/Users/anbanmestry/Downloads/quiz-system`  
-**Current Version:** v1.2.0 (Released: 2025-08-01)  
+**Current Version:** v1.3.0 (Released: 2025-08-02)  
 **Owner:** Anban Mestry <anbanm@gmail.com>  
 **Repository:** https://github.com/anbanm/quiz-system.git
 
@@ -13,38 +13,40 @@
 ✅ **Cross-Browser Compatibility Validated**  
 ✅ **Documentation Fully Updated**
 
-## Key Achievements in Last Session (2025-08-01)
+## Key Achievements in Last Session (2025-08-02)
 
-### 🤖 Major Testing Implementation
-- **108 comprehensive Playwright tests** across 6 browsers/devices
-- **Real image testing** with 5 sample SVG images (math formulas, diagrams, visuals)
-- **Cross-browser testing** (Chromium, Firefox, WebKit)
-- **Mobile device testing** (iPhone 12, Pixel 5, iPad Pro)
-- **Interactive "bot vision" testing** with Playwright UI
+### 🔧 Major Codebase Refactoring (v1.3.0)
+- **87% file size reduction**: HTML reduced from 1,915 lines to 244 lines
+- **Separated HTML, CSS, and JavaScript** into dedicated files for better maintainability
+- **Clean file structure** with `css/` and `js/` directories following web development best practices
+- **Enhanced test library** with left sidebar menu for managing quiz collections
+- **Smart JSON format conversion** handling different option formats automatically
 
-### 📊 Test Coverage Breakdown
-- **36 Teacher Interface tests**: Quiz creation, image upload, JSON generation
-- **36 Student Interface tests**: Quiz taking, image display, answer submission
-- **36 Mobile Responsiveness tests**: Touch targets, image sizing, responsive layout
+### 🎯 New Features & UX Improvements
+- **Test Library with Sidebar**: Pre-loaded sample tests (math, science) for immediate use
+- **Built-in Sample Tests**: Math and science quizzes available without file uploads
+- **Duplicate Test Detection**: Smart handling of test library imports with user confirmation
+- **Enhanced Button Behavior**: Context-aware "Create New Quiz" vs "Add New Question"
+- **Test Metadata Display**: Question count, total points, difficulty overview
+- **Auto-scroll and Focus**: Better UX when loading tests and adding questions
 
-### 🎯 Technical Implementations
-- Created comprehensive Playwright configuration (`playwright.config.js`)
-- Generated sample test images as SVG data URLs (`tests/test-data/images/`)
-- Fixed mobile test configuration issues (test.use() placement)
-- Implemented proper Git branching workflow (`feature/playwright-testing`)
-- Updated package.json with testing scripts and version bump
+### 🧪 Test Suite Maintenance
+- **174 tests passing** (expanded from previous 108 with new question reordering tests)
+- **Fixed test failures** caused by success dialogs blocking UI interactions
+- **Improved test reliability** for mobile devices and sidebar interactions
+- **Comprehensive cross-browser validation** maintained across all platforms
 
-### 📝 Documentation Updates
-- Updated README.md with comprehensive testing section
-- Added testing badges and version updates
-- Created detailed changelog for v1.2.0
-- Fixed date inconsistencies in changelog
+### 📝 Documentation & Release Management
+- **Professional Git workflow**: Feature branch → testing → merge → tag → release
+- **Updated README.md** with comprehensive v1.3.0 changelog
+- **Version management** in package.json updated to 1.3.0
+- **Git tagging** for proper release tracking
 
 ## Essential Commands
 
 ### Testing Commands
 ```bash
-# Run all 108 tests
+# Run all 174 tests (expanded test suite)
 npm test
 
 # Interactive "bot vision" testing (BEST EXPERIENCE)
@@ -54,6 +56,7 @@ npm run test:ui
 npm run test:mobile      # Mobile responsiveness tests
 npm run test:generator   # Teacher interface tests  
 npm run test:runner      # Student interface tests
+npm run test:reordering  # Question reordering tests
 
 # View test reports
 npm run test:report
@@ -93,13 +96,18 @@ gh release create v1.x.x --title "Title" --notes "Description"
 quiz-system/
 ├── src/
 │   ├── frontend/          # Main quiz tools
-│   │   ├── quizGenerator.html
+│   │   ├── quizGenerator.html    # 🔧 Refactored (244 lines, was 1915)
+│   │   ├── css/                  # 🆕 Separated CSS files
+│   │   │   └── quiz-generator.css
+│   │   ├── js/                   # 🆕 Separated JavaScript files
+│   │   │   └── quiz-generator.js
 │   │   └── WebTest.html
 │   └── unity/             # Unity C# scripts
 ├── tests/                 # 🆕 Comprehensive test suite
 │   ├── quiz-generator.spec.js      # Teacher interface tests
 │   ├── quiz-test-runner.spec.js    # Student interface tests
 │   ├── mobile-responsiveness.spec.js # Mobile tests
+│   ├── question-reordering.spec.js # 🆕 Question reordering tests
 │   └── test-data/         # Sample images and quiz data
 ├── playwright.config.js   # 🆕 Test configuration
 ├── package.json           # Updated with test scripts
@@ -108,10 +116,11 @@ quiz-system/
 ```
 
 ## Test Status: 100% SUCCESS ✅
-- **108/108 tests passing** across all platforms
-- **6 browsers/devices** fully validated
+- **174/174 tests passing** across all platforms (expanded test suite)
+- **6 browsers/devices** fully validated (Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari, Tablet iPad)
 - **Real image functionality** thoroughly tested
 - **Mobile responsiveness** confirmed on all devices
+- **Question reordering** fully tested with arrow buttons
 
 ## Key Technical Decisions Made
 
@@ -133,10 +142,10 @@ quiz-system/
 - Tested image overflow and container sizing
 
 ## Last Known Issues & Solutions
-1. **Playwright test.use() error**: Fixed by restructuring mobile tests
-2. **Multi-question navigation**: Updated tests to handle single-page quiz format
-3. **Image data storage**: Fixed by properly setting imagePreviewData
-4. **Date inconsistencies**: Corrected changelog dates to match Git history
+1. **Success dialogs blocking tests**: Fixed by adding proper dialog handling in quiz-generator.spec.js
+2. **Sidebar interference on mobile**: Fixed by closing sidebar before download actions in tests
+3. **Codebase maintainability**: Solved with major refactoring separating HTML, CSS, and JS
+4. **Test reliability**: Enhanced with better UI interaction handling across all 174 tests
 
 ## Future Session Quick Start
 1. Navigate to project: `cd /Users/anbanmestry/Downloads/quiz-system`
@@ -145,9 +154,9 @@ quiz-system/
 4. For interactive testing: `npm run test:ui`
 
 ## Context for Future Claude Sessions
-*"We just completed a major v1.2.0 release adding comprehensive Playwright testing to the quiz system. The project now has 108 automated tests covering teacher interface, student interface, and mobile responsiveness across 6 browsers/devices. All tests pass 100% and include real image testing with sample visuals. The GitHub repository is fully updated with professional documentation."*
+*"We just completed a major v1.3.0 release featuring significant codebase refactoring and enhanced UX for the quiz system. The HTML file was reduced by 87% (1,915 → 244 lines) through separation of concerns into dedicated CSS and JavaScript files. Added a test library with sidebar, smart JSON conversion, and improved button behavior. All 174 automated tests pass 100% across 6 browsers/devices. The project now follows modern web development best practices with clean file organization."*
 
 ---
-📅 **Last Updated:** 2025-08-01  
+📅 **Last Updated:** 2025-08-02  
 🤖 **Generated with Claude Code**  
 👨‍💻 **Co-Authored-By:** Claude & Anban Mestry
