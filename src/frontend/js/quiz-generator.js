@@ -7,58 +7,22 @@ let currentQuestionIndex = null // Index of the currently selected question
 let questionEditor = null;     // Quill rich text editor instance
 let optionEditors = [];        // Array to store option editor instances
 
-// Helper function to convert Quill Delta to HTML
+// Helper function to convert Quill Delta to HTML - now using modular version
 function deltaToHtml(delta) {
-    if (!delta || !delta.ops) return '';
-    
-    let html = '';
-    
-    for (const op of delta.ops) {
-        if (typeof op.insert === 'string') {
-            let text = op.insert.replace(/\n/g, ''); // Remove newlines
-            
-            if (op.attributes) {
-                if (op.attributes.bold) text = `<strong>${text}</strong>`;
-                if (op.attributes.italic) text = `<em>${text}</em>`;
-                if (op.attributes.underline) text = `<u>${text}</u>`;
-                if (op.attributes.script === 'sub') text = `<sub>${text}</sub>`;
-                if (op.attributes.script === 'super') text = `<sup>${text}</sup>`;
-            }
-            
-            html += text;
-        }
-    }
-    
-    return html.trim();
+    return window.QuizModules.Utils.deltaToHtml(delta);
 }
 
-// Utility functions for flexible question format
+// Utility functions for flexible question format - now using modular versions
 function convertInternalToLetter(internalAnswer) {
-    const mapping = {
-        'option1': 'A',
-        'option2': 'B', 
-        'option3': 'C',
-        'option4': 'D',
-        'option5': 'E',
-        'option6': 'F'
-    };
-    return mapping[internalAnswer] || 'A';
+    return window.QuizModules.Utils.convertInternalToLetter(internalAnswer);
 }
 
 function convertLetterToInternal(letter) {
-    const mapping = {
-        'A': 'option1',
-        'B': 'option2',
-        'C': 'option3', 
-        'D': 'option4',
-        'E': 'option5',
-        'F': 'option6'
-    };
-    return mapping[letter] || 'option1';
+    return window.QuizModules.Utils.convertLetterToInternal(letter);
 }
 
 function getLetterForIndex(index) {
-    return String.fromCharCode(65 + index); // A=65, B=66, etc.
+    return window.QuizModules.Utils.getLetterForIndex(index);
 }
 
 function createBackwardCompatibleQuestion(question) {
