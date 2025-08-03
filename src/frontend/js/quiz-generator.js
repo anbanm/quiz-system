@@ -4,8 +4,7 @@
 let quizData = { tests: [] }; // Store all tests
 let currentTestIndex = -1;      // Index of the currently selected test
 let currentQuestionIndex = null // Index of the currently selected question
-let questionEditor = null;     // Quill rich text editor instance
-let optionEditors = [];        // Array to store option editor instances
+// Rich text editors are now managed by QuizModules.RichText
 
 // Helper function to convert Quill Delta to HTML - now using modular version
 function deltaToHtml(delta) {
@@ -80,15 +79,8 @@ function updateQuestionTypeUI() {
         optionCount.value = '2';
         updateOptionCount(); // Update to show only A, B
         
-        // True/False questions should ALWAYS have "True" and "False" as options
-        if (optionEditors && optionEditors.length >= 2) {
-            optionEditors[0].setText('True');
-            optionEditors[1].setText('False');
-            
-            // Disable the option editors for true/false (make them read-only)
-            optionEditors[0].disable();
-            optionEditors[1].disable();
-        }
+        // Handle true/false editor setup using rich text module
+        window.QuizModules.RichText.handleQuestionTypeChange('true-false');
         
         // Update correct answer dropdown for true/false
         const correctAnswer = document.getElementById('correctAnswer');
@@ -102,12 +94,8 @@ function updateQuestionTypeUI() {
         optionCountContainer.style.display = 'block';
         updateOptionCount(); // Update based on current selection
         
-        // Enable all option editors for multiple choice
-        if (optionEditors && optionEditors.length >= 2) {
-            optionEditors.forEach(editor => {
-                editor.enable();
-            });
-        }
+        // Handle multiple choice editor setup using rich text module
+        window.QuizModules.RichText.handleQuestionTypeChange('multiple-choice');
     }
 }
 
@@ -708,10 +696,8 @@ function createNewQuiz() {
         });
         // Focus on the question field
         setTimeout(() => {
-            // Focus on the Quill editor instead of the non-existent question field
-            if (questionEditor) {
-                questionEditor.focus();
-            }
+            // Focus on the Quill editor using module
+            window.QuizModules.RichText.focusQuestionEditor();
         }, 500);
     }, 300);
 }
@@ -723,10 +709,11 @@ function addOrUpdateQuestion() {
         alert("No test selected!")
         return;
     }
-    // Get rich text content from Quill editor
-    const questionText = questionEditor.getText().trim();
-    const questionHtml = questionEditor.root.innerHTML;
-    const questionDelta = questionEditor.getContents();
+    // Get rich text content from Quill editor using module
+    const questionContent = window.QuizModules.RichText.getQuestionContent();
+    const questionText = questionContent.text;
+    const questionHtml = questionContent.html;
+    const questionDelta = questionContent.delta;
     let image = document.getElementById("imagePath").value;
     let imagePreviewData = null;
     
@@ -741,49 +728,14 @@ function addOrUpdateQuestion() {
     const questionType = document.getElementById("questionType").value;
     const selectedOptionCount = questionType === 'true-false' ? 2 : parseInt(document.getElementById("optionCount").value);
     
-    // Check if option editors are initialized
-    if (!optionEditors || optionEditors.length < 6) {
+    // Check if option editors are initialized using module
+    if (!window.QuizModules.RichText.areEditorsReady()) {
         alert("Option editors not properly initialized. Please refresh the page.");
         return;
     }
     
-    // Get rich text content from option editors with cleanup
-    const optionData = optionEditors.map(editor => {
-        if (!editor) {
-            return { text: '', html: '', delta: { ops: [] } };
-        }
-        
-        const text = editor.getText().replace(/\n/g, '').trim();
-        
-        // Get HTML by manually converting Delta to HTML
-        let html = '';
-        try {
-            const delta = editor.getContents();
-            html = deltaToHtml(delta);
-            console.log(`Option HTML extraction - Text: "${text}", HTML: "${html}"`);
-        } catch (e) {
-            console.error('HTML extraction failed:', e);
-            html = text; // Fallback to plain text
-        }
-        
-        // Final fallback to plain text if HTML is empty
-        if (!html) {
-            html = text;
-        }
-        
-        // Clean up delta - remove newlines and paragraph formatting
-        const delta = editor.getContents();
-        if (delta.ops) {
-            delta.ops = delta.ops.filter(op => op.insert !== '\n').map(op => {
-                if (typeof op.insert === 'string') {
-                    op.insert = op.insert.replace(/\n/g, '');
-                }
-                return op;
-            }).filter(op => op.insert !== '');
-        }
-        
-        return { text, html, delta };
-    });
+    // Get rich text content from option editors using module
+    const optionData = window.QuizModules.RichText.getOptionContent();
     
     // Extract plain text values for backward compatibility
     const option1 = optionData[0].text;
@@ -1018,17 +970,8 @@ function editQuestion(index){
         }, 600);
     }, 500);
 
-    // Populate rich text editor
-    if (question.questionDelta) {
-        // Load rich content from Delta format
-        questionEditor.setContents(question.questionDelta);
-    } else if (question.questionHtml) {
-        // Fallback to HTML
-        questionEditor.root.innerHTML = question.questionHtml;
-    } else {
-        // Fallback to plain text
-        questionEditor.setText(question.question || '');
-    }
+    // Populate rich text editor using module
+    window.QuizModules.RichText.setQuestionContent(question);
 
     if(question.image){
         document.getElementById("imagePath").value = question.image||"";
@@ -1065,33 +1008,8 @@ function editQuestion(index){
     }
     updateQuestionTypeUI(); // This will set up the options visibility and dropdown
     
-    // Set options in rich text editors
-    if (optionEditors && optionEditors.length >= 6) {
-        const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
-        
-        for (let i = 0; i < 6; i++) {
-            let optionText = '';
-            let optionHtml = '';
-            let optionDelta = null;
-            
-            // Check for rich text option data first
-            if (question.optionsDelta && question.optionsDelta[letters[i]]) {
-                optionDelta = question.optionsDelta[letters[i]];
-                optionEditors[i].setContents(optionDelta);
-            } else if (question.optionsHtml && question.optionsHtml[letters[i]]) {
-                optionHtml = question.optionsHtml[letters[i]];
-                optionEditors[i].root.innerHTML = optionHtml;
-            } else if (question.options && question.options[letters[i]]) {
-                // New plain text format
-                optionText = question.options[letters[i]];
-                optionEditors[i].setText(optionText);
-            } else {
-                // Old format fallback
-                optionText = question[`option${i + 1}`] || '';
-                optionEditors[i].setText(optionText);
-            }
-        }
-    }
+    // Set options in rich text editors using module
+    window.QuizModules.RichText.setOptionContent(question);
     
     // Set correct answer (handle both letter and internal format)
     if (question.correctAnswer && question.correctAnswer.match(/^[A-F]$/)) {
@@ -1358,20 +1276,14 @@ function updateQuestionButtonText() {
 }
 
 function clearQuestionForm(){
-    // Clear rich text editor
-    if (questionEditor) {
-        questionEditor.setText('');
-    }
+    // Clear rich text editors using module
+    window.QuizModules.RichText.clearQuestionEditor();
+    window.QuizModules.RichText.clearOptionEditors();
+    
     document.getElementById("imagePath").value = "";
     document.getElementById("questionType").value = "multiple-choice";
     document.getElementById("optionCount").value = "4";
     updateQuestionTypeUI(); // Reset to multiple choice view
-    // Clear option editors
-    if (optionEditors && optionEditors.length >= 6) {
-        optionEditors.forEach(editor => {
-            editor.setText('');
-        });
-    }
     document.getElementById("correctAnswer").value = "option1";
     document.getElementById("category").value = "";
     document.getElementById("points").value = 1;
@@ -1748,129 +1660,9 @@ function closeGuidance() {
     }
 }
 
-// Initialize Quill rich text editor
+// Initialize Quill rich text editor - now delegated to module
 function initializeQuillEditor() {
-    if (questionEditor) return; // Already initialized
-    
-    questionEditor = new Quill('#question-editor', {
-        theme: 'snow',
-        placeholder: 'What is the capital of France?',
-        modules: {
-            toolbar: [
-                ['bold', 'italic', 'underline'],
-                [{ 'script': 'sub'}, { 'script': 'super' }],
-                [{ 'header': [1, 2, false] }],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                [{ 'color': [] }, { 'background': [] }],
-                ['clean']
-            ]
-        }
-    });
-    
-    // Initialize option editors with minimal toolbar (just superscript/subscript)
-    initializeOptionEditors();
-}
-
-function initializeOptionEditors() {
-    // Destroy existing editors first
-    if (optionEditors && optionEditors.length > 0) {
-        optionEditors.forEach(editor => {
-            if (editor && editor.container) {
-                editor.container.remove();
-            }
-        });
-    }
-    
-    optionEditors = []; // Clear existing editors
-    
-    const optionConfigs = [
-        { editorId: 'option1-editor', toolbarId: 'option1-toolbar', placeholder: 'First answer option' },
-        { editorId: 'option2-editor', toolbarId: 'option2-toolbar', placeholder: 'Second answer option' },
-        { editorId: 'option3-editor', toolbarId: 'option3-toolbar', placeholder: 'Third answer option' },
-        { editorId: 'option4-editor', toolbarId: 'option4-toolbar', placeholder: 'Fourth answer option' },
-        { editorId: 'option5-editor', toolbarId: 'option5-toolbar', placeholder: 'Fifth answer option' },
-        { editorId: 'option6-editor', toolbarId: 'option6-toolbar', placeholder: 'Sixth answer option' }
-    ];
-    
-    optionConfigs.forEach((config, index) => {
-        const container = document.getElementById(config.editorId);
-        const toolbar = document.getElementById(config.toolbarId);
-        
-        if (!container) {
-            console.error(`Container ${config.editorId} not found`);
-            return;
-        }
-        
-        if (!toolbar) {
-            console.error(`Toolbar ${config.toolbarId} not found`);
-            return;
-        }
-        
-        // Clear any existing content
-        container.innerHTML = '';
-        
-        try {
-            const editor = new Quill(container, {
-                theme: 'snow',
-                placeholder: config.placeholder,
-                formats: ['bold', 'italic', 'underline', 'script'],
-                modules: {
-                    toolbar: {
-                        container: toolbar
-                    },
-                    keyboard: {
-                        bindings: {
-                            enter: {
-                                key: 'Enter',
-                                handler: function() {
-                                    return false; // Disable Enter completely
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Force the editor to start with plain text only
-            editor.setContents([{ insert: '' }]);
-            
-            // Override getText to remove any newlines
-            const originalGetText = editor.getText.bind(editor);
-            editor.getText = function() {
-                return originalGetText().replace(/\n/g, '').trim();
-            };
-            
-            // Store a custom getter for clean HTML
-            editor.getCleanHTML = function() {
-                const editorElement = this.root.querySelector('.ql-editor');
-                if (!editorElement) return '';
-                let html = editorElement.innerHTML;
-                
-                // If the content is just plain text in a paragraph, extract it
-                if (html.match(/^<p[^>]*>([^<]*)<\/p>$/)) {
-                    html = html.replace(/<p[^>]*>([^<]*)<\/p>/, '$1');
-                }
-                // Remove empty paragraphs and line breaks, but preserve formatting tags
-                html = html.replace(/<p[^>]*><\/p>/g, '').replace(/<br[^>]*>/g, '');
-                
-                // Only remove paragraph tags if they don't contain formatting
-                if (!html.includes('<') || html.match(/^<p[^>]*>.*<\/p>$/)) {
-                    html = html.replace(/<\/?p[^>]*>/g, '');
-                }
-                
-                return html.trim();
-            };
-            
-            // Add debug logging
-            console.log(`Initialized editor ${index} for ${config.editorId} with toolbar ${config.toolbarId}`);
-            
-            optionEditors.push(editor);
-        } catch (error) {
-            console.error(`Failed to initialize editor for ${config.editorId}:`, error);
-        }
-    });
-    
-    console.log(`Total option editors initialized: ${optionEditors.length}`);
+    window.QuizModules.RichText.initializeQuillEditor();
 }
 
 // Initialize the test library when page loads
