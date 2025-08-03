@@ -187,6 +187,11 @@
             "type": "button",
             "description": "Shows JSON preview"
           },
+          "exportPdfButton": {
+            "selector": "button:has-text('📄 Export to PDF')",
+            "type": "button",
+            "description": "Opens PDF template selection dialog"
+          },
           "downloadZipButton": {
             "selector": "button:has-text('📦 Download ZIP Package')",
             "type": "button", 
@@ -209,6 +214,17 @@
               "reviewOrderButton": "button:has-text('Review & Reorder Questions')", 
               "saveExportButton": "button:has-text('Save & Export Quiz')",
               "closeButton": "button:has-text('✕ Just Close This')"
+            }
+          },
+          "pdfExportDialog": {
+            "container": "#pdf-export-dialog",
+            "type": "modal",
+            "description": "PDF template selection dialog",
+            "elements": {
+              "studentQuizTemplate": ".pdf-template-option[data-template='STUDENT_QUIZ']",
+              "answerKeyTemplate": ".pdf-template-option[data-template='ANSWER_KEY']",
+              "practiceSheetTemplate": ".pdf-template-option[data-template='PRACTICE_SHEET']",
+              "cancelButton": "button:has-text('Cancel')"
             }
           }
         }
