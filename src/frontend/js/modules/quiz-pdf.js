@@ -136,8 +136,16 @@ window.QuizModules.PDF = (function() {
         // Add questions
         const questions = quizData.questions || [];
         for (let i = 0; i < questions.length; i++) {
+            // Estimate space needed for this question
+            const questionText = extractPlainText(questions[i]);
+            const estimatedLines = Math.ceil(questionText.length / 80) + 3; // Rough estimate
+            const hasImage = questions[i].image || questions[i].imagePreviewData;
+            const estimatedHeight = estimatedLines * LAYOUT.LINE_HEIGHT + 
+                                  (hasImage ? 65 : 0) + // Image space
+                                  LAYOUT.QUESTION_SPACING;
+            
             // Check if we need a new page
-            if (currentY > LAYOUT.PAGE_HEIGHT - 50) {
+            if (currentY + estimatedHeight > LAYOUT.PAGE_HEIGHT - 30) {
                 doc.addPage();
                 currentY = LAYOUT.MARGIN;
             }
@@ -227,30 +235,45 @@ window.QuizModules.PDF = (function() {
         doc.setFontSize(11);
         doc.setFont(undefined, 'normal');
         
-        // Question number and difficulty/points (for answer key)
-        let questionHeader = `${questionNum}. `;
-        if (template.showDifficulty && question.difficulty) {
-            questionHeader += `[${question.difficulty.toUpperCase()}] `;
-        }
-        if (template.showPoints && question.points) {
-            questionHeader += `(${question.points} pts) `;
+        // Question number and metadata on separate lines for better spacing
+        doc.setFont(undefined, 'bold');
+        doc.text(`${questionNum}.`, LAYOUT.MARGIN, y);
+        
+        // Add difficulty and points on same line, but with proper spacing
+        if (template.showDifficulty || template.showPoints) {
+            let metadata = '';
+            if (template.showDifficulty && question.difficulty) {
+                metadata += `[${question.difficulty.toUpperCase()}]`;
+            }
+            if (template.showPoints && question.points) {
+                if (metadata) metadata += ' ';
+                metadata += `(${question.points} pts)`;
+            }
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'normal');
+            doc.text(metadata, LAYOUT.MARGIN + 15, y);
+            y += LAYOUT.LINE_HEIGHT;
         }
         
-        doc.setFont(undefined, 'bold');
-        doc.text(questionHeader, LAYOUT.MARGIN, y);
+        doc.setFontSize(11);
         doc.setFont(undefined, 'normal');
         
         // Question text - handle rich text by converting to plain text
         const questionText = extractPlainText(question);
         const questionLines = doc.splitTextToSize(questionText, LAYOUT.PAGE_WIDTH - LAYOUT.MARGIN - 20);
         
-        let questionY = y;
+        let questionY = y + 2; // Add small spacing after metadata
         questionLines.forEach(line => {
             doc.text(line, LAYOUT.MARGIN + 10, questionY);
             questionY += LAYOUT.LINE_HEIGHT;
         });
         
-        y = questionY + 5;
+        y = questionY + 3; // Reduced spacing after question text
+        
+        // Add image if present
+        if (question.image || question.imagePreviewData) {
+            y = addQuestionImage(doc, question, y);
+        }
         
         // Add answer options
         if (question.questionType !== 'true-false' && template.bubbleStyle !== 'none') {
@@ -357,6 +380,87 @@ window.QuizModules.PDF = (function() {
         y += 8;
         
         doc.setFont(undefined, 'normal'); // Reset font
+        return y;
+    }
+    
+    /**
+     * Add question image to PDF
+     * @param {Object} doc - jsPDF document
+     * @param {Object} question - Question data with image
+     * @param {number} y - Current Y position
+     * @returns {number} New Y position
+     */
+    function addQuestionImage(doc, question, y) {
+        try {
+            const imageData = question.imagePreviewData || question.image;
+            if (!imageData) return y;
+            
+            // Check if it's a data URL
+            if (imageData.startsWith('data:image/')) {
+                // Try to detect image format
+                let format = 'JPEG'; // Default
+                if (imageData.startsWith('data:image/png')) {
+                    format = 'PNG';
+                } else if (imageData.startsWith('data:image/gif')) {
+                    format = 'GIF';
+                } else if (imageData.startsWith('data:image/webp')) {
+                    format = 'WEBP';
+                }
+                
+                // Calculate image dimensions - max width 100mm, max height 60mm
+                const maxWidth = 100;
+                const maxHeight = 60;
+                
+                // Try to get actual image dimensions by creating an Image element
+                const img = new Image();
+                img.src = imageData;
+                
+                let imageWidth, imageHeight;
+                
+                if (img.naturalWidth && img.naturalHeight) {
+                    // Use actual aspect ratio
+                    const aspectRatio = img.naturalWidth / img.naturalHeight;
+                    imageWidth = Math.min(maxWidth, maxHeight * aspectRatio);
+                    imageHeight = imageWidth / aspectRatio;
+                } else {
+                    // Default sizing
+                    imageWidth = maxWidth * 0.8; // Slightly smaller default
+                    imageHeight = 45; // Fixed height for consistency
+                }
+                
+                // Ensure we don't exceed maximums
+                if (imageWidth > maxWidth) {
+                    imageWidth = maxWidth;
+                    imageHeight = imageWidth / (img.naturalWidth / img.naturalHeight || 4/3);
+                }
+                if (imageHeight > maxHeight) {
+                    imageHeight = maxHeight;
+                    imageWidth = imageHeight * (img.naturalWidth / img.naturalHeight || 4/3);
+                }
+                
+                // Add the image
+                doc.addImage(imageData, format, LAYOUT.MARGIN + 15, y, imageWidth, imageHeight);
+                y += imageHeight + 8; // Add spacing after image
+                
+                console.log(`Added image: ${format}, ${imageWidth}x${imageHeight}mm`);
+            } else {
+                // Handle non-data URL images (add placeholder text)
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'italic');
+                doc.text('[Image: ' + (question.imagePath || 'attached') + ']', LAYOUT.MARGIN + 15, y);
+                y += LAYOUT.LINE_HEIGHT + 3;
+                doc.setFont(undefined, 'normal');
+            }
+        } catch (error) {
+            console.warn('Error adding image to PDF:', error);
+            // Add placeholder text if image fails
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'italic');
+            doc.text('[Image could not be loaded]', LAYOUT.MARGIN + 15, y);
+            y += LAYOUT.LINE_HEIGHT + 3;
+            doc.setFont(undefined, 'normal');
+        }
+        
         return y;
     }
     
