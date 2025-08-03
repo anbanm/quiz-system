@@ -2,15 +2,15 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Browser Support](https://img.shields.io/badge/browsers-Chrome%20%7C%20Safari%20%7C%20Firefox%20%7C%20Edge-brightgreen.svg)
 ![Offline](https://img.shields.io/badge/offline-ready-orange.svg)  
-![Tests](https://img.shields.io/badge/tests-210%20passing-brightgreen.svg)
+![Tests](https://img.shields.io/badge/tests-250%20passing-brightgreen.svg)
 ![Playwright](https://img.shields.io/badge/testing-Playwright-blueviolet.svg)
 ![Rich Text](https://img.shields.io/badge/rich%20text-Quill.js-yellow.svg)
 
-**Create professional quizzes with rich text formulas • Mathematical expressions • 210 automated tests**
+**Create professional quizzes with rich text formulas • PDF export with templates • 250 automated tests**
 
 *Perfect for teachers who want a simple, reliable quiz tool that works anywhere*
 
@@ -29,13 +29,14 @@
 - **📦 ZIP Packages**: Share complete quizzes easily - students just upload and go
 - **🎯 Educational Design**: Teacher-friendly interface with clear "Quiz" terminology
 - **⚡ Zero Setup**: Download, open in browser, start creating
+- **📄 PDF Export**: 3 professional templates (Student Quiz, Answer Key, Practice Sheet)
 - **🔒 Privacy First**: All data stays on your device, no accounts needed
-- **🤖 100% Test Coverage**: 210 automated tests across all browsers and mobile devices
+- **🤖 100% Test Coverage**: 250 automated tests across all browsers and mobile devices
 - **📱 Mobile Ready**: Responsive design tested on iPhone, Android, and iPad
 
 *A comprehensive quiz generation and testing system with Unity integration for educational applications.*
 
-## 🏗️ Modular Architecture (v1.4.0)
+## 🏗️ Modular Architecture (v1.5.0)
 
 The quiz system now features a **completely modular architecture** with 73% code reduction and enhanced maintainability:
 
@@ -46,6 +47,7 @@ The quiz system now features a **completely modular architecture** with 73% code
 - **💾 `quiz-data.js`** (722 lines) - Data management, import/export, and test library
 - **🎨 `quiz-ui.js`** (646 lines) - UI components, dialogs, and rendering
 - **❓ `quiz-questions.js`** (374 lines) - Question CRUD operations and management
+- **📄 `quiz-pdf.js`** (821 lines) - PDF export with 3 professional templates
 
 ### 🌐 Global Namespace Pattern
 ```javascript
@@ -55,7 +57,8 @@ window.QuizModules = {
     RichText: { initializeQuillEditor, getQuestionContent },
     Data: { loadTestLibrary, saveTestLibrary, generateJSON },
     UI: { renderQuestions, showSuccessDialog, toggleSidebar },
-    Questions: { addOrUpdateQuestion, editQuestion, deleteQuestion }
+    Questions: { addOrUpdateQuestion, editQuestion, deleteQuestion },
+    PDF: { generateStudentQuiz, generateAnswerKey, generatePracticeSheet }
 };
 ```
 
@@ -91,6 +94,7 @@ This project consists of two main components:
 - ✅ Set difficulty levels (Easy, Medium, Hard) with visual indicators
 - ✅ Assign point values to questions (1-10 points)
 - ✅ Category organization for subject-based quizzes
+- ✅ **PDF Export**: 3 professional templates with rich text preservation
 - ✅ **ZIP package export** with images in separate folder (recommended)
 - ✅ **Triple format storage**: Plain text, HTML, and Delta for maximum compatibility
 - ✅ Load and edit existing quiz data with proper rich text preservation
@@ -140,11 +144,12 @@ quiz-system/
 │   │           ├── quiz-richtext.js   # Rich text (367 lines)
 │   │           ├── quiz-data.js       # Data management (722 lines)
 │   │           ├── quiz-ui.js         # UI components (646 lines)
-│   │           └── quiz-questions.js  # Question management (374 lines)
+│   │           ├── quiz-questions.js  # Question management (374 lines)
+│   │           └── quiz-pdf.js        # PDF export templates (821 lines)
 │   └── unity/             # Unity C# scripts
 │       ├── SampleWebView.cs
 │       └── SampleWebViewSim.cs
-├── tests/                 # Revolutionary test architecture with 210 tests
+├── tests/                 # Revolutionary test architecture with 250 tests
 │   ├── page-objects/      # Page Object Model with UI mapping
 │   │   ├── QuizGeneratorPage.js
 │   │   └── WebTestPage.js
@@ -154,6 +159,7 @@ quiz-system/
 │   ├── quiz-test-runner.spec.js     # Student interface tests
 │   ├── question-reordering.spec.js  # Question management tests
 │   ├── mobile-responsiveness.spec.js # Mobile compatibility tests
+│   ├── pdf-export.spec.js          # PDF export functionality tests
 │   └── test-data/         # Sample images and quiz data
 ├── docs/                  # Documentation
 ├── examples/              # Sample quiz data
@@ -181,8 +187,11 @@ quiz-system/
    - Add images if needed (with live preview)
    - Set A/B/C/D answer options
    - Choose difficulty and points
-4. **Download ZIP Package** (recommended) or JSON file
-5. Share the ZIP file with students
+4. **Export Options**:
+   - **📄 Export to PDF** (3 professional templates)
+   - **📦 Download ZIP Package** (recommended for sharing)
+   - **📄 Download JSON Only** (embedded format)
+5. Share files with students
 
 ### Taking a Quiz (Student)
 1. Open `src/frontend/WebTest.html` in a web browser
@@ -209,13 +218,13 @@ quiz-system/
 Our quiz system includes comprehensive automated testing to ensure reliability across all platforms.
 
 ### Test Coverage - TRUE 100% ACHIEVED! 🎉
-- **210 total tests** across 5 different browsers and devices - **ALL PASSING**
-- **42 tests per platform**: Each browser/device runs complete test suite
+- **250 total tests** across 5 different browsers and devices - **ALL PASSING**
+- **50 tests per platform**: Each browser/device runs complete test suite
 - **Rich Text Testing**: Mathematical formulas, chemical equations, formatting preservation
 - **UI Architecture Testing**: Page Object Model with UI mapping abstraction layer
 - **End-to-End Testing**: Complete workflow from quiz creation to student testing
 
-### Tested Platforms (42/42 tests each ✅)
+### Tested Platforms (50/50 tests each ✅)
 - **Desktop Browsers**: Chromium ✅, Firefox ✅, WebKit (Safari) ✅
 - **Mobile Devices**: Mobile Chrome ✅, Mobile Safari ✅
 - **Rich Text Features**: H₂O, E=mc², bold/italic/underline formatting tested
@@ -227,7 +236,7 @@ Our quiz system includes comprehensive automated testing to ensure reliability a
 # Install dependencies (first time only)
 npm install
 
-# Run all 210 tests (TRUE 100% passing!)
+# Run all 250 tests (TRUE 100% passing!)
 npm test
 
 # Clean Architecture Tests (Modern Page Object Model)
@@ -238,6 +247,7 @@ npx playwright test tests/question-reordering.spec.js   # Question management
 npx playwright test tests/quiz-generator.spec.js        # Rich text integration  
 npx playwright test tests/mobile-responsiveness.spec.js # Mobile compatibility
 npx playwright test tests/quiz-test-runner.spec.js      # Student interface
+npx playwright test tests/pdf-export.spec.js            # PDF export functionality
 
 # Interactive "bot vision" testing
 npx playwright test --ui
@@ -270,7 +280,7 @@ Run `npx playwright test --ui` to experience **"bot vision"** testing:
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. **Run the test suite**: `npm test` (all 210 tests must pass)
+4. **Run the test suite**: `npm test` (all 250 tests must pass)
 5. Test thoroughly across different browsers
 6. Commit your changes (`git commit -m 'Add amazing feature'`)
 7. Push to the branch (`git push origin feature/amazing-feature`)
@@ -283,6 +293,18 @@ Run `npx playwright test --ui` to experience **"bot vision"** testing:
 - Follow the existing teacher-friendly design patterns
 
 ## Changelog
+
+### v1.5.0 (2025-08-03) - 📄 Professional PDF Export System
+- ✅ **3 PDF Templates**: Student Quiz, Teacher Answer Key, Practice Worksheet
+- ✅ **Rich Text Preservation**: Superscript/subscript formulas maintained in PDF (H₂O, E=mc²)
+- ✅ **Smart Image Integration**: Automatic scaling with aspect ratio preservation (max 100mm x 60mm)
+- ✅ **Professional A4 Layout**: Proper margins, typography, and page headers/footers
+- ✅ **Offline PDF Generation**: Complete jsPDF integration for tablet/offline compatibility
+- ✅ **Comprehensive Testing**: 40 new PDF export tests (250 total tests, 100% passing)
+- ✅ **Template Selection Dialog**: User-friendly interface with template previews
+- ✅ **Multiple Export Formats**: Student bubbles, filled answer keys, blank practice sheets
+- ✅ **Mathematical Formula Support**: Delta and HTML format processing in PDFs
+- ✅ **Modular Architecture**: New quiz-pdf.js module (821 lines) with clean separation
 
 ### v1.4.0 (2025-08-03) - 🏗️ JavaScript Modular Refactoring
 - ✅ **Modular Architecture**: Complete refactoring of 71KB monolithic file into 6 maintainable modules
