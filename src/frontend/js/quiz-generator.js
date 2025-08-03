@@ -516,6 +516,12 @@ function closeGuidance() {
     window.QuizModules.UI.closeGuidance();
 }
 
+// PDF Export Functions
+function exportToPDFDialog() {
+    // Delegate to UI module
+    window.QuizModules.UI.showPDFExportDialog(quizData, currentTestIndex);
+}
+
 // Initialize Quill rich text editor - now delegated to module
 function initializeQuillEditor() {
     window.QuizModules.RichText.initializeQuillEditor();

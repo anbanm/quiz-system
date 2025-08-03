@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Builder for Teachers</title>
     <script src="jszip.min.js"></script>
+    <!-- jsPDF Library for PDF Generation (Offline) -->
+    <script src="js/jspdf.min.js"></script>
     <!-- Quill.js Rich Text Editor (Offline) -->
     <link href="lib/quill.snow.css" rel="stylesheet">
     <script src="lib/quill.min.js"></script>
@@ -315,9 +317,12 @@
     <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
         <h2 style="color: #2c3e50; margin-bottom: 20px;">💾 Save Your Quiz</h2>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
             <button onclick="generateJSON()" style="background: #3498db; padding: 15px; border-radius: 8px;">
                 👀 Preview Quiz Data
+            </button>
+            <button onclick="exportToPDFDialog()" style="background: #e74c3c; padding: 15px; border-radius: 8px;">
+                📄 Export to PDF
             </button>
             <button onclick="downloadZIP()" style="background: #27ae60; padding: 15px; border-radius: 8px;">
                 📦 Download ZIP Package
@@ -329,6 +334,7 @@
         
         <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
             <h4 style="margin: 0 0 10px 0; color: #27ae60;">💡 Download Options:</h4>
+            <p style="margin: 5px 0; font-size: 14px;"><strong>📄 PDF Export:</strong> Professional printable quiz with student, answer key, and practice sheet templates</p>
             <p style="margin: 5px 0; font-size: 14px;"><strong>📦 ZIP Package:</strong> Complete quiz with images in separate folder (recommended for sharing)</p>
             <p style="margin: 5px 0; font-size: 14px;"><strong>📄 JSON Only:</strong> Lightweight file with embedded images (larger file size)</p>
         </div>
@@ -350,6 +356,7 @@
     <script src="js/modules/quiz-data.js"></script>
     <script src="js/modules/quiz-ui.js"></script>
     <script src="js/modules/quiz-questions.js"></script>
+    <script src="js/modules/quiz-pdf.js"></script>
     <!-- Then load main application -->
     <script src="js/quiz-generator.js"></script>
     <!-- Initialize modules after everything is loaded -->
@@ -357,10 +364,10 @@
         // Initialize module system when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             // Validate all modules are loaded correctly
-            const requiredModules = ['Loader', 'Utils', 'RichText', 'Data', 'UI', 'Questions'];
+            const requiredModules = ['Loader', 'Utils', 'RichText', 'Data', 'UI', 'Questions', 'PDF'];
             if (window.QuizModules.Loader.checkRequiredModules(requiredModules)) {
                 // Validate module APIs
-                const modulesToValidate = ['Utils', 'RichText', 'Data', 'UI', 'Questions'];
+                const modulesToValidate = ['Utils', 'RichText', 'Data', 'UI', 'Questions', 'PDF'];
                 const allValid = modulesToValidate.every(module => 
                     window.QuizModules.Loader.validateModuleAPI(module)
                 );

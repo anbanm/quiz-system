@@ -611,6 +611,228 @@ window.QuizModules.UI = (function() {
         }).join('');
     }
     
+    /**
+     * Show PDF export dialog with template options
+     * @param {Object} quizData - Current quiz data
+     * @param {number} currentTestIndex - Current test index
+     */
+    function showPDFExportDialog(quizData, currentTestIndex) {
+        if (!quizData.tests[currentTestIndex] || quizData.tests[currentTestIndex].questions.length === 0) {
+            showGuidanceMessage('No Questions to Export', 'Please add some questions to your quiz before exporting to PDF.', '#e74c3c');
+            return;
+        }
+        
+        // Remove any existing PDF dialog
+        const existing = document.getElementById('pdf-export-dialog');
+        if (existing) existing.remove();
+        
+        // Create PDF export dialog
+        const dialogDiv = document.createElement('div');
+        dialogDiv.id = 'pdf-export-dialog';
+        dialogDiv.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: scaleIn 0.3s ease;
+            text-align: center;
+            min-width: 450px;
+            max-width: 90vw;
+        `;
+        
+        const templates = window.QuizModules.PDF.getAvailableTemplates();
+        
+        dialogDiv.innerHTML = `
+            <div style="margin-bottom: 25px;">
+                <div style="font-size: 48px; margin-bottom: 15px;">📄</div>
+                <h2 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 24px;">Export Quiz to PDF</h2>
+                <p style="margin: 0; color: #7f8c8d; font-size: 16px;">Choose a template for your PDF export</p>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
+                <div class="pdf-template-option" data-template="STUDENT_QUIZ" style="
+                    border: 2px solid #3498db;
+                    border-radius: 10px;
+                    padding: 15px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    text-align: left;
+                    background: #f8f9fa;
+                " onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f8f9fa'">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 20px;">📝</span>
+                        <strong style="color: #2c3e50; font-size: 16px;">${templates.STUDENT_QUIZ.name}</strong>
+                    </div>
+                    <p style="margin: 0; color: #666; font-size: 14px;">${templates.STUDENT_QUIZ.description}</p>
+                </div>
+                
+                <div class="pdf-template-option" data-template="ANSWER_KEY" style="
+                    border: 2px solid #27ae60;
+                    border-radius: 10px;
+                    padding: 15px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    text-align: left;
+                    background: #f8f9fa;
+                " onmouseover="this.style.background='#e8f5e9'" onmouseout="this.style.background='#f8f9fa'">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 20px;">🔑</span>
+                        <strong style="color: #2c3e50; font-size: 16px;">${templates.ANSWER_KEY.name}</strong>
+                    </div>
+                    <p style="margin: 0; color: #666; font-size: 14px;">${templates.ANSWER_KEY.description}</p>
+                </div>
+                
+                <div class="pdf-template-option" data-template="PRACTICE_SHEET" style="
+                    border: 2px solid #f39c12;
+                    border-radius: 10px;
+                    padding: 15px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    text-align: left;
+                    background: #f8f9fa;
+                " onmouseover="this.style.background='#fff3e0'" onmouseout="this.style.background='#f8f9fa'">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 20px;">📋</span>
+                        <strong style="color: #2c3e50; font-size: 16px;">${templates.PRACTICE_SHEET.name}</strong>
+                    </div>
+                    <p style="margin: 0; color: #666; font-size: 14px;">${templates.PRACTICE_SHEET.description}</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button onclick="window.QuizModules.UI.closePDFDialog()" style="
+                    background: transparent;
+                    color: #95a5a6;
+                    border: 2px solid #ecf0f1;
+                    padding: 12px 20px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    transition: all 0.2s ease;
+                ">Cancel</button>
+            </div>
+        `;
+
+        // Add backdrop
+        const backdrop = document.createElement('div');
+        backdrop.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            animation: fadeIn 0.3s ease;
+        `;
+        backdrop.onclick = closePDFDialog;
+
+        document.body.appendChild(backdrop);
+        document.body.appendChild(dialogDiv);
+        
+        // Store references for closing
+        window.currentPDFDialog = dialogDiv;
+        window.currentPDFBackdrop = backdrop;
+        
+        // Add click handlers for template options
+        const templateOptions = dialogDiv.querySelectorAll('.pdf-template-option');
+        templateOptions.forEach(option => {
+            option.onclick = () => {
+                const templateType = option.dataset.template;
+                exportToPDF(quizData, currentTestIndex, templateType);
+            };
+        });
+    }
+    
+    /**
+     * Close PDF export dialog
+     */
+    function closePDFDialog() {
+        const dialog = window.currentPDFDialog;
+        const backdrop = window.currentPDFBackdrop;
+        
+        if (dialog) {
+            dialog.style.animation = 'scaleOut 0.3s ease';
+            setTimeout(() => {
+                if (dialog.parentNode) dialog.remove();
+            }, 300);
+        }
+        
+        if (backdrop) {
+            backdrop.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => {
+                if (backdrop.parentNode) backdrop.remove();
+            }, 300);
+        }
+    }
+    
+    /**
+     * Export quiz to PDF with selected template
+     * @param {Object} quizData - Quiz data
+     * @param {number} currentTestIndex - Current test index  
+     * @param {string} templateType - Template type to use
+     */
+    function exportToPDF(quizData, currentTestIndex, templateType) {
+        try {
+            // Close the dialog first
+            closePDFDialog();
+            
+            // Check if PDF module is available
+            if (!window.QuizModules.PDF) {
+                showGuidanceMessage('PDF Module Not Available', 'The PDF export module is not loaded. Please ensure jspdf.min.js is included.', '#e74c3c');
+                return;
+            }
+            
+            const test = quizData.tests[currentTestIndex];
+            let doc;
+            let filename;
+            
+            // Generate PDF based on template type
+            switch (templateType) {
+                case 'STUDENT_QUIZ':
+                    doc = window.QuizModules.PDF.generateStudentQuiz(test);
+                    filename = `${test.testName || 'quiz'}-student.pdf`;
+                    break;
+                case 'ANSWER_KEY':
+                    doc = window.QuizModules.PDF.generateAnswerKey(test);
+                    filename = `${test.testName || 'quiz'}-answer-key.pdf`;
+                    break;
+                case 'PRACTICE_SHEET':
+                    doc = window.QuizModules.PDF.generatePracticeSheet(test);
+                    filename = `${test.testName || 'quiz'}-practice.pdf`;
+                    break;
+                default:
+                    throw new Error('Invalid template type');
+            }
+            
+            // Clean filename
+            filename = filename.replace(/[^a-z0-9.-]/gi, '_').toLowerCase();
+            
+            // Download the PDF
+            window.QuizModules.PDF.downloadPDF(doc, filename);
+            
+            // Show success message
+            showGuidanceMessage(
+                'PDF Generated Successfully! 📄', 
+                `Your ${templateType.toLowerCase().replace('_', ' ')} has been downloaded.`,
+                '#27ae60'
+            );
+            
+        } catch (error) {
+            console.error('PDF Export Error:', error);
+            showGuidanceMessage(
+                'PDF Export Failed',
+                `Error generating PDF: ${error.message}. Please try again.`,
+                '#e74c3c'
+            );
+        }
+    }
+
     // Register this module with the loader
     if (window.QuizModules.Loader) {
         window.QuizModules.Loader.registerModule('UI', '1.4.0');
@@ -628,6 +850,11 @@ window.QuizModules.UI = (function() {
         showNextStepsGuidance: showNextStepsGuidance,
         showGuidanceMessage: showGuidanceMessage,
         closeGuidance: closeGuidance,
+        
+        // PDF export dialogs
+        showPDFExportDialog: showPDFExportDialog,
+        closePDFDialog: closePDFDialog,
+        exportToPDF: exportToPDF,
         
         // Form management
         clearQuestionForm: clearQuestionForm,
