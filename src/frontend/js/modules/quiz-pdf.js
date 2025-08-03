@@ -258,17 +258,11 @@ window.QuizModules.PDF = (function() {
         doc.setFontSize(11);
         doc.setFont(undefined, 'normal');
         
-        // Question text - handle rich text by converting to plain text
-        const questionText = extractPlainText(question);
-        const questionLines = doc.splitTextToSize(questionText, LAYOUT.PAGE_WIDTH - LAYOUT.MARGIN - 20);
+        // Question text - handle rich text with proper formatting
+        const questionY = y + 2; // Add small spacing after metadata
+        const finalY = addRichTextContent(doc, question, LAYOUT.MARGIN + 10, questionY, LAYOUT.PAGE_WIDTH - LAYOUT.MARGIN - 20);
         
-        let questionY = y + 2; // Add small spacing after metadata
-        questionLines.forEach(line => {
-            doc.text(line, LAYOUT.MARGIN + 10, questionY);
-            questionY += LAYOUT.LINE_HEIGHT;
-        });
-        
-        y = questionY + 3; // Reduced spacing after question text
+        y = finalY + 3; // Reduced spacing after question text
         
         // Add image if present
         if (question.image || question.imagePreviewData) {
@@ -325,15 +319,33 @@ window.QuizModules.PDF = (function() {
             doc.setFont(undefined, isCorrect ? 'bold' : 'normal');
             doc.text(`${letter}.`, bubbleX + 5, y);
             
-            // Clean option text
-            const cleanText = extractPlainText({ questionHtml: optionText, question: optionText });
-            const optionLines = doc.splitTextToSize(cleanText, LAYOUT.PAGE_WIDTH - LAYOUT.MARGIN - 40);
+            // Format option text with rich text support
+            const optionQuestion = {
+                questionHtml: optionText,
+                question: optionText,
+                // Try to get rich text data if available from the original question
+                optionsDelta: question.optionsDelta,
+                optionsHtml: question.optionsHtml
+            };
             
+            // Use rich text content if available, otherwise fallback to plain text
             let optionY = y;
-            optionLines.forEach(line => {
-                doc.text(line, bubbleX + 12, optionY);
-                optionY += LAYOUT.LINE_HEIGHT;
-            });
+            if (question.optionsDelta && question.optionsDelta[letter]) {
+                // Use Delta format for option
+                optionY = addDeltaFormattedText(doc, question.optionsDelta[letter], bubbleX + 12, y, LAYOUT.PAGE_WIDTH - LAYOUT.MARGIN - 40);
+            } else if (question.optionsHtml && question.optionsHtml[letter]) {
+                // Use HTML format for option  
+                optionY = addHtmlFormattedText(doc, question.optionsHtml[letter], bubbleX + 12, y, LAYOUT.PAGE_WIDTH - LAYOUT.MARGIN - 40);
+            } else {
+                // Fallback to plain text
+                const cleanText = extractPlainText({ questionHtml: optionText, question: optionText });
+                const optionLines = doc.splitTextToSize(cleanText, LAYOUT.PAGE_WIDTH - LAYOUT.MARGIN - 40);
+                
+                optionLines.forEach(line => {
+                    doc.text(line, bubbleX + 12, optionY);
+                    optionY += LAYOUT.LINE_HEIGHT;
+                });
+            }
             
             y = optionY + 2;
         }
@@ -501,12 +513,243 @@ window.QuizModules.PDF = (function() {
     }
     
     /**
-     * Extract plain text from question (handle rich text)
+     * Add rich text content to PDF with proper formatting
+     * @param {Object} doc - jsPDF document
+     * @param {Object} question - Question object with rich text data
+     * @param {number} x - X position
+     * @param {number} y - Y position
+     * @param {number} maxWidth - Maximum width for text wrapping
+     * @returns {number} Final Y position after text
+     */
+    function addRichTextContent(doc, question, x, y, maxWidth) {
+        // Try to use Delta format first (richest formatting), then HTML, then plain text
+        if (question.questionDelta && question.questionDelta.ops) {
+            return addDeltaFormattedText(doc, question.questionDelta, x, y, maxWidth);
+        } else if (question.questionHtml) {
+            return addHtmlFormattedText(doc, question.questionHtml, x, y, maxWidth);
+        } else {
+            // Fallback to plain text
+            const plainText = question.question || '';
+            const lines = doc.splitTextToSize(plainText, maxWidth);
+            lines.forEach(line => {
+                doc.text(line, x, y);
+                y += LAYOUT.LINE_HEIGHT;
+            });
+            return y;
+        }
+    }
+    
+    /**
+     * Add Delta formatted text to PDF with rich formatting
+     * @param {Object} doc - jsPDF document
+     * @param {Object} delta - Quill Delta object
+     * @param {number} x - X position
+     * @param {number} y - Y position  
+     * @param {number} maxWidth - Maximum width for text wrapping
+     * @returns {number} Final Y position after text
+     */
+    function addDeltaFormattedText(doc, delta, x, y, maxWidth) {
+        if (!delta.ops || delta.ops.length === 0) {
+            return y;
+        }
+        
+        let currentX = x;
+        let currentY = y;
+        let currentLine = '';
+        let currentLineWidth = 0;
+        
+        for (const op of delta.ops) {
+            if (typeof op.insert === 'string') {
+                let text = op.insert.replace(/\n/g, ' '); // Convert newlines to spaces
+                
+                // Apply formatting
+                let fontStyle = 'normal';
+                let fontSize = 11;
+                
+                if (op.attributes) {
+                    if (op.attributes.bold) {
+                        fontStyle = 'bold';
+                    } else if (op.attributes.italic) {
+                        fontStyle = 'italic';
+                    }
+                }
+                
+                doc.setFont(undefined, fontStyle);
+                doc.setFontSize(fontSize);
+                
+                // Handle superscript and subscript
+                if (op.attributes && op.attributes.script) {
+                    if (op.attributes.script === 'super') {
+                        // Superscript: smaller font, raised position
+                        doc.setFontSize(fontSize * 0.7);
+                        const textWidth = doc.getTextWidth(text);
+                        doc.text(text, currentX, currentY - 2);
+                        currentX += textWidth;
+                        currentLineWidth += textWidth;
+                    } else if (op.attributes.script === 'sub') {
+                        // Subscript: smaller font, lowered position
+                        doc.setFontSize(fontSize * 0.7);
+                        const textWidth = doc.getTextWidth(text);
+                        doc.text(text, currentX, currentY + 2);
+                        currentX += textWidth;
+                        currentLineWidth += textWidth;
+                    }
+                } else {
+                    // Regular text
+                    const words = text.split(' ');
+                    
+                    for (let i = 0; i < words.length; i++) {
+                        const word = words[i] + (i < words.length - 1 ? ' ' : '');
+                        const wordWidth = doc.getTextWidth(word);
+                        
+                        // Check if we need to wrap to next line
+                        if (currentLineWidth + wordWidth > maxWidth && currentLine.length > 0) {
+                            currentY += LAYOUT.LINE_HEIGHT;
+                            currentX = x;
+                            currentLineWidth = 0;
+                            currentLine = '';
+                        }
+                        
+                        doc.text(word, currentX, currentY);
+                        currentX += wordWidth;
+                        currentLineWidth += wordWidth;
+                        currentLine += word;
+                    }
+                }
+                
+                // Reset font for next operation
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(11);
+            }
+        }
+        
+        return currentY + LAYOUT.LINE_HEIGHT;
+    }
+    
+    /**
+     * Add HTML formatted text to PDF with basic formatting
+     * @param {Object} doc - jsPDF document
+     * @param {string} html - HTML string
+     * @param {number} x - X position
+     * @param {number} y - Y position
+     * @param {number} maxWidth - Maximum width for text wrapping
+     * @returns {number} Final Y position after text
+     */
+    function addHtmlFormattedText(doc, html, x, y, maxWidth) {
+        // Simple HTML to formatted text conversion
+        let text = html;
+        
+        // Handle basic formatting by converting to text with markers
+        text = text.replace(/<sup[^>]*>(.*?)<\/sup>/gi, '^($1)'); // Superscript marker
+        text = text.replace(/<sub[^>]*>(.*?)<\/sub>/gi, '_($1)'); // Subscript marker
+        text = text.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**'); // Bold marker
+        text = text.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*'); // Italic marker
+        
+        // Remove remaining HTML tags
+        text = text.replace(/<[^>]*>/g, '');
+        
+        // Decode HTML entities
+        text = text.replace(/&nbsp;/g, ' ')
+                  .replace(/&amp;/g, '&')
+                  .replace(/&lt;/g, '<')
+                  .replace(/&gt;/g, '>')
+                  .replace(/&quot;/g, '"')
+                  .trim();
+        
+        // Process the text with formatting markers
+        return processFormattedText(doc, text, x, y, maxWidth);
+    }
+    
+    /**
+     * Process text with formatting markers
+     * @param {Object} doc - jsPDF document
+     * @param {string} text - Text with formatting markers
+     * @param {number} x - X position
+     * @param {number} y - Y position
+     * @param {number} maxWidth - Maximum width
+     * @returns {number} Final Y position
+     */
+    function processFormattedText(doc, text, x, y, maxWidth) {
+        let currentY = y;
+        let currentX = x;
+        
+        // Split into segments by formatting markers
+        const segments = text.split(/(\*\*.*?\*\*|\*.*?\*|\^.*?\)\_.*?\))/);
+        
+        for (const segment of segments) {
+            if (!segment) continue;
+            
+            let actualText = segment;
+            let fontStyle = 'normal';
+            let isSuper = false;
+            let isSub = false;
+            let fontSize = 11;
+            
+            // Check for formatting
+            if (segment.startsWith('**') && segment.endsWith('**')) {
+                // Bold
+                actualText = segment.slice(2, -2);
+                fontStyle = 'bold';
+            } else if (segment.startsWith('*') && segment.endsWith('*')) {
+                // Italic
+                actualText = segment.slice(1, -1);
+                fontStyle = 'italic';
+            } else if (segment.startsWith('^(') && segment.endsWith(')')) {
+                // Superscript
+                actualText = segment.slice(2, -1);
+                fontSize = 8;
+                isSuper = true;
+            } else if (segment.startsWith('_(') && segment.endsWith(')')) {
+                // Subscript
+                actualText = segment.slice(2, -1);
+                fontSize = 8;
+                isSub = true;
+            }
+            
+            doc.setFont(undefined, fontStyle);
+            doc.setFontSize(fontSize);
+            
+            const textWidth = doc.getTextWidth(actualText);
+            
+            // Check line wrapping
+            if (currentX + textWidth > x + maxWidth) {
+                currentY += LAYOUT.LINE_HEIGHT;
+                currentX = x;
+            }
+            
+            // Adjust Y position for super/subscript
+            let adjustedY = currentY;
+            if (isSuper) {
+                adjustedY -= 2;
+            } else if (isSub) {
+                adjustedY += 2;
+            }
+            
+            doc.text(actualText, currentX, adjustedY);
+            currentX += textWidth;
+            
+            // Reset formatting
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(11);
+        }
+        
+        return currentY + LAYOUT.LINE_HEIGHT;
+    }
+    
+    /**
+     * Extract plain text from question (fallback for simple cases)
      * @param {Object} question - Question object
      * @returns {string} Plain text
      */
     function extractPlainText(question) {
-        if (question.questionHtml) {
+        if (question.questionDelta && question.questionDelta.ops) {
+            // Extract plain text from Delta format
+            return question.questionDelta.ops
+                .map(op => typeof op.insert === 'string' ? op.insert : '')
+                .join('')
+                .replace(/\n/g, ' ')
+                .trim();
+        } else if (question.questionHtml) {
             // Strip HTML tags and decode entities
             return question.questionHtml
                 .replace(/<[^>]*>/g, '') // Remove HTML tags
