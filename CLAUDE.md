@@ -13,6 +13,110 @@
 ✅ **Legacy Test Migration Complete**  
 📐 **Clean Architecture Pattern Established**
 
+## 🧩 ACTIVE WORK: JavaScript Modular Refactoring v1.4.0
+
+**URGENT CONTEXT FOR CONTINUATION:** We are actively refactoring the 71KB quiz-generator.js file into maintainable modules using global namespace pattern for offline-first compatibility.
+
+### ✅ Phase 1 Complete - Utility Functions Module  
+- **Created**: `src/frontend/js/modules/quiz-utils.js` (190 lines)
+- **Extracted**: deltaToHtml, convertInternalToLetter, convertLetterToInternal, getLetterForIndex, createBackwardCompatibleQuestion, getImageExtension, generateQuizId, getDifficultyColor, getDifficultyEmoji, generateOptionDisplayHTML
+- **Pattern**: `window.QuizModules.Utils.functionName()`
+- **Status**: All functions delegated, tests passing
+
+### ✅ Phase 2 Complete - Rich Text Editor Module
+- **Created**: `src/frontend/js/modules/quiz-richtext.js` (380+ lines)  
+- **Extracted**: All Quill.js functionality including initializeQuillEditor, initializeOptionEditors, question/option content management
+- **API**: 15+ methods like setQuestionContent, getQuestionContent, setOptionContent, getOptionContent, handleQuestionTypeChange, areEditorsReady
+- **Pattern**: `window.QuizModules.RichText.methodName()`
+- **Status**: Complete rich text functionality modularized, ~300 lines removed from main file
+
+### 🚧 NEXT: Phase 3 - Data Management Module
+**Target**: Extract save/load/library functions (~400 lines)
+- Functions to extract: initializeTestLibrary, saveTestLibrary, loadTestFromLibrary, addTestToLibrary, generateJSON, generateEmbeddedJSON, handleFileSelect, loadJSON, downloadZIP, downloadJSON
+- Create: `src/frontend/js/modules/quiz-data.js`
+
+### 🚧 Remaining Phases:
+- **Phase 4**: UI Components Module (dialogs, forms, rendering) ~500 lines
+- **Phase 5**: Question Management Module (CRUD operations) ~300 lines  
+- **Phase 6**: Final integration and cleanup
+
+### 📁 Current Module Structure:
+```
+src/frontend/js/
+├── modules/
+│   ├── quiz-utils.js      ✅ Phase 1 (190 lines)
+│   ├── quiz-richtext.js   ✅ Phase 2 (380 lines)
+│   └── quiz-data.js       🚧 Phase 3 (target: 400 lines)
+├── quiz-generator.js      🔧 Main file (reduced from 1917 to ~1300 lines)
+└── ...
+```
+
+### 🎯 Key Technical Details:
+- **Offline-First**: Using global namespace pattern (`window.QuizModules.*`) instead of ES6 imports
+- **Backward Compatibility**: All existing functionality preserved through delegation
+- **Test Coverage**: All 210 tests continue passing throughout refactoring
+- **Branch**: `feature/modular-refactoring-v1.4.0`
+
+### 🚨 CRITICAL INSTRUCTIONS FOR CONTEXT WINDOW RECOVERY
+
+**When this conversation compacts and you need to resume modular refactoring work:**
+
+1. **Check Current State:**
+   ```bash
+   git status
+   git branch
+   ls -la src/frontend/js/modules/
+   wc -l src/frontend/js/quiz-generator.js
+   ```
+
+2. **Verify What's Done:**
+   - ✅ `quiz-utils.js` exists (190 lines) - utility functions
+   - ✅ `quiz-richtext.js` exists (380+ lines) - Quill.js functionality
+   - ✅ HTML loads both modules before main script
+   - ✅ Main file delegates to modules using `window.QuizModules.*`
+
+3. **Phase 3 Target - Data Management Module:**
+   **Create**: `src/frontend/js/modules/quiz-data.js`
+   
+   **Functions to Extract from main file (search for these):**
+   - `initializeTestLibrary()` - loads sample/saved tests
+   - `saveTestLibrary()` - localStorage persistence
+   - `loadTestFromLibrary(testId)` - load existing test
+   - `addTestToLibrary(filename, testData)` - add imported test
+   - `generateJSON()` - export with separate images
+   - `generateEmbeddedJSON()` - export with embedded images
+   - `downloadZIP()` - ZIP package creation
+   - `downloadJSON()` - single file download
+   - `handleFileSelect(event)` - image upload
+   - `loadJSON(event)` - quiz file import
+   - `handleTestFiles(event)` - multiple test import
+   - `renderTestLibrary()` - sidebar test list UI
+
+4. **Module Pattern to Follow:**
+   ```javascript
+   window.QuizModules = window.QuizModules || {};
+   window.QuizModules.Data = (function() {
+       'use strict';
+       // Private variables and functions
+       return {
+           // Public API methods
+       };
+   })();
+   ```
+
+5. **Update Process:**
+   - Extract functions to new module
+   - Update main file to delegate using `window.QuizModules.Data.methodName()`
+   - Update HTML to load new module: `<script src="js/modules/quiz-data.js"></script>`
+   - Test with: `npm test -- --grep "should handle quiz interaction" --reporter=json`
+
+6. **After Phase 3, Continue To:**
+   - **Phase 4**: UI Components (dialogs, forms, rendering) ~500 lines
+   - **Phase 5**: Question Management (CRUD operations) ~300 lines
+   - **Phase 6**: Final integration and cleanup
+
+**REMEMBER**: Always test after each extraction and commit working phases. The goal is to reduce the 71KB main file into maintainable modules while keeping all 210 tests passing.
+
 ## Key Achievements in Current Session (2025-08-02)
 
 ### 🎯 Rich Text Editor Integration (Major Feature)
