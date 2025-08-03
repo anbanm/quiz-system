@@ -96,12 +96,19 @@ window.QuizModules.PDF = (function() {
      * @returns {Object} jsPDF document instance
      */
     function generatePDF(quizData, template) {
-        // Check if jsPDF is available
-        if (typeof window.jsPDF === 'undefined') {
+        // Check if jsPDF is available (v3.0.1+ uses window.jspdf.jsPDF)
+        let jsPDF;
+        if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF) {
+            jsPDF = window.jspdf.jsPDF;
+        } else if (typeof window.jsPDF !== 'undefined') {
+            jsPDF = window.jsPDF;
+        } else {
+            console.error('jsPDF detection failed. Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('pdf')));
             throw new Error('jsPDF library not loaded. Please include jspdf.min.js');
         }
         
-        const doc = new window.jsPDF();
+        console.log('Using jsPDF:', jsPDF);
+        const doc = new jsPDF();
         let currentY = LAYOUT.MARGIN;
         
         // Add header
