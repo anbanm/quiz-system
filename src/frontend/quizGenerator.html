@@ -342,11 +342,39 @@
 
 </div>
 
-    <!-- Load modular components first -->
+    <!-- Load module loader first -->
+    <script src="js/modules/quiz-loader.js"></script>
+    <!-- Load modular components -->
     <script src="js/modules/quiz-utils.js"></script>
     <script src="js/modules/quiz-richtext.js"></script>
+    <script src="js/modules/quiz-data.js"></script>
+    <script src="js/modules/quiz-ui.js"></script>
+    <script src="js/modules/quiz-questions.js"></script>
     <!-- Then load main application -->
     <script src="js/quiz-generator.js"></script>
+    <!-- Initialize modules after everything is loaded -->
+    <script>
+        // Initialize module system when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validate all modules are loaded correctly
+            const requiredModules = ['Loader', 'Utils', 'RichText', 'Data', 'UI', 'Questions'];
+            if (window.QuizModules.Loader.checkRequiredModules(requiredModules)) {
+                // Validate module APIs
+                const modulesToValidate = ['Utils', 'RichText', 'Data', 'UI', 'Questions'];
+                const allValid = modulesToValidate.every(module => 
+                    window.QuizModules.Loader.validateModuleAPI(module)
+                );
+                
+                if (allValid) {
+                    window.QuizModules.Loader.initializeModules();
+                } else {
+                    console.error('[QuizModules] Module API validation failed');
+                }
+            } else {
+                console.error('[QuizModules] Required modules missing');
+            }
+        });
+    </script>
 </div> <!-- Close main-content -->
 </body>
 </html>

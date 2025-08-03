@@ -332,6 +332,11 @@ window.QuizModules.RichText = (function() {
         return questionEditor !== null && optionEditors && optionEditors.length >= 6;
     }
     
+    // Register this module with the loader
+    if (window.QuizModules.Loader) {
+        window.QuizModules.Loader.registerModule('RichText', '1.4.0');
+    }
+    
     // Public API
     return {
         // Initialization

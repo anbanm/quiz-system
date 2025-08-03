@@ -204,6 +204,11 @@ window.QuizModules.Utils = (function() {
         return html;
     }
     
+    // Register this module with the loader
+    if (window.QuizModules.Loader) {
+        window.QuizModules.Loader.registerModule('Utils', '1.4.0');
+    }
+    
     // Public API
     return {
         deltaToHtml: deltaToHtml,
