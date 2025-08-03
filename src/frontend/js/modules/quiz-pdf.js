@@ -96,18 +96,34 @@ window.QuizModules.PDF = (function() {
      * @returns {Object} jsPDF document instance
      */
     function generatePDF(quizData, template) {
-        // Check if jsPDF is available (v3.0.1+ uses window.jspdf.jsPDF)
+        // Check if jsPDF is available - try multiple detection patterns
         let jsPDF;
-        if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF) {
-            jsPDF = window.jspdf.jsPDF;
-        } else if (typeof window.jsPDF !== 'undefined') {
+        
+        // Try different global locations where jsPDF might be available
+        if (typeof window.jsPDF !== 'undefined') {
+            // jsPDF 2.x global export
             jsPDF = window.jsPDF;
+            console.log('Found jsPDF at window.jsPDF (v2.x pattern)');
+        } else if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF) {
+            // jsPDF 3.x namespaced export
+            jsPDF = window.jspdf.jsPDF;
+            console.log('Found jsPDF at window.jspdf.jsPDF (v3.x pattern)');
+        } else if (typeof jsPDF !== 'undefined') {
+            // Global variable
+            jsPDF = window.jsPDF;
+            console.log('Found jsPDF as global variable');
         } else {
-            console.error('jsPDF detection failed. Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('pdf')));
-            throw new Error('jsPDF library not loaded. Please include jspdf.min.js');
+            // Debug: show what PDF-related globals are available
+            const pdfGlobals = Object.keys(window).filter(k => k.toLowerCase().includes('pdf'));
+            console.error('jsPDF detection failed.');
+            console.error('Available PDF-related globals:', pdfGlobals);
+            console.error('window.jsPDF type:', typeof window.jsPDF);
+            console.error('window.jspdf type:', typeof window.jspdf);
+            
+            throw new Error('jsPDF library not loaded. Please ensure jspdf.min.js is included and loaded properly.');
         }
         
-        console.log('Using jsPDF:', jsPDF);
+        console.log('Using jsPDF constructor:', jsPDF);
         const doc = new jsPDF();
         let currentY = LAYOUT.MARGIN;
         
