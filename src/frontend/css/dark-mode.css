@@ -1,0 +1,204 @@
+/* Dark Mode Styles - Phase 1 UX Enhancement */
+
+/* Dark mode toggle button */
+.dark-mode-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.dark-mode-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+/* Dark mode styles using data attribute */
+[data-theme="dark"] {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-card: #0f3460;
+    --bg-input: #1a1a2e;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --border-color: #374151;
+    --accent: #60a5fa;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --shadow: rgba(0,0,0,0.4);
+}
+
+[data-theme="dark"] body {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .container {
+    background: var(--bg-secondary) !important;
+    box-shadow: 0 4px 8px var(--shadow) !important;
+}
+
+[data-theme="dark"] .sidebar {
+    background: var(--bg-secondary) !important;
+    border-right-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .main-content {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4 {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] label,
+[data-theme="dark"] small {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+    background-color: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] input::placeholder {
+    color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .test-item {
+    background: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .test-item:hover {
+    background: #1e3a5f !important;
+    border-color: var(--accent) !important;
+}
+
+[data-theme="dark"] .test-item.active {
+    background: linear-gradient(135deg, var(--accent), #2563eb) !important;
+}
+
+[data-theme="dark"] .question-item,
+[data-theme="dark"] .question-card {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Dark mode for Quill editors */
+[data-theme="dark"] .ql-toolbar {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .ql-container {
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .ql-editor {
+    background-color: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .ql-editor.ql-blank::before {
+    color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .ql-toolbar button {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .ql-toolbar button:hover {
+    color: var(--text-primary) !important;
+}
+
+/* Dark mode for details/summary */
+[data-theme="dark"] details {
+    background: var(--bg-card) !important;
+}
+
+[data-theme="dark"] summary {
+    color: var(--text-secondary) !important;
+}
+
+/* Dark mode for JSON output */
+[data-theme="dark"] #jsonOutput {
+    background: #0d1117 !important;
+    color: #c9d1d9 !important;
+}
+
+/* Dark mode for quiz taking (WebTest) */
+[data-theme="dark"] .question {
+    background: var(--bg-secondary) !important;
+    border-left-color: var(--accent) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .question label {
+    background: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .question label:hover {
+    background: #1e3a5f !important;
+    border-color: var(--accent) !important;
+}
+
+[data-theme="dark"] #resultContainer {
+    background: #0f3460 !important;
+    border-left-color: var(--success) !important;
+}
+
+[data-theme="dark"] #logArea {
+    background: #0d1117 !important;
+    border-color: var(--border-color) !important;
+    color: #c9d1d9 !important;
+}
+
+/* Toast dark mode */
+[data-theme="dark"] #quiz-toast-container > div {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+}
+
+/* Timer dark mode */
+[data-theme="dark"] #quiz-timer {
+    background: linear-gradient(135deg, #0f3460, #16213e) !important;
+}
+
+/* Auto dark mode based on system preference */
+@media (prefers-color-scheme: dark) {
+    [data-theme="auto"] body { background-color: #1a1a2e !important; color: #e4e4e7 !important; }
+    [data-theme="auto"] .container { background: #16213e !important; }
+    [data-theme="auto"] .sidebar { background: #16213e !important; border-right-color: #374151 !important; }
+    [data-theme="auto"] input[type="text"],
+    [data-theme="auto"] input[type="number"],
+    [data-theme="auto"] select { background-color: #1a1a2e !important; color: #e4e4e7 !important; border-color: #374151 !important; }
+}

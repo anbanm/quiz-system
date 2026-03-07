@@ -1,0 +1,324 @@
+/* Accessibility Styles - Phase 1 A11y Enhancement */
+
+/* Focus indicators for keyboard navigation (A11Y-03) */
+*:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+    outline: none;
+}
+
+*:focus-visible {
+    outline: 3px solid #3498db;
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+button:focus-visible {
+    outline: 3px solid #2980b9;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.3);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #3498db;
+    outline-offset: 0;
+    border-color: #3498db !important;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+a:focus-visible {
+    outline: 3px solid #3498db;
+    outline-offset: 2px;
+}
+
+/* Skip navigation link */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: #2c3e50;
+    color: white;
+    padding: 12px 24px;
+    z-index: 10000;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 0 0 8px 0;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* Required field indicators */
+.required-indicator {
+    color: #e74c3c;
+    font-weight: bold;
+    margin-left: 4px;
+}
+
+label[data-required]::after {
+    content: ' *';
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* Screen reader only text */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Focus trap indicator for modals */
+.focus-trap-active {
+    position: relative;
+}
+
+.focus-trap-active::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    body {
+        background-color: white !important;
+        color: black !important;
+    }
+
+    button {
+        border: 2px solid black !important;
+    }
+
+    input, select, textarea {
+        border: 2px solid black !important;
+    }
+
+    .test-item {
+        border: 2px solid black !important;
+    }
+
+    .question-item {
+        border: 2px solid black !important;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Color-blind friendly: Don't rely solely on color */
+.option-container::before {
+    font-weight: bold;
+    font-size: 14px;
+    display: inline-block;
+    min-width: 24px;
+}
+
+/* Larger touch targets for mobile */
+@media (pointer: coarse) {
+    button, [role="button"] {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    input[type="radio"],
+    input[type="checkbox"] {
+        min-height: 24px;
+        min-width: 24px;
+    }
+}
+
+/* Form validation styles */
+.field-error {
+    border-color: #e74c3c !important;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2) !important;
+}
+
+.field-success {
+    border-color: #27ae60 !important;
+}
+
+.validation-message {
+    font-size: 13px;
+    margin-top: 4px;
+    display: block;
+}
+
+.validation-message.error {
+    color: #e74c3c;
+}
+
+.validation-message.success {
+    color: #27ae60;
+}
+
+/* Unsaved changes indicator */
+.unsaved-indicator {
+    display: none;
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff3cd;
+    color: #856404;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #ffc107;
+}
+
+.unsaved-indicator.visible {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Step indicator for multi-step forms */
+.step-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px 0;
+}
+
+.step-indicator .step {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    border: 2px solid #ddd;
+    color: #999;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.step-indicator .step.active {
+    border-color: #3498db;
+    color: white;
+    background: #3498db;
+}
+
+.step-indicator .step.completed {
+    border-color: #27ae60;
+    color: white;
+    background: #27ae60;
+}
+
+.step-indicator .step-connector {
+    width: 40px;
+    height: 2px;
+    background: #ddd;
+    align-self: center;
+}
+
+.step-indicator .step-connector.active {
+    background: #3498db;
+}
+
+/* Progress indicator for quiz taking */
+.quiz-progress {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: white;
+    padding: 10px 20px;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 20px;
+}
+
+.quiz-progress-bar {
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.quiz-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3498db, #2ecc71);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.quiz-progress-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #666;
+}
+
+/* Responsive improvements for tablets */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .sidebar {
+        width: 250px !important;
+    }
+
+    .main-content {
+        padding-left: 270px !important;
+    }
+
+    .main-content.sidebar-collapsed {
+        padding-left: 40px !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .sidebar {
+        width: 85vw !important;
+        max-width: 300px;
+    }
+
+    .main-content {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+
+    .option-toolbar button {
+        min-height: 36px !important;
+        min-width: 36px !important;
+        padding: 4px 6px !important;
+    }
+
+    /* Stack grid layouts */
+    div[style*="grid-template-columns: 1fr 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    div[style*="grid-template-columns: 1fr 1fr 1fr 1fr"] {
+        grid-template-columns: 1fr 1fr !important;
+    }
+}

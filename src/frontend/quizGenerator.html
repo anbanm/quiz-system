@@ -12,8 +12,17 @@
     <script src="lib/quill.min.js"></script>
     <link rel="stylesheet" href="css/quiz-generator.css">
     <link rel="stylesheet" href="css/quill-custom.css">
+    <link rel="stylesheet" href="css/dark-mode.css">
+    <link rel="stylesheet" href="css/accessibility.css">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <style>
+        @keyframes toastSlideIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes timerPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    </style>
 </head>
 <body>
+<a href="#question-form-section" class="skip-link">Skip to main content</a>
 <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Test Library">📚</button>
 
 <div class="sidebar" id="sidebar">
@@ -350,7 +359,17 @@
 
     <!-- Load module loader first -->
     <script src="js/modules/quiz-loader.js"></script>
-    <!-- Load modular components -->
+    <!-- Load v2.0+ modules (Phase 1-4) -->
+    <script src="js/modules/quiz-security.js"></script>
+    <script src="js/modules/quiz-toast.js"></script>
+    <script src="js/modules/quiz-timer.js"></script>
+    <script src="js/modules/quiz-autosave.js"></script>
+    <script src="js/modules/quiz-analytics.js"></script>
+    <script src="js/modules/quiz-question-bank.js"></script>
+    <script src="js/modules/quiz-anti-cheat.js"></script>
+    <script src="js/modules/quiz-certificate.js"></script>
+    <script src="js/modules/quiz-plugin.js"></script>
+    <!-- Load core modular components -->
     <script src="js/modules/quiz-utils.js"></script>
     <script src="js/modules/quiz-richtext.js"></script>
     <script src="js/modules/quiz-data.js"></script>
@@ -368,10 +387,10 @@
             if (window.QuizModules.Loader.checkRequiredModules(requiredModules)) {
                 // Validate module APIs
                 const modulesToValidate = ['Utils', 'RichText', 'Data', 'UI', 'Questions', 'PDF'];
-                const allValid = modulesToValidate.every(module => 
+                const allValid = modulesToValidate.every(module =>
                     window.QuizModules.Loader.validateModuleAPI(module)
                 );
-                
+
                 if (allValid) {
                     window.QuizModules.Loader.initializeModules();
                 } else {
@@ -379,6 +398,53 @@
                 }
             } else {
                 console.error('[QuizModules] Required modules missing');
+            }
+
+            // Initialize dark mode toggle
+            (function() {
+                var saved = localStorage.getItem('quiz-theme') || 'light';
+                document.documentElement.setAttribute('data-theme', saved);
+
+                var toggle = document.createElement('button');
+                toggle.className = 'dark-mode-toggle';
+                toggle.setAttribute('aria-label', 'Toggle dark mode');
+                toggle.setAttribute('title', 'Toggle dark mode');
+                toggle.textContent = saved === 'dark' ? '\u2600' : '\u263E';
+                toggle.addEventListener('click', function() {
+                    var current = document.documentElement.getAttribute('data-theme');
+                    var next = current === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', next);
+                    localStorage.setItem('quiz-theme', next);
+                    toggle.textContent = next === 'dark' ? '\u2600' : '\u263E';
+                });
+                document.body.appendChild(toggle);
+            })();
+
+            // Initialize auto-save
+            if (window.QuizModules.AutoSave) {
+                window.QuizModules.AutoSave.init(
+                    function() {
+                        // Get state callback
+                        if (typeof quizData !== 'undefined' && quizData.tests.length > 0) {
+                            return { quizData: quizData, currentTestIndex: currentTestIndex };
+                        }
+                        return null;
+                    },
+                    function(state) {
+                        // Restore state callback
+                        if (state && state.quizData) {
+                            quizData = state.quizData;
+                            currentTestIndex = state.currentTestIndex || 0;
+                            populateTestSelect();
+                            selectTest(currentTestIndex);
+                        }
+                    }
+                );
+            }
+
+            // Initialize plugins
+            if (window.QuizModules.Plugins) {
+                window.QuizModules.Plugins.initAll();
             }
         });
     </script>

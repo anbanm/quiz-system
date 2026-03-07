@@ -5,9 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Quiz Test</title>
     <script src="jszip.min.js"></script>
+    <script src="js/jspdf.min.js"></script>
     <!-- Quill.js for rich text display (Offline) -->
     <link href="lib/quill.snow.css" rel="stylesheet">
     <link href="css/quill-custom.css" rel="stylesheet">
+    <link href="css/dark-mode.css" rel="stylesheet">
+    <link href="css/accessibility.css" rel="stylesheet">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <style>
+        @keyframes toastSlideIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes timerPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    </style>
     <style>
         /* Mobile-first responsive design */
         body {
@@ -556,12 +564,202 @@
             logArea.innerText += message + "\n";
             logArea.scrollTop = logArea.scrollHeight;
         }
+
+        // === PHASE 1-3 ENHANCEMENTS ===
+
+        // Quiz settings (configurable before quiz starts)
+        let quizSettings = {
+            timerEnabled: false,
+            timerMinutes: 30,
+            randomizeQuestions: false,
+            randomizeOptions: false,
+            antiCheatEnabled: false,
+            showProgressBar: true,
+            allowReview: true
+        };
+
+        let questionTimes = {};
+        let currentQuestionStartTime = null;
+
+        // Track time per question
+        function trackQuestionTime(index) {
+            if (currentQuestionStartTime !== null && typeof userAnswers[index] !== 'undefined') {
+                let prevIndex = Object.keys(userAnswers).pop();
+                if (prevIndex !== undefined) {
+                    questionTimes[prevIndex] = (questionTimes[prevIndex] || 0) + Math.round((Date.now() - currentQuestionStartTime) / 1000);
+                }
+            }
+            currentQuestionStartTime = Date.now();
+        }
+
+        // Enhanced saveAnswer with time tracking
+        let originalSaveAnswer = saveAnswer;
+        saveAnswer = function(questionIndex, selectedOption) {
+            trackQuestionTime(questionIndex);
+            originalSaveAnswer(questionIndex, selectedOption);
+            updateProgressBar();
+        };
+
+        // Update progress bar
+        function updateProgressBar() {
+            let answered = Object.keys(userAnswers).length;
+            let total = questions.length;
+            let progressFill = document.getElementById('progressFill');
+            let progressText = document.getElementById('progressText');
+            if (progressFill) {
+                progressFill.style.width = total > 0 ? ((answered / total) * 100) + '%' : '0%';
+            }
+            if (progressText) {
+                progressText.textContent = answered + ' of ' + total + ' answered';
+            }
+        }
+
+        // Show review page before submit
+        function showReviewPage() {
+            if (!quizSettings.allowReview) {
+                submitTest();
+                return;
+            }
+
+            let unanswered = [];
+            for (let i = 0; i < questions.length; i++) {
+                if (userAnswers[i] === undefined) unanswered.push(i + 1);
+            }
+
+            let reviewContainer = document.getElementById('reviewContainer');
+            if (!reviewContainer) {
+                reviewContainer = document.createElement('div');
+                reviewContainer.id = 'reviewContainer';
+                reviewContainer.style.cssText = 'margin:20px 0;padding:20px;background:#fff3cd;border-radius:10px;border-left:4px solid #ffc107;';
+                document.getElementById('quizContainer').parentNode.insertBefore(reviewContainer, document.getElementById('resultContainer'));
+            }
+
+            let html = '<h3 style="margin:0 0 15px 0;color:#856404;">Review Before Submitting</h3>';
+            html += '<p>Answered: <strong>' + Object.keys(userAnswers).length + '/' + questions.length + '</strong></p>';
+
+            if (unanswered.length > 0) {
+                html += '<p style="color:#dc3545;font-weight:bold;">Unanswered questions: ' + unanswered.join(', ') + '</p>';
+            } else {
+                html += '<p style="color:#28a745;font-weight:bold;">All questions answered!</p>';
+            }
+
+            html += '<div style="display:flex;gap:10px;margin-top:15px;">';
+            html += '<button onclick="document.getElementById(\'reviewContainer\').style.display=\'none\'" style="background:#6c757d;flex:1;">Go Back</button>';
+            html += '<button onclick="submitTest()" style="background:#28a745;flex:1;">Confirm Submit</button>';
+            html += '</div>';
+
+            reviewContainer.innerHTML = html;
+            reviewContainer.style.display = 'block';
+            reviewContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Enhanced submitTest with analytics
+        let originalSubmitTest = submitTest;
+        submitTest = function() {
+            // Stop timer
+            if (window.QuizModules && window.QuizModules.Timer) {
+                window.QuizModules.Timer.stop();
+            }
+
+            // Deactivate anti-cheat
+            if (window.QuizModules && window.QuizModules.AntiCheat) {
+                window.QuizModules.AntiCheat.deactivate();
+            }
+
+            // Hide review container
+            let reviewContainer = document.getElementById('reviewContainer');
+            if (reviewContainer) reviewContainer.style.display = 'none';
+
+            // Call original submit
+            originalSubmitTest();
+
+            // Show analytics dashboard
+            if (window.QuizModules && window.QuizModules.Analytics) {
+                let totalTime = window.QuizModules.Timer ? window.QuizModules.Timer.getElapsed() : 0;
+                let analytics = window.QuizModules.Analytics.calculateAnalytics(
+                    questions, userAnswers, { questionTimes: questionTimes, totalTime: totalTime }
+                );
+
+                let dashboardHTML = window.QuizModules.Analytics.generateDashboardHTML(analytics);
+
+                // Add CSV export and certificate buttons
+                dashboardHTML += '<div style="display:flex;gap:10px;margin-top:20px;padding:0 20px 20px;">';
+                dashboardHTML += '<button onclick="exportResults()" style="background:#17a2b8;flex:1;">Export CSV</button>';
+                if (window.QuizModules.Certificate && window.QuizModules.Certificate.isEligible(analytics.summary.percentage)) {
+                    dashboardHTML += '<button onclick="generateCertificate()" style="background:#28a745;flex:1;">Get Certificate</button>';
+                }
+                dashboardHTML += '</div>';
+
+                let analyticsDiv = document.getElementById('analyticsDashboard');
+                if (!analyticsDiv) {
+                    analyticsDiv = document.createElement('div');
+                    analyticsDiv.id = 'analyticsDashboard';
+                    analyticsDiv.style.cssText = 'margin-top:20px;background:white;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.1);overflow:hidden;';
+                    document.getElementById('resultContainer').after(analyticsDiv);
+                }
+                analyticsDiv.innerHTML = dashboardHTML;
+
+                // Save result
+                window.QuizModules.Analytics.saveResult(testID, analytics);
+
+                // Store for export/certificate
+                window._lastAnalytics = analytics;
+            }
+        };
+
+        function exportResults() {
+            if (window._lastAnalytics && window.QuizModules.Analytics) {
+                window.QuizModules.Analytics.exportCSV(window._lastAnalytics, testID || 'quiz');
+            }
+        }
+
+        function generateCertificate() {
+            if (window._lastAnalytics && window.QuizModules.Certificate) {
+                try {
+                    let a = window._lastAnalytics.summary;
+                    let doc = window.QuizModules.Certificate.generate({
+                        studentName: prompt('Enter your name for the certificate:') || 'Student',
+                        quizName: testID || 'Quiz',
+                        score: a.percentage,
+                        grade: a.grade,
+                        correctAnswers: a.correctCount,
+                        totalQuestions: a.totalQuestions,
+                        template: a.percentage >= 90 ? 'honors' : 'standard'
+                    });
+                    window.QuizModules.Certificate.download(doc, (testID || 'quiz') + '-certificate.pdf');
+                } catch (e) {
+                    alert('Certificate generation failed: ' + e.message);
+                }
+            }
+        }
     </script>
+    <!-- Load v2.0+ modules -->
+    <script src="js/modules/quiz-loader.js"></script>
+    <script src="js/modules/quiz-security.js"></script>
+    <script src="js/modules/quiz-toast.js"></script>
+    <script src="js/modules/quiz-timer.js"></script>
+    <script src="js/modules/quiz-utils.js"></script>
+    <script src="js/modules/quiz-analytics.js"></script>
+    <script src="js/modules/quiz-anti-cheat.js"></script>
+    <script src="js/modules/quiz-certificate.js"></script>
+    <script src="js/modules/quiz-plugin.js"></script>
 </head>
 <body>
+<a href="#quizContainer" class="skip-link">Skip to quiz</a>
 <div class="container">
     <h2>Quiz Test</h2>
     <button onclick="toggleMode()">Toggle Mode: <span id="modeIndicator">Unity Mode</span></button>
+
+    <!-- Progress bar (shown during quiz) -->
+    <div id="quizProgressBar" style="display:none; margin:15px 0; padding:10px; background:#f8f9fa; border-radius:8px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; color:#666; margin-bottom:5px;">
+            <span id="progressText">0 of 0 answered</span>
+            <span id="progressPercent">0%</span>
+        </div>
+        <div style="height:8px; background:#e9ecef; border-radius:4px; overflow:hidden;">
+            <div id="progressFill" style="height:100%; width:0%; background:linear-gradient(90deg,#3498db,#2ecc71); border-radius:4px; transition:width 0.5s ease;"></div>
+        </div>
+    </div>
     
     <div id="fileUploadSection" style="display: none; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
         <h3 style="margin: 0 0 15px 0; color: #2c3e50;">📁 Load Quiz Files</h3>
@@ -583,8 +781,50 @@
     
     <div id="quizContainer"></div>
     <button onclick="submitTest()">Submit Test</button>
+    <div id="reviewContainer" style="display:none;"></div>
     <div id="resultContainer"></div>
+    <div id="analyticsDashboard"></div>
     <div id="logArea"></div>
 </div>
+<script>
+    // Initialize dark mode
+    (function() {
+        var saved = localStorage.getItem('quiz-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', saved);
+
+        var toggle = document.createElement('button');
+        toggle.className = 'dark-mode-toggle';
+        toggle.setAttribute('aria-label', 'Toggle dark mode');
+        toggle.textContent = saved === 'dark' ? '\u2600' : '\u263E';
+        toggle.addEventListener('click', function() {
+            var current = document.documentElement.getAttribute('data-theme');
+            var next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('quiz-theme', next);
+            toggle.textContent = next === 'dark' ? '\u2600' : '\u263E';
+        });
+        document.body.appendChild(toggle);
+    })();
+
+    // Show progress bar when quiz loads and start timer
+    var origLoadTest = loadTest;
+    loadTest = async function(testJson) {
+        await origLoadTest(testJson);
+
+        // Show progress bar
+        var progressBar = document.getElementById('quizProgressBar');
+        if (progressBar && questions.length > 0) {
+            progressBar.style.display = 'block';
+            updateProgressBar();
+        }
+
+        // Start elapsed time tracking
+        if (window.QuizModules && window.QuizModules.Timer && questions.length > 0) {
+            window.QuizModules.Timer.startCountUp({
+                parentElement: document.querySelector('.container')
+            });
+        }
+    };
+</script>
 </body>
 </html>

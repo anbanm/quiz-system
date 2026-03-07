@@ -551,7 +551,7 @@ window.QuizModules.UI = (function() {
                             </div>
                             
                             <div style="margin-bottom: 15px;">
-                                <strong style="color: #2c3e50; font-size: 16px;">${question.questionHtml || question.question}</strong>
+                                <strong style="color: #2c3e50; font-size: 16px;">${window.QuizModules.Security ? window.QuizModules.Security.sanitizeHTML(question.questionHtml || question.question) : (question.questionHtml || question.question)}</strong>
                                 ${question.image ? `<div style="margin-top: 10px;"><img src="${question.imagePreviewData || question.image}" alt="Question image" style="max-width: 200px; max-height: 150px; border: 1px solid #ddd; border-radius: 5px;"></div>` : ''}
                             </div>
                             

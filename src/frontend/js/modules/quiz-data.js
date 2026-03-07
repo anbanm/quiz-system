@@ -101,8 +101,9 @@ window.QuizModules.Data = (function() {
      * Initialize the test library from localStorage or with sample data
      */
     function initializeTestLibrary() {
-        // Load from localStorage
-        const savedTests = localStorage.getItem('quizTestLibrary');
+        // Load from localStorage with safe storage wrapper
+        const storage = (window.QuizModules.Security && window.QuizModules.Security.safeStorage) || localStorage;
+        const savedTests = storage.getItem('quizTestLibrary');
         if (savedTests) {
             try {
                 testLibrary = JSON.parse(savedTests);
@@ -125,7 +126,12 @@ window.QuizModules.Data = (function() {
      * Save test library to localStorage
      */
     function saveTestLibrary() {
-        localStorage.setItem('quizTestLibrary', JSON.stringify(testLibrary));
+        const storage = (window.QuizModules.Security && window.QuizModules.Security.safeStorage) || localStorage;
+        try {
+            storage.setItem('quizTestLibrary', JSON.stringify(testLibrary));
+        } catch (e) {
+            console.error('Failed to save test library:', e);
+        }
     }
     
     /**
