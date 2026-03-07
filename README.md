@@ -1,55 +1,79 @@
-# 🎓 Quiz System - Teacher-Friendly Quiz Creator
+# Quiz System - Teacher-Friendly Quiz Creator
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Browser Support](https://img.shields.io/badge/browsers-Chrome%20%7C%20Safari%20%7C%20Firefox%20%7C%20Edge-brightgreen.svg)
-![Offline](https://img.shields.io/badge/offline-ready-orange.svg)  
+![Offline](https://img.shields.io/badge/offline-ready-orange.svg)
 ![Tests](https://img.shields.io/badge/tests-250%20passing-brightgreen.svg)
 ![Playwright](https://img.shields.io/badge/testing-Playwright-blueviolet.svg)
 ![Rich Text](https://img.shields.io/badge/rich%20text-Quill.js-yellow.svg)
+![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg)
 
-**Create professional quizzes with rich text formulas • PDF export with templates • 250 automated tests**
+**Create professional quizzes with rich text formulas, timed assessments, analytics, and PDF export**
 
 *Perfect for teachers who want a simple, reliable quiz tool that works anywhere*
 
-[📦 Download Latest Release](https://github.com/anbanm/quiz-system/releases) • [🎬 See Demo](#quick-start) • [🚀 Get Started](#quick-start) • [🤖 Run Tests](#testing)
+[Download Latest Release](https://github.com/anbanm/quiz-system/releases) | [Get Started](#quick-start) | [Run Tests](#testing)
 
 </div>
 
 ---
 
-## ✨ Why Teachers Love This Quiz System
+## Why Teachers Love This Quiz System
 
-- **🧮 Rich Text & Formulas**: Chemical formulas (H₂O), physics equations (E=mc²), mathematical expressions
-- **🎨 Visual Formatting**: Bold, italic, underline, subscript, superscript with color-coded editors
-- **🌐 Works Everywhere**: Safari, Chrome, Firefox, Edge - even without internet
-- **📸 Image Support**: Add pictures to questions with live preview
-- **📦 ZIP Packages**: Share complete quizzes easily - students just upload and go
-- **🎯 Educational Design**: Teacher-friendly interface with clear "Quiz" terminology
-- **⚡ Zero Setup**: Download, open in browser, start creating
-- **📄 PDF Export**: 3 professional templates (Student Quiz, Answer Key, Practice Sheet)
-- **🔒 Privacy First**: All data stays on your device, no accounts needed
-- **🤖 100% Test Coverage**: 250 automated tests across all browsers and mobile devices
-- **📱 Mobile Ready**: Responsive design tested on iPhone, Android, and iPad
+- **Rich Text & Formulas**: Chemical formulas (H2O), physics equations (E=mc2), mathematical expressions
+- **Visual Formatting**: Bold, italic, underline, subscript, superscript with color-coded editors
+- **Works Everywhere**: Safari, Chrome, Firefox, Edge - even without internet
+- **Image Support**: Add pictures to questions with live preview
+- **ZIP Packages**: Share complete quizzes easily - students just upload and go
+- **PDF Export**: 3 professional templates (Student Quiz, Answer Key, Practice Sheet)
+- **Timer & Progress**: Countdown/count-up timer with progress bar for timed assessments
+- **Question Bank**: Reusable question library with tagging and cross-quiz search
+- **Analytics Dashboard**: Per-question analysis, grade boundaries, CSV export
+- **Anti-Cheating**: Tab switch detection, copy/paste prevention, answer randomization
+- **Certificates**: Auto-generated completion certificates (standard, honors, minimal templates)
+- **Dark Mode**: Toggle between light and dark themes
+- **Auto-Save**: Draft recovery so work is never lost
+- **Accessibility**: Keyboard navigation, screen reader support, high contrast mode
+- **Docker Deployment**: One-command deployment with REST API server
+- **Plugin System**: Extensible hook-based architecture for custom modules
+- **Privacy First**: All data stays on your device, no accounts needed
+- **100% Test Coverage**: 250 automated tests across all browsers and mobile devices
+- **Mobile Ready**: Responsive design tested on iPhone, Android, and iPad
 
 *A comprehensive quiz generation and testing system with Unity integration for educational applications.*
 
-## 🏗️ Modular Architecture (v1.5.0)
+## Modular Architecture (v2.0.0)
 
-The quiz system now features a **completely modular architecture** with 73% code reduction and enhanced maintainability:
+The quiz system features a **completely modular architecture** with 13+ specialized modules:
 
-### 📦 Module Overview
-- **🔧 `quiz-loader.js`** (189 lines) - Module system with validation and dependency checking
-- **⚙️ `quiz-utils.js`** (225 lines) - Utility functions for format conversion and calculations  
-- **📝 `quiz-richtext.js`** (367 lines) - Quill.js integration for mathematical formulas
-- **💾 `quiz-data.js`** (722 lines) - Data management, import/export, and test library
-- **🎨 `quiz-ui.js`** (646 lines) - UI components, dialogs, and rendering
-- **❓ `quiz-questions.js`** (374 lines) - Question CRUD operations and management
-- **📄 `quiz-pdf.js`** (821 lines) - PDF export with 3 professional templates
+### Core Modules
+| Module | Lines | Purpose |
+|--------|-------|---------|
+| `quiz-loader.js` | 189 | Module system with validation and dependency checking |
+| `quiz-utils.js` | 225 | Utility functions for format conversion and calculations |
+| `quiz-richtext.js` | 367 | Quill.js integration for mathematical formulas |
+| `quiz-data.js` | 727 | Data management, import/export, and test library |
+| `quiz-ui.js` | 873 | UI components, dialogs, and rendering |
+| `quiz-questions.js` | 376 | Question CRUD operations and management |
+| `quiz-pdf.js` | 820 | PDF export with 3 professional templates |
 
-### 🌐 Global Namespace Pattern
+### v2.0 Extension Modules
+| Module | Lines | Purpose |
+|--------|-------|---------|
+| `quiz-security.js` | 434 | HTML sanitization, CSP, JSON validation, safe storage |
+| `quiz-timer.js` | 293 | Countdown/count-up timer with progress tracking |
+| `quiz-toast.js` | 177 | Non-intrusive toast notification system |
+| `quiz-autosave.js` | 260 | Auto-save with draft recovery |
+| `quiz-analytics.js` | 340 | Per-question analytics, grade boundaries, CSV export |
+| `quiz-question-bank.js` | 346 | Question bank with tagging and cross-quiz reuse |
+| `quiz-anti-cheat.js` | 262 | Tab detection, copy prevention, Fisher-Yates shuffle |
+| `quiz-certificate.js` | 237 | PDF certificate generation with 3 templates |
+| `quiz-plugin.js` | 224 | Hook-based plugin/extension system |
+
+### Global Namespace Pattern
 ```javascript
 window.QuizModules = {
     Loader: { registerModule, validateAPI, initializeModules },
@@ -58,22 +82,16 @@ window.QuizModules = {
     Data: { loadTestLibrary, saveTestLibrary, generateJSON },
     UI: { renderQuestions, showSuccessDialog, toggleSidebar },
     Questions: { addOrUpdateQuestion, editQuestion, deleteQuestion },
-    PDF: { generateStudentQuiz, generateAnswerKey, generatePracticeSheet }
+    PDF: { generateStudentQuiz, generateAnswerKey, generatePracticeSheet },
+    Security: { sanitizeHTML, validateJSON, safeStorage },
+    Timer: { start, pause, reset, getElapsed },
+    Analytics: { trackAnswer, generateReport, exportCSV },
+    QuestionBank: { addToBank, search, importFromQuiz },
+    AntiCheat: { enable, detectTabSwitch, shuffleAnswers },
+    Certificate: { generate, getTemplates },
+    Plugin: { register, emit, on }
 };
 ```
-
-### ✅ Benefits Achieved
-- **Maintainability**: Clear separation of concerns across focused modules
-- **Testability**: Each module can be tested independently with isolated APIs  
-- **Reusability**: Modules can be used in other projects following the same patterns
-- **Debuggability**: Module-specific logging and error handling
-- **Offline-First**: Global namespace ensures compatibility without ES6 imports
-
-## 📸 Screenshots
-
-> **Coming Soon!** We're preparing beautiful screenshots to show you the teacher-friendly interface in action.
-> 
-> For now, try it yourself: Download the files and open `src/frontend/quizGenerator.html` in your browser!
 
 ## Overview
 
@@ -84,128 +102,151 @@ This project consists of two main components:
 ## Features
 
 ### Quiz Generator (`quizGenerator.html`)
-- ✅ **Rich Text Editor** with Quill.js integration for mathematical formulas
-- ✅ **Chemical Formulas**: H₂O, CO₂, NaCl with proper subscript formatting
-- ✅ **Physics Equations**: E=mc², F=ma with superscript support
-- ✅ **Color-Coded Options**: Each answer (A-F) has themed toolbar (green, blue, orange, red, purple, cyan)
-- ✅ **Multiple Question Types**: Multiple choice (2-6 options) and True/False
-- ✅ **Dedicated Quiz Creation**: "Start Fresh Quiz" button always available
-- ✅ **Image support** with live preview and smart file handling
-- ✅ Set difficulty levels (Easy, Medium, Hard) with visual indicators
-- ✅ Assign point values to questions (1-10 points)
-- ✅ Category organization for subject-based quizzes
-- ✅ **PDF Export**: 3 professional templates with rich text preservation
-- ✅ **ZIP package export** with images in separate folder (recommended)
-- ✅ **Triple format storage**: Plain text, HTML, and Delta for maximum compatibility
-- ✅ Load and edit existing quiz data with proper rich text preservation
-- ✅ **Offline functionality** - works without internet connection
+- Rich Text Editor with Quill.js integration for mathematical formulas
+- Chemical Formulas: H2O, CO2, NaCl with proper subscript formatting
+- Physics Equations: E=mc2, F=ma with superscript support
+- Color-Coded Options: Each answer (A-F) has themed toolbar
+- Multiple Question Types: Multiple choice (2-6 options) and True/False
+- Image support with live preview and smart file handling
+- Difficulty levels (Easy, Medium, Hard) with visual indicators
+- Point values per question (1-10 points)
+- Category organization for subject-based quizzes
+- PDF Export: 3 professional templates with rich text preservation
+- ZIP package export with images in separate folder
+- Triple format storage: Plain text, HTML, and Delta for compatibility
+- Auto-save with draft recovery
+- Dark mode toggle
+- Toast notifications for non-intrusive feedback
+- Question bank with tagging and search
+- Offline functionality - works without internet connection
 
 ### Quiz Test Runner (`WebTest.html`)
-- ✅ **Rich Text Display**: Mathematical formulas and formatting preserved perfectly
-- ✅ **Chemical Formulas**: H₂O, CO₂ rendered with proper subscripts
-- ✅ **Physics Equations**: E=mc² displayed with correct superscripts
-- ✅ **Universal browser support** - Safari, Chrome, Firefox, Edge
-- ✅ **ZIP package upload** with automatic extraction (all browsers)
-- ✅ **JSON file upload** for embedded image and rich text quizzes
-- ✅ Smart image loading with extension matching (.jpg/.jpeg support)
-- ✅ Display questions with properly resolved images and rich formatting
-- ✅ Multiple choice answer collection with letter-based answers
-- ✅ **Complete compatibility** with old and new quiz formats
-- ✅ Score calculation and detailed reporting
-- ✅ Unity integration via messaging
-- ✅ **Debug logging** for troubleshooting
+- Rich Text Display: Mathematical formulas and formatting preserved
+- Countdown/count-up timer with progress bar
+- Anti-cheating: Tab switch detection, copy/paste prevention, answer shuffling
+- Analytics tracking for per-question performance
+- Certificate generation upon completion
+- Universal browser support - Safari, Chrome, Firefox, Edge
+- ZIP package upload with automatic extraction
+- JSON file upload for embedded image quizzes
+- Score calculation and detailed reporting
+- Accessibility: keyboard navigation, screen reader support, high contrast
+- Unity integration via messaging
+- Debug logging for troubleshooting
 
 ### Unity Integration
-- ✅ WebView integration with UniWebView
-- ✅ JSON data communication
-- ✅ Coin/points system integration
-- ✅ Result tracking and display
+- WebView integration with UniWebView
+- JSON data communication
+- Coin/points system integration
+- Result tracking and display
+
+### Server & Deployment (v2.0)
+- Docker container with health check and persistent volume
+- REST API server (Node.js, zero external dependencies)
+- `docker-compose.yml` for one-command deployment
 
 ## Project Structure
 
 ```
 quiz-system/
 ├── src/
-│   ├── frontend/          # Web-based quiz tools
-│   │   ├── quizGenerator.html      # Main quiz creation interface
-│   │   ├── WebTest.html           # Student quiz testing interface
-│   │   ├── css/                   # Stylesheets
+│   ├── frontend/
+│   │   ├── quizGenerator.html
+│   │   ├── WebTest.html
+│   │   ├── css/
 │   │   │   ├── quiz-generator.css
-│   │   │   └── quill-custom.css
-│   │   ├── lib/                   # Third-party libraries
-│   │   │   ├── quill.min.js       # Rich text editor
+│   │   │   ├── quill-custom.css
+│   │   │   ├── dark-mode.css
+│   │   │   └── accessibility.css
+│   │   ├── lib/
+│   │   │   ├── quill.min.js
 │   │   │   └── quill.snow.css
-│   │   ├── jszip.min.js          # ZIP handling (offline)
-│   │   └── js/                    # JavaScript modules
-│   │       ├── quiz-generator.js  # Main application (512 lines)
-│   │       └── modules/           # Modular architecture (v1.4.0)
-│   │           ├── quiz-loader.js     # Module system (189 lines)
-│   │           ├── quiz-utils.js      # Utilities (225 lines)
-│   │           ├── quiz-richtext.js   # Rich text (367 lines)
-│   │           ├── quiz-data.js       # Data management (722 lines)
-│   │           ├── quiz-ui.js         # UI components (646 lines)
-│   │           ├── quiz-questions.js  # Question management (374 lines)
-│   │           └── quiz-pdf.js        # PDF export templates (821 lines)
-│   └── unity/             # Unity C# scripts
+│   │   ├── jszip.min.js
+│   │   └── js/
+│   │       ├── quiz-generator.js       # Main orchestration (535 lines)
+│   │       ├── jspdf.min.js
+│   │       └── modules/                # 16 specialized modules
+│   │           ├── quiz-loader.js
+│   │           ├── quiz-utils.js
+│   │           ├── quiz-richtext.js
+│   │           ├── quiz-data.js
+│   │           ├── quiz-ui.js
+│   │           ├── quiz-questions.js
+│   │           ├── quiz-pdf.js
+│   │           ├── quiz-security.js
+│   │           ├── quiz-timer.js
+│   │           ├── quiz-toast.js
+│   │           ├── quiz-autosave.js
+│   │           ├── quiz-analytics.js
+│   │           ├── quiz-question-bank.js
+│   │           ├── quiz-anti-cheat.js
+│   │           ├── quiz-certificate.js
+│   │           └── quiz-plugin.js
+│   └── unity/
 │       ├── SampleWebView.cs
 │       └── SampleWebViewSim.cs
-├── tests/                 # Revolutionary test architecture with 250 tests
-│   ├── page-objects/      # Page Object Model with UI mapping
+├── server/
+│   └── index.js                        # REST API server
+├── tests/
+│   ├── page-objects/
 │   │   ├── QuizGeneratorPage.js
 │   │   └── WebTestPage.js
-│   ├── ui-mapping.json    # UI element mapping abstraction
-│   ├── quiz-generator-clean.spec.js # Clean architecture tests
-│   ├── quiz-generator.spec.js       # Rich text integration tests
-│   ├── quiz-test-runner.spec.js     # Student interface tests
-│   ├── question-reordering.spec.js  # Question management tests
-│   ├── mobile-responsiveness.spec.js # Mobile compatibility tests
-│   ├── pdf-export.spec.js          # PDF export functionality tests
-│   └── test-data/         # Sample images and quiz data
-├── docs/                  # Documentation
-├── examples/              # Sample quiz data
-├── playwright.config.js   # Test configuration
-├── .gitignore
-├── CLAUDE.md             # Development context and recovery instructions
+│   ├── ui-mapping.json
+│   ├── quiz-generator-clean.spec.js
+│   ├── quiz-generator.spec.js
+│   ├── quiz-test-runner.spec.js
+│   ├── question-reordering.spec.js
+│   ├── mobile-responsiveness.spec.js
+│   ├── pdf-export.spec.js
+│   └── test-data/
+├── Dockerfile
+├── docker-compose.yml
+├── ROADMAP.md
+├── playwright.config.js
+├── package.json
 └── README.md
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
-### 📥 Download & Setup (30 seconds)
-1. **Download**: Click the green "Code" button above → "Download ZIP"
+### Download & Setup (30 seconds)
+1. **Download**: Click the green "Code" button above, then "Download ZIP"
 2. **Extract**: Unzip the downloaded file anywhere on your computer
-3. **Open**: Double-click `src/frontend/quizGenerator.html` 
-4. **Start Creating**: Your browser opens with the quiz generator ready to go!
+3. **Open**: Double-click `src/frontend/quizGenerator.html`
+4. **Start Creating**: Your browser opens with the quiz generator ready to go
 
-*That's it! No installation, no accounts, no internet required.*
+*No installation, no accounts, no internet required.*
+
+### Docker Deployment (Optional)
+```bash
+# One-command deployment with REST API
+docker-compose up -d
+
+# Or build and run manually
+docker build -t quiz-system .
+docker run -p 3000:3000 quiz-system
+```
 
 ### Creating a Quiz (Teacher)
 1. Open `src/frontend/quizGenerator.html` in a web browser
-2. Click "✨ Create New Quiz"
+2. Click "Create New Quiz"
 3. Add questions with the teacher-friendly interface:
-   - Write clear questions
+   - Write questions with rich text formatting
    - Add images if needed (with live preview)
    - Set A/B/C/D answer options
    - Choose difficulty and points
 4. **Export Options**:
-   - **📄 Export to PDF** (3 professional templates)
-   - **📦 Download ZIP Package** (recommended for sharing)
-   - **📄 Download JSON Only** (embedded format)
+   - **Export to PDF** (3 professional templates)
+   - **Download ZIP Package** (recommended for sharing)
+   - **Download JSON Only** (embedded format)
 5. Share files with students
 
 ### Taking a Quiz (Student)
 1. Open `src/frontend/WebTest.html` in a web browser
 2. Toggle to "Local File Mode"
-3. **Upload ZIP Package** (easiest - works on all browsers):
-   - Select the ZIP file from your teacher
-   - Images and quiz load automatically
-4. **OR Upload JSON File** (if using embedded format)
-5. Answer questions and submit for results
-
-### Advanced: Folder Method (Chrome/Edge only)
-- Extract ZIP package to a folder
-- Use the folder picker in WebTest
-- Images load from the extracted folder
+3. Upload ZIP Package or JSON file
+4. Answer questions (with optional timer and anti-cheating)
+5. Submit for results and optional certificate
 
 ### Unity Integration
 1. Import the C# scripts into your Unity project
@@ -213,22 +254,17 @@ quiz-system/
 3. Configure the WebView to load your quiz HTML files
 4. Handle results in your game logic
 
-## 🤖 Testing
+## Testing
 
-Our quiz system includes comprehensive automated testing to ensure reliability across all platforms.
-
-### Test Coverage - TRUE 100% ACHIEVED! 🎉
-- **250 total tests** across 5 different browsers and devices - **ALL PASSING**
-- **50 tests per platform**: Each browser/device runs complete test suite
-- **Rich Text Testing**: Mathematical formulas, chemical equations, formatting preservation
-- **UI Architecture Testing**: Page Object Model with UI mapping abstraction layer
+### Test Coverage
+- **250 total tests** across 5 browsers and devices - all passing
+- **50 tests per platform**: Each browser/device runs the complete suite
+- **Rich Text Testing**: Mathematical formulas, chemical equations, formatting
 - **End-to-End Testing**: Complete workflow from quiz creation to student testing
 
-### Tested Platforms (50/50 tests each ✅)
-- **Desktop Browsers**: Chromium ✅, Firefox ✅, WebKit (Safari) ✅
-- **Mobile Devices**: Mobile Chrome ✅, Mobile Safari ✅
-- **Rich Text Features**: H₂O, E=mc², bold/italic/underline formatting tested
-- **Cross-Platform Formulas**: Mathematical expressions preserved across all platforms
+### Tested Platforms (50/50 tests each)
+- **Desktop**: Chromium, Firefox, WebKit (Safari)
+- **Mobile**: Mobile Chrome, Mobile Safari
 
 ### Running Tests
 
@@ -236,179 +272,114 @@ Our quiz system includes comprehensive automated testing to ensure reliability a
 # Install dependencies (first time only)
 npm install
 
-# Run all 250 tests (TRUE 100% passing!)
+# Run all 250 tests
 npm test
 
-# Clean Architecture Tests (Modern Page Object Model)
+# Specific test suites
 npx playwright test tests/quiz-generator-clean.spec.js
+npx playwright test tests/quiz-generator.spec.js
+npx playwright test tests/question-reordering.spec.js
+npx playwright test tests/mobile-responsiveness.spec.js
+npx playwright test tests/quiz-test-runner.spec.js
+npx playwright test tests/pdf-export.spec.js
 
-# Specific test suites (ALL 100% PASSING ✅)
-npx playwright test tests/question-reordering.spec.js   # Question management
-npx playwright test tests/quiz-generator.spec.js        # Rich text integration  
-npx playwright test tests/mobile-responsiveness.spec.js # Mobile compatibility
-npx playwright test tests/quiz-test-runner.spec.js      # Student interface
-npx playwright test tests/pdf-export.spec.js            # PDF export functionality
-
-# Interactive "bot vision" testing
+# Interactive testing
 npx playwright test --ui
 
 # View test reports
 npx playwright show-report
 ```
 
-### Interactive Testing Experience
-Run `npx playwright test --ui` to experience **"bot vision"** testing:
-- ✨ Watch tests execute in real-time with rich text editors
-- 🎮 Use timeline scrubber to replay mathematical formula input
-- 🔍 Inspect Quill.js rich text elements the bot interacts with
-- 📱 Switch between different devices and browsers
-- 🧮 See chemical formulas (H₂O) and physics equations (E=mc²) being tested
-- 🎨 Watch color-coded option editors in action
-
 ## Dependencies
 
 - **Web**: Modern web browser with ES6 support (works completely offline)
 - **Unity**: Unity 2021.3+ with UniWebView package
-- **Testing**: Node.js 16+ and npm (for running automated tests)
-- **Included Libraries**: 
-  - **Quill.js** (bundled locally for rich text editing with mathematical formulas)
-  - **JSZip 3.10.1** (bundled locally for offline ZIP package support)
-  - **Playwright 1.54.2+** (automated testing framework with 210 tests)
+- **Testing**: Node.js 16+ and npm
+- **Server**: Node.js 16+ (zero external dependencies)
+- **Docker**: Docker 20+ and docker-compose (optional)
+- **Included Libraries**:
+  - Quill.js (bundled locally for rich text editing)
+  - JSZip 3.10.1 (bundled locally for ZIP support)
+  - jsPDF (bundled locally for PDF generation)
+
+## Changelog
+
+### v2.0.0 (2026-03-07) - Complete Platform Overhaul
+
+**Phase 1 - Core Modernization:**
+- Security module: HTML sanitizer, CSP headers, JSON validation, safe localStorage wrapper
+- Accessibility: Focus indicators, skip navigation, screen reader support, high contrast, reduced motion
+- UX: Toast notifications, dark mode toggle, auto-save with draft recovery
+- Quiz timer: Countdown/count-up with progress bar, review page, question randomization
+
+**Phase 2 - Platform Features:**
+- Analytics dashboard with per-question analysis and grade boundaries
+- CSV export for quiz results
+- Question bank with tagging, search, and cross-quiz reuse
+
+**Phase 3 - Advanced Capabilities:**
+- Anti-cheating: Tab switch detection, copy/paste prevention, Fisher-Yates shuffle
+- Certificate generation with jsPDF (standard, honors, minimal templates)
+
+**Phase 4 - Enterprise & Scale:**
+- Docker deployment with health check and persistent volume
+- REST API server with Node.js (zero external dependencies)
+- Plugin/extension system with hook-based architecture
+
+### v1.5.0 (2025-08-03) - PDF Export System
+- 3 PDF templates: Student Quiz, Teacher Answer Key, Practice Worksheet
+- Rich text preservation in PDF output
+- Smart image integration with aspect ratio preservation
+- Offline PDF generation with jsPDF
+- New quiz-pdf.js module (821 lines)
+
+### v1.4.0 (2025-08-03) - Modular Refactoring
+- Complete refactoring of 71KB monolithic file into 6 modules
+- 73% code reduction in main file (1,917 to 512 lines)
+- Global namespace pattern for offline-first compatibility
+- Module system with validation and dependency checking
+
+### v1.3.1 (2025-08-02) - Rich Text Revolution
+- Quill.js integration with mathematical formula support
+- Chemical formulas (H2O) and physics equations (E=mc2)
+- Color-coded answer option editors (A-F)
+- UI mapping abstraction layer with Page Object Model
+- 210/210 tests passing across all platforms
+
+### v1.3.0 (2025-08-02) - Codebase Refactoring
+- Separated HTML, CSS, and JavaScript into dedicated files
+- 87% file size reduction in HTML
+- Test library with sidebar navigation
+- Built-in sample quizzes
+
+### v1.2.0 (2025-08-01) - Testing Release
+- 108 automated Playwright tests across 6 browsers/devices
+- Cross-browser and mobile device testing
+- Interactive test viewer
+
+### v1.1.0 (2025-07-27) - ZIP & UX
+- ZIP package support for all browsers
+- Teacher-friendly interface redesign
+- Offline JSZip library
+- Smart image handling
+
+### v1.0.0 (2025-07-27) - Initial Release
+- Basic quiz generation and testing
+- Unity integration with UniWebView
+- JSON export/import
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. **Run the test suite**: `npm test` (all 250 tests must pass)
-5. Test thoroughly across different browsers
-6. Commit your changes (`git commit -m 'Add amazing feature'`)
-7. Push to the branch (`git push origin feature/amazing-feature`)
-8. Submit a pull request
-
-### Development Guidelines
-- All new features must include comprehensive Playwright tests
-- Maintain cross-browser compatibility (Chrome, Firefox, Safari, Edge)
-- Ensure mobile responsiveness with proper touch targets (44px minimum)
-- Follow the existing teacher-friendly design patterns
-
-## Changelog
-
-### v1.5.0 (2025-08-03) - 📄 Professional PDF Export System
-- ✅ **3 PDF Templates**: Student Quiz, Teacher Answer Key, Practice Worksheet
-- ✅ **Rich Text Preservation**: Superscript/subscript formulas maintained in PDF (H₂O, E=mc²)
-- ✅ **Smart Image Integration**: Automatic scaling with aspect ratio preservation (max 100mm x 60mm)
-- ✅ **Professional A4 Layout**: Proper margins, typography, and page headers/footers
-- ✅ **Offline PDF Generation**: Complete jsPDF integration for tablet/offline compatibility
-- ✅ **Comprehensive Testing**: 40 new PDF export tests (250 total tests, 100% passing)
-- ✅ **Template Selection Dialog**: User-friendly interface with template previews
-- ✅ **Multiple Export Formats**: Student bubbles, filled answer keys, blank practice sheets
-- ✅ **Mathematical Formula Support**: Delta and HTML format processing in PDFs
-- ✅ **Modular Architecture**: New quiz-pdf.js module (821 lines) with clean separation
-
-### v1.4.0 (2025-08-03) - 🏗️ JavaScript Modular Refactoring
-- ✅ **Modular Architecture**: Complete refactoring of 71KB monolithic file into 6 maintainable modules
-- ✅ **73% Code Reduction**: Main file reduced from 1,917 lines to 512 lines
-- ✅ **Global Namespace Pattern**: Offline-first compatibility with `window.QuizModules.*` structure
-- ✅ **Module System**: Comprehensive loader with validation, dependency checking, and initialization
-- ✅ **Separation of Concerns**: Clear module boundaries for utilities, rich text, data, UI, and questions
-- ✅ **100% Functionality Preserved**: All existing features work identically with modular structure
-- ✅ **Enhanced Maintainability**: Isolated responsibilities make debugging and feature additions easier
-- ✅ **Testability**: Each module has clear APIs and can be tested independently
-- ✅ **Backward Compatibility**: Existing quiz files continue to work without modification
-- ✅ **Bug Fixes**: Resolved test library loading, focus issues, and global function accessibility
-
-### v1.3.1 (2025-08-02) - 🧮 Rich Text Revolution with TRUE 100% Test Coverage
-- ✅ **Rich Text Editor Integration**: Complete Quill.js integration with mathematical formula support
-- ✅ **Chemical Formulas**: H₂O, CO₂, NaCl with proper subscript formatting throughout
-- ✅ **Physics Equations**: E=mc², F=ma with superscript support for scientific notation
-- ✅ **Color-Coded Interfaces**: Each answer option (A-F) has themed toolbar and editor
-- ✅ **Multiple Question Types**: Support for 2-6 multiple choice options and True/False
-- ✅ **Quiz Terminology Standardization**: Consistent "Quiz" usage throughout interface
-- ✅ **Dedicated Quiz Creation**: "Start Fresh Quiz" button always available when editing
-- ✅ **Revolutionary Test Architecture**: UI mapping abstraction layer with Page Object Model
-- ✅ **TRUE 100% Test Coverage**: 210/210 tests passing across all browsers and platforms
-- ✅ **Triple Format Storage**: Plain text, HTML, and Delta formats for maximum compatibility
-- ✅ **Cross-Platform Formula Preservation**: Mathematical expressions maintained from creation to testing
-- ✅ **End-to-End Rich Text Testing**: Complete workflow validation with formula preservation
-- ✅ **Backward Compatibility**: Existing quizzes work seamlessly with new rich text features
-
-### v1.3.0 (2025-08-02) - 🔧 Major Codebase Refactoring & Enhanced UX
-- ✅ **Major Code Refactoring**: Separated HTML, CSS, and JavaScript into dedicated files
-- ✅ **87% File Size Reduction**: HTML file reduced from 1,915 lines to 244 lines
-- ✅ **Improved Maintainability**: Clean file structure with `css/` and `js/` directories
-- ✅ **Test Library with Sidebar**: Left sidebar menu for managing quiz collections
-- ✅ **Built-in Sample Tests**: Pre-loaded math and science quizzes for immediate use
-- ✅ **Smart JSON Format Conversion**: Automatic handling of different option formats
-- ✅ **Enhanced Button Behavior**: Context-aware "Create New Quiz" vs "Add New Question"
-- ✅ **Test Metadata Display**: Question count, total points, difficulty overview
-- ✅ **Duplicate Test Detection**: Smart handling of test library imports
-- ✅ **Better Code Organization**: Separation of concerns following web development best practices
-- ✅ **Future-Ready Architecture**: Easier maintenance and feature additions
-
-### v1.2.0 (2025-08-01) - 🤖 Comprehensive Testing Release
-- ✅ **Complete Playwright Test Suite**: 108 automated tests across 6 browsers/devices
-- ✅ **Real Image Testing**: Sample math formulas, diagrams, and visual elements
-- ✅ **Cross-Browser Testing**: Chromium, Firefox, WebKit compatibility validation
-- ✅ **Mobile Device Testing**: iPhone 12, Pixel 5, iPad Pro responsive testing
-- ✅ **Interactive Bot Vision**: `npm run test:ui` for real-time test watching
-- ✅ **Teacher Interface Testing**: Quiz creation, image upload, JSON generation (36 tests)
-- ✅ **Student Interface Testing**: Quiz taking, image display, answer submission (36 tests)
-- ✅ **Mobile Responsiveness Testing**: Touch targets, image sizing, layout validation (36 tests)
-- ✅ **Sample Test Data**: Comprehensive test images and quiz examples
-- ✅ **Professional Test Infrastructure**: Playwright configuration with cross-platform support
-
-### v1.1.0 (2025-07-27)
-- ✅ **ZIP Package Support**: Upload and extract ZIP files in any browser
-- ✅ **Teacher-Friendly Interface**: Professional educational design with emojis and clear language
-- ✅ **Offline JSZip Library**: Complete offline functionality without internet dependency
-- ✅ **Smart Image Handling**: Extension matching, data URL support, live previews
-- ✅ **Enhanced JSON Format**: Labeled options (A/B/C/D) with letter-based correct answers
-- ✅ **Cross-Browser Compatibility**: Full support for Safari, Firefox, Chrome, Edge
-- ✅ **Compact Question Cards**: Horizontal layout with image thumbnails
-- ✅ **Better Error Handling**: Debug logging and improved user feedback
-- ✅ **Backward Compatibility**: Supports both old and new quiz formats
-
-### v1.0.0 (2025-07-27)
-- ✅ Initial release with basic quiz generation and testing
-- ✅ Unity integration with UniWebView
-- ✅ JSON export/import functionality
-- ✅ Basic image support
-
-## Future Improvements
-
-### Modular Enhancements (v1.5.0+)
-- [ ] **Module Hot-Reloading**: Development mode with live module updates
-- [ ] **Plugin System**: Third-party modules with standardized APIs
-- [ ] **Module Lazy Loading**: Load modules on-demand for better performance
-- [ ] **Module Configuration**: Per-module settings and customization
-- [ ] **Inter-Module Communication**: Event bus for decoupled module interaction
-
-### Educational Features
-- [ ] **Quick Assessment Mode**: Rapid quiz taking with instant feedback
-- [ ] **Test Resubmission**: Allow students to retake quizzes with improved scoring
-- [ ] Question reordering (drag & drop) - partially implemented
-- [ ] Additional question types (text input, fill-in-the-blank, matching)
-- [ ] Question bank and templates library with rich text formulas
-- [ ] Export to PDF/Word formats with preserved mathematical formatting
-- [ ] Advanced analytics and reporting dashboard
-- [ ] Real-time collaborative quiz editing with rich text synchronization
-- [ ] Student progress tracking across multiple quizzes
-- [ ] Quiz scheduling and time limits
-
-### Technical Enhancements
-- [ ] **Advanced mathematical notation (LaTeX integration)**
-- [ ] **Scientific notation and complex equations support**
-- [ ] **Module-specific testing**: Individual module test suites
-- [ ] **Visual regression testing**: Screenshot comparisons with module isolation
-- [ ] **Performance testing**: Module load time and memory usage optimization
-- [ ] **Automated accessibility (a11y) testing integration**
-- [ ] **Module dependency graph visualization**
-- [ ] **Code splitting and tree shaking**: Remove unused module features
+4. Run the test suite: `npm test` (all 250 tests must pass)
+5. Commit your changes
+6. Push and submit a pull request
 
 ## License
 
-This project is for educational use. Please respect any licensing requirements for UniWebView if used commercially.
+MIT License. See [LICENSE](LICENSE) for details.
 
 ## Support
 
